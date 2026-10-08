@@ -111,7 +111,7 @@ void loadSoundEffectBank(s32 bankId) {
         } else {
             bcopy(pak, bank->buf, 0x2030);
             if (openSlotVabHeader(bank, 0, 0x1010) != 0) {
-                transferSlotVabBody(bank, (s32)findPakChunk((Chunk *)pak, 8, bank->id), bank->vab);
+                transferSlotVabBody(bank, (s32p)findPakChunk((Chunk *)pak, 8, bank->id), bank->vab);
             } else {
                 bank->id = 0xFF;
             }
@@ -156,7 +156,7 @@ void loadMusicTrack(s32 slotIndex, s32 trackId, u8 volume) {
             freeHeapBlock(pak);
             slot->id = 0xFF;
         } else {
-            transferSlotVabBody(slot, (s32)findPakChunk((Chunk *)pak, 8, MUSIC_CHUNK_ID(slot->id)), slot->vab);
+            transferSlotVabBody(slot, (s32p)findPakChunk((Chunk *)pak, 8, MUSIC_CHUNK_ID(slot->id)), slot->vab);
             SOUND_STATE.data[slotIndex] = findPakChunk((Chunk *)slot->buf, 6, MUSIC_CHUNK_ID(slot->id));
             SOUND_STATE.seq[slotIndex] = SsSeqOpen(SOUND_STATE.data[slotIndex], slot->vab);
             freeHeapBlock(pak);

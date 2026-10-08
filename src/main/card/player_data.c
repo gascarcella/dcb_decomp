@@ -173,7 +173,7 @@ void playModelAnimation(s32 modelSlot, s32 animId) {
     /* reload the animation data (heap tag 0x84 + slot) only for a new clip */
     if (model->anim.clip != animId) {
         freeHeapBlocksByTag(modelSlot + 0x84);
-        setModelAnimationData(model, (s32 *)decompressToHeap((s32)findPakChunk(model->pak, 1, animId), modelSlot + 0x84), animId);
+        setModelAnimationData(model, (s32 *)decompressToHeap((s32p)findPakChunk(model->pak, 1, animId), modelSlot + 0x84), animId);
     }
     startModelAnimation(modelSlot, animId, -2, 0);
 }
@@ -185,7 +185,7 @@ void setModelAnimationPose(s32 modelSlot, s32 animId) {
     model = SCENE_3D->models[modelSlot];
     heapTag = modelSlot + 0x84;
     freeHeapBlocksByTag(heapTag);
-    setModelAnimationData(model, (s32 *)decompressToHeap((s32)findPakChunk(model->pak, 1, animId), heapTag), animId);
+    setModelAnimationData(model, (s32 *)decompressToHeap((s32p)findPakChunk(model->pak, 1, animId), heapTag), animId);
     applyAnimationFirstFrame(modelSlot, animId);
 }
 

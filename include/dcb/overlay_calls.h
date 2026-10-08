@@ -116,7 +116,7 @@ void SUB_runPartnerEquipment();
 
 /* SUGSEG: the battle scenes */
 void SUG_updateScreenCopyQuads(void);
-s32 SUG_startTexAnim(s32, s32, RingEffect *, u8 *, s32p);
+s32p SUG_startTexAnim(s32, s32, RingEffect *, u8 *, s32p);
 void SUG_tickTexAnim(u8 *);
 void SUG_freeTexAnim(u8 *);
 void SUG_runPolygonBattle();

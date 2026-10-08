@@ -96,7 +96,7 @@ void renderSceneModels(FrameBuffer *buffer, s32 bufferIndex) {
                 link = (ModelLink *)model->link;
                 memset(&rot, 0, 8);
                 if (link->enabled != 0) {
-                    tickEffectMotion((s32)link, link->axisMode);
+                    tickEffectMotion((s32p)link, link->axisMode);
                     model->root.coord = link->m;
                     link->model->rot = link->rot;
                     link->model->pos = link->pos;
@@ -207,7 +207,7 @@ void initScene3D(s32 allocBuffers) {
         SCENE_LIGHT_COLORS = colorMatrices[1];
     }
     if (allocBuffers) {
-        mountDriveTask((s32) "M:", getCurrentTaskId());
-        addFrameCallback((s32)renderSceneModels);
+        mountDriveTask((s32p) "M:", getCurrentTaskId());
+        addFrameCallback((s32p)renderSceneModels);
     }
 }

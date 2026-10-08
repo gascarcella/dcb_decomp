@@ -144,9 +144,9 @@ s32 reuseLoadedModelTexture(Model *model) {
 /* format (us and eu): 0 for an OMD's objects, 1 for TMDs; jp only loads
    OMDs */
 #if VERSION_JP
-s32 loadModel(s32 slot, s32 id, s32 vramSlot, s32p pak) {
+s32 loadModel(s32 slot, s32 id, s32p vramSlot, s32p pak) {
 #elif VERSION_US || VERSION_EU
-s32 loadModel(s32 slot, s32 id, s32 vramSlot, s32p pak, s8 format) {
+s32 loadModel(s32 slot, s32 id, s32p vramSlot, s32p pak, s8 format) {
 #endif
     char path[16];
     TIM_IMAGE tim;

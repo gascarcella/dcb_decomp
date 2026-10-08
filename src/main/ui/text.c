@@ -51,7 +51,7 @@ void initSystemSprites(s32 vramX, s32 vramY, s32 poolSize) {
     freeHeapBlock(tim);
     pool = allocPermanentHeapBlock(SPRITE_POOL_SIZE * sizeof(SprtPacket) * 2);
     for (i = 0; i < 2; i++) {
-        DB(i).spritePool = (s32)(pool + SPRITE_POOL_SIZE * i);
+        DB(i).spritePool = (s32p)(pool + SPRITE_POOL_SIZE * i);
     }
     initSpritePoolPackets();
     SPRITE_POOL_CURSOR = CURRENT_FRAME_BUFFER->spritePool;

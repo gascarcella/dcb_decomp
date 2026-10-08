@@ -515,9 +515,9 @@ void runWindowTask(WindowSpec *spec, s32 parent) {
     do {
         waitFrames(1);
         moving = slideWindowSpritesIn(task);
-        AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, (s32)&task->sprites[FRAME_BUFFER_INDEX][0]);
+        AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, &task->sprites[FRAME_BUFFER_INDEX][0]);
         if (task->phase == 1) {
-            AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, (s32)&task->sprites[FRAME_BUFFER_INDEX][1]);
+            AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, &task->sprites[FRAME_BUFFER_INDEX][1]);
         }
         task->spec->update(&task->state);
         if (moving == 0) {
@@ -535,9 +535,9 @@ void runWindowTask(WindowSpec *spec, s32 parent) {
     if (task->state == 4) {
         do {
             waitFrames(1);
-            AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, (s32)&task->sprites[FRAME_BUFFER_INDEX][0]);
+            AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, &task->sprites[FRAME_BUFFER_INDEX][0]);
             if (task->phase == 1) {
-                AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, (s32)&task->sprites[FRAME_BUFFER_INDEX][1]);
+                AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, &task->sprites[FRAME_BUFFER_INDEX][1]);
             }
             stepWindowClosing(task);
             if (task->phase == 1 && slideWindowSpritesOut(task) == 0) {
@@ -1014,7 +1014,7 @@ s8 runChoiceMenu(ChoiceMenu *menu) {
     case 1:
         poly = &menu->bars[FRAME_BUFFER_INDEX];
         setPrimQuadRect(poly, sprite->x, sprite->y, menu->barWidth, 21);
-        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[sprite->z], (s32)poly);
+        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[sprite->z], poly);
         break;
     case 2:
     case 3:
@@ -1228,7 +1228,7 @@ void renderScrollingBackground(FrameBuffer *fb, s32 index) {
     if (count == 1) {
         poly = &SCROLLING_BACKGROUND->bars[index];
         setPrimQuadRect(poly, sprite->x, sprite->y, sprite[1].x, 21);
-        AddPrim((s32 *)(&fb->ot[sprite->z] + 1), (s32)poly);
+        AddPrim((s32 *)(&fb->ot[sprite->z] + 1), poly);
     }
     drawScrollingBackground();
 }

@@ -63,7 +63,7 @@ void renderWireGrid(FrameBuffer *buffer, s32 bufferIndex) {
                 line->r0 = color >> 1;
                 line->g0 = color + 0x40;
                 line->b0 = (0x80 - color) / 2;
-                AddPrim((s32 *)&buffer->ot[vertex[1].pad < vertex[0].pad ? vertex[0].pad : vertex[1].pad], (s32p)line++);
+                AddPrim((s32 *)&buffer->ot[vertex[1].pad < vertex[0].pad ? vertex[0].pad : vertex[1].pad], line++);
             }
         }
     }
@@ -83,7 +83,7 @@ void renderWireGrid(FrameBuffer *buffer, s32 bufferIndex) {
                 line->r0 = color >> 1;
                 line->g0 = color + 0x40;
                 line->b0 = (0x80 - color) / 2;
-                AddPrim((s32 *)&buffer->ot[columnVertex[1].pad < columnVertex[0].pad ? columnVertex[0].pad : columnVertex[1].pad], (s32p)line++);
+                AddPrim((s32 *)&buffer->ot[columnVertex[1].pad < columnVertex[0].pad ? columnVertex[0].pad : columnVertex[1].pad], line++);
             }
         }
     }

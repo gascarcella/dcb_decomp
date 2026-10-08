@@ -161,7 +161,7 @@ void runDuel(s32 mode, s32 parent) {
         waitFrames(FRAME_INTERVAL);
         switch (DUEL->state) {
         case -1:
-            addFrameCallback((s32)renderDuelFrame);
+            addFrameCallback((s32p)renderDuelFrame);
             DUEL->state++;
             break;
         case 0:
@@ -198,7 +198,7 @@ void runDuel(s32 mode, s32 parent) {
             }
             if (timer++ >= 10) {
                 createWireGrid(400, 600, 9, 13, 0, 1);
-                addFrameCallback((s32)renderWireGrid);
+                addFrameCallback((s32p)renderWireGrid);
                 timer = 0;
                 DUEL->state++;
             }
@@ -212,7 +212,7 @@ void runDuel(s32 mode, s32 parent) {
                 DB(0).scenePackets = allocHeapBlock(0xBB80, 0x7F);
                 DB(1).scenePackets = allocHeapBlock(0xBB80, 0x7F);
                 showArenaStage(0x400);
-                addFrameCallback((s32)renderSceneModels);
+                addFrameCallback((s32p)renderSceneModels);
                 SCENE_3D->modelState[0x17] = 1;
                 timer = 0;
                 DUEL->state++;
@@ -247,8 +247,8 @@ void runDuel(s32 mode, s32 parent) {
                 spawnTask(0, -1, 0, 0x200, screenFadeTask, 0, 1, 6, 0);
             }
             if (timer == 120) {
-                removeFrameCallback((s32)renderWireGrid);
-                removeFrameCallback((s32)renderDuelFrame);
+                removeFrameCallback((s32p)renderWireGrid);
+                removeFrameCallback((s32p)renderDuelFrame);
             }
             if (timer >= 122) {
                 timer = 0;
@@ -276,7 +276,7 @@ void runDuel(s32 mode, s32 parent) {
             }
             PLAYER_PANEL(0, HUD_DECK)->state = 7;
             PLAYER_PANEL(1, HUD_DECK)->state = 7;
-            addFrameCallback((s32)renderDuelFrame);
+            addFrameCallback((s32p)renderDuelFrame);
             DUEL->state++;
             break;
         case 7:
@@ -316,7 +316,7 @@ void runDuel(s32 mode, s32 parent) {
     while (KAW_RESULT_SCREEN_STATE != 0) {
         waitFrames(FRAME_INTERVAL);
         if (KAW_RESULT_SCREEN_STATE == 1) {
-            removeFrameCallback((s32)renderDuelFrame);
+            removeFrameCallback((s32p)renderDuelFrame);
         }
     }
     while (DUEL->stopTurnLoop != 0) {

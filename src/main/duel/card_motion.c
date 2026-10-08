@@ -550,7 +550,7 @@ void renderBoardCards(void) {
                                       0x1A, z);
                         sprintf(text, "%4d", PLAYER(i)->displayedStats[0]);
                         drawText(SPRITE(card)->sx + 15, SPRITE(card)->sy + 30,
-                                      (s32)text, hpColor, z);
+                                      (s32p)text, hpColor, z);
                         hpLabelRect.x = 0x60;
                         hpLabelRect.y = 0xDB;
                         hpLabelRect.w = 0x26;

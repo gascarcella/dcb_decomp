@@ -1016,7 +1016,7 @@ void runDuelTurnLoop(void) {
             waitDuelFrames(0x3C);
             if (((PlayerProfile *)PLAYER_PROFILES)->skipBattleAnimation) {
                 ATTACK_ICON_TIMER = 0x20;
-                addFrameCallback((s32)renderAttackChoiceIcons);
+                addFrameCallback((s32p)renderAttackChoiceIcons);
                 while (ATTACK_ICON_TIMER != 0) {
                     waitFrames(FRAME_INTERVAL);
                 }
@@ -1157,7 +1157,7 @@ void runDuelTurnLoop(void) {
                         knockedOut = 1;
                     }
                 }
-                removeFrameCallback((s32)renderAttackChoiceIcons);
+                removeFrameCallback((s32p)renderAttackChoiceIcons);
                 if (knockedOut) {
                     DUEL->step++;
                 } else {
