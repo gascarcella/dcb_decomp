@@ -2,7 +2,7 @@
 
 _Last updated: 2026-10-08_
 
-The fork is set up and the PC port has not started. Upstream's decompilation is complete: every function and all
+The fork is set up, and the PC port links and boots to the title screen headless (M1 in progress). Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
 ## The PS1 build
@@ -18,7 +18,8 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarations, fibers, the replay runners).
+v0.3.1 (v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+runners; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
 - **The baseline** (`scripts/probe.sh`, CI's `probe` job): 35 of 155 units compile; 120 fail with 3,732 gating
@@ -59,7 +60,20 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
   creates kind 0) and halt on the host; no duplicate global left; the adapter's probes (`port/game/state.c`: stage,
   map, the profile image in its PS1 layout, the scripts' `wait_mem` targets, `VOLATILE`); `PLATFORM_WAIT` in the
   CD and memory card polls (`docs/PORT.md` "Overlays", "Busy-waits", "Testing").
-- Next: #4 (M1).
+- **M1 step 4, the link and the first boot:** the pin is v0.3.1. `scripts/probe.sh` is a gate now and passes: 156 of
+  156 units, 0 diagnostics, no duplicate global, `decls` 0 mismatching (`game.h` and `evoseg.h`: the `PC_PORT` side of
+  `OpenEvent`/`EnableEvent`, `CdSearchFile`, `CdSync` and the `void` returns takes the stack's form, `GsWorkBase` is a
+  pointer on the host; #22 items 1-3), `psyq/check.sh` 0 missing. **The port links** (`scripts/port_build.sh`; CI's
+  `probe` job): the 71 overlay `undefined_syms` names the C references are `#define`d onto their fields (#20), and
+  `port_gen.py sections` passes. **It boots headless to the title** (`scripts/port_build.sh --boot`, CI's `replay`
+  job): `main()`, `runMainTask`, the CD, OPENSEG at frame 163 (stage 8), the opening movie, OPENSEG again at 5583 and
+  the title's PRESS START at 6013 (the emulator: 827 and 7866); the sanitizer build too, with the same log. The
+  blockers on the way: the frame buffer read before the render loop runs, the card directories' size (the heap's PS1
+  layout kept: `PLAYER_PROFILES` at 0x800C8964), `StCdIntrFlag`'s type. `tests/port/run.py boot` and `title` reach
+  every checkpoint with the emulator's stages and overlay sequence, deterministic, but the profile hashes cannot
+  match at boot (#24, a decision); `new_game` stops at the registration's first dialog (#23). Also open: UBSan's
+  alignment reports (#25), the movie's length (#26), the TMD readers (#22 item 4).
+- Next: #23 (the dialogs), the decision on #24, then `new_game` and `first_duel` (#4).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).
