@@ -1562,7 +1562,14 @@ void PutDispEnv(DISPENV *);
 void PutDrawEnv(DRAWENV *);
 void DrawOTag(u32 *);
 void ChangeClearPad(s32);
+#ifndef PC_PORT
 s32 spawnTask();
+#else
+/* startup.s's stub on the host (port/game/tasks.c). The game calls it unprototyped with 5 to 9 arguments, function
+ * pointers and strings among them: each becomes an s32p, the missing ones 0 */
+s32 spawnTask(s32p, s32p, s32p, s32p, s32p, s32p, s32p, s32p, s32p);
+#define spawnTask(...) spawnTask(PORT_S32P_ARGS9(__VA_ARGS__))
+#endif
 s32 CdInit(void);
 s32 CdControlB(u8, u8 *, u8 *);
 void CdSetDebug(s32);
@@ -1595,7 +1602,13 @@ s32 catan(s32);
 #else
 long catan(long);
 #endif
+#ifndef PC_PORT
 s32 resumeTask();
+#else
+/* the same (port/game/tasks.c): resumeTask(task) or resumeTask(task, result), the result a pointer at times */
+s32 resumeTask(s32p, s32p);
+#define resumeTask(...) resumeTask(PORT_S32P_ARGS2(__VA_ARGS__))
+#endif
 s32 OpenTIM(u32 *);
 TIM_IMAGE *ReadTIM(TIM_IMAGE *);
 void SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);

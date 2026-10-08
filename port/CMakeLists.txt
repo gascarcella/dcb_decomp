@@ -60,3 +60,8 @@ psxstack_add_game(dcb
     DEFINES VERSION_${DCB_VERSION_UPPER} SKIP_ASM
     CONFIGURE_DEPENDS "${DCB_ROOT}/port/tools/port_inputs.py" "${DCB_ROOT}/port/tools/port_bss.py"
                       "${DCB_ROOT}/mk/version/${DCB_VERSION}.mk" ${DCB_CONFIG_DEPS} ${DCB_HEADER_DEPS})
+
+# The adapter's port/game/tasks.c (startup.s's task glue) includes the game's headers for Task and the scheduler's
+# prototypes, and game.h declares libc's functions with the PS1's types (strlen, memset, bzero, ...): under the
+# adapter's -Werror those clash with the compiler's builtins. The units compile with -fno-builtin for the same reason.
+set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/game/tasks.c" APPEND PROPERTY COMPILE_OPTIONS -fno-builtin)

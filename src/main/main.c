@@ -42,6 +42,9 @@ int main(void) {
     launchTaskScheduler(1, 0x400, runMainTask, 0, 0, 0, 0);
     for (;;) {
         rand();
+        /* this loop is the task list's end, which the vsync handler leaves
+         * for the main task: on the host, at this wait's tick */
+        PLATFORM_WAIT();
     }
 }
 #elif VERSION_US || VERSION_EU
@@ -72,6 +75,9 @@ int main(void) {
     launchTaskScheduler(1, 0x400, runMainTask, 0, 0, 0, 0);
     for (;;) {
         rand();
+        /* this loop is the task list's end, which the vsync handler leaves
+         * for the main task: on the host, at this wait's tick */
+        PLATFORM_WAIT();
     }
 }
 #endif

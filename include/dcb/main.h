@@ -24,9 +24,17 @@ typedef struct Task {
     /* 0x0C */ struct Task *next;
     /* 0x10 */ s32 unk10;
     /* 0x14 */ s32 id; /* also the tag of the task's heap blocks */
-    /* 0x18 */ s32 wakeResult;
-    /* 0x1C */ s32 stack;
+    /* 0x18 */ s32p wakeResult; /* what resumeTask hands the task: its waitFrames returns it */
+    /* 0x1C */ s32p stack;
     /* 0x20 */ s32 regs[40]; /* as in the kernel's TCB, indexed by R_* (asm.h) */
+#ifdef PC_PORT
+    /* The host's (port/game/tasks.c): the task's fiber (TASK_LIST_END's is the main fiber, main()'s idle loop), and
+     * the entry point and its four arguments at pointer width, which regs[] holds on the PS1. After regs[], so that
+     * the PS1's offsets read the same. */
+    PortFiber *fiber;
+    s32p entry;
+    s32p args[4];
+#endif
 } Task;
 
 extern s32 TASK_VSYNC_MODE;
