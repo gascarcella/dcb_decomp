@@ -129,7 +129,7 @@ jobs:
     - uses: actions/checkout@v5
       with:
         repository: gascarcella/psxstack
-        ref: 67abb63
+        ref: 67abb63d26bbaaf39cdb2f28b298185ff4488a91   # the merge of psxstack #30 (tools/replay/); a full SHA: the action takes nothing shorter
         path: psxstack-main
         persist-credentials: false
 
