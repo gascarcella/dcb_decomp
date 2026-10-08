@@ -99,7 +99,7 @@ void EVO_startShatter(s32 model) {
         EVO_SHATTER_ORDER[j] = tmp;
     }
     if (EVO_SHATTER_STARTED == 0) {
-        addFrameCallback((s32)EVO_tickShatter);
+        addFrameCallback((s32p)EVO_tickShatter);
         EVO_SHATTER_STARTED = 1;
     }
     EVO_SHATTER_DELAY = 120;

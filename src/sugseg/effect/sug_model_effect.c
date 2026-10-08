@@ -61,7 +61,7 @@ void SUG_uploadShadedClut(ClutFade *fade, u16 stp) {
     DrawSync(0);
 }
 
-void *SUG_createModelEffect(s16 brightness, EffectTemplate *template, s32 modelId, s32 anim, s32 texAnimId, s32 vramSlot, u8 flags, s32 allBones, s32p pak, s32 clutBank) {
+void *SUG_createModelEffect(s16 brightness, EffectTemplate *template, s32 modelId, s32 anim, s32 texAnimId, s32p vramSlot, u8 flags, s32 allBones, s32p pak, s32 clutBank) {
     ModelEffect *fx;
     Rect16 rect;
     s32 slot;

@@ -39,5 +39,5 @@ void EVO_initScreenFlash(void) {
     }
     EVO_SCREEN_FLASH.on = 0;
     EVO_SCREEN_FLASH.brightness = 0;
-    addFrameCallback((s32)EVO_drawScreenFlash);
+    addFrameCallback((s32p)EVO_drawScreenFlash);
 }

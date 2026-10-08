@@ -68,7 +68,7 @@ void *SUG_loadTamFile(s32 key, s32 *path, s32 sub, Chunk *pak) {
     return NULL;
 }
 
-s32 SUG_startTexAnim(s32 id, s32 kind, RingEffect *owner, TexAnim *anim, s32p pak) {
+s32p SUG_startTexAnim(s32 id, s32 kind, RingEffect *owner, TexAnim *anim, s32p pak) {
     Rect16 *uv;
     s32 slot;
     s32 y;
@@ -175,7 +175,7 @@ s32 SUG_startTexAnim(s32 id, s32 kind, RingEffect *owner, TexAnim *anim, s32p pa
         if (!TAM_MOVES_FRAMES(anim->header)) {
             anim->rect.x += dx;
         }
-        return (s32)anim;
+        return (s32p)anim;
     }
     return 0;
 }

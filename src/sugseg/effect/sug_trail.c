@@ -55,8 +55,8 @@ TrailEffect *SUG_createTrailEffect(s16 brightness, Bytes4 *c0, Bytes4 *c1, Bytes
     obj->prevPos[1] = obj->pos;
     obj->prevRot[0] = obj->rot;
     obj->prevRot[1] = obj->rot;
-    initTransform(obj->edges[0], (s32)obj, x0, 0, 0, 0, 0, 0);
-    initTransform(obj->edges[1], (s32)obj, x1, 0, 0, 0, 0, 0);
+    initTransform(obj->edges[0], (s32p)obj, x0, 0, 0, 0, 0, 0);
+    initTransform(obj->edges[1], (s32p)obj, x1, 0, 0, 0, 0, 0);
     obj->colors = allocTaskHeapBlock(colorMode ? count * 16 : 16);
     SUG_initTrailPrims(obj, semiTrans, blend, primKind, texAnimId, uv, tpage, clut);
     SUG_setTrailColors(obj, colorMode, c0, c1, c2, c3);
@@ -91,7 +91,7 @@ void SUG_tickTrailEffect(TrailEffect *obj) {
         return;
     }
     PushMatrix();
-    tickEffectMotion((s32)obj, 0);
+    tickEffectMotion((s32p)obj, 0);
     PopMatrix();
     switch (obj->fadeMode) {
     case 1:
@@ -205,7 +205,7 @@ void SUG_tickTrailEffect(TrailEffect *obj) {
         for (i = 0; i < obj->count; i++, line++, tp++) {
             SUG_getPosHistory(obj->histories[0], i, NULL, &pos);
             SUG_getPosHistory(obj->histories[0], i + 1, NULL, &d);
-            transformAndAddLineG2((s32)line, (s32)tp, (s32)&pos, (s32)&d, obj->semiTrans, obj->otz);
+            transformAndAddLineG2((s32p)line, (s32p)tp, (s32p)&pos, (s32p)&d, obj->semiTrans, obj->otz);
         }
         break;
     case 9:
@@ -216,7 +216,7 @@ void SUG_tickTrailEffect(TrailEffect *obj) {
             SUG_getPosHistory(obj->histories[0], i + 1, NULL, &c);
             SUG_getPosHistory(obj->histories[1], i, NULL, &b);
             SUG_getPosHistory(obj->histories[1], i + 1, NULL, &d);
-            transformAndAddPolyG4((s32)g4, (s32)tp, (s32)&pos, (s32)&b, (s32)&c, (s32)&d, obj->semiTrans, 0, obj->otz);
+            transformAndAddPolyG4((s32p)g4, (s32p)tp, (s32p)&pos, (s32p)&b, (s32p)&c, (s32p)&d, obj->semiTrans, 0, obj->otz);
         }
         break;
     /* jp's trails are never textured */
@@ -232,7 +232,7 @@ void SUG_tickTrailEffect(TrailEffect *obj) {
             SUG_getPosHistory(obj->histories[1], i, NULL, &b);
             SUG_getPosHistory(obj->histories[1], i + 1, NULL, &d);
             setPrimQuadUvRect((u8 *)ft4, obj->uv.x, obj->uv.y, obj->uv.w, obj->uv.h);
-            transformAndAddPolyFT4((s32)ft4, (s32)&pos, (s32)&b, (s32)&c, (s32)&d, 0, obj->otz);
+            transformAndAddPolyFT4((s32p)ft4, (s32p)&pos, (s32p)&b, (s32p)&c, (s32p)&d, 0, obj->otz);
         }
         break;
     case 13:
@@ -246,7 +246,7 @@ void SUG_tickTrailEffect(TrailEffect *obj) {
             SUG_getPosHistory(obj->histories[1], i, NULL, &b);
             SUG_getPosHistory(obj->histories[1], i + 1, NULL, &d);
             setPrimQuadUvRect((u8 *)gt4, obj->uv.x, obj->uv.y, obj->uv.w, obj->uv.h);
-            transformAndAddPolyGT4((s32)gt4, (s32)&pos, (s32)&b, (s32)&c, (s32)&d, 0, obj->otz);
+            transformAndAddPolyGT4((s32p)gt4, (s32p)&pos, (s32p)&b, (s32p)&c, (s32p)&d, 0, obj->otz);
         }
         break;
 #endif

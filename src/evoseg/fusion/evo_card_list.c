@@ -465,7 +465,7 @@ void EVO_drawSortMenu(UiWindow *w) {
         if ((w->view.y + w->rect.h) / EVO_SORT_MENU.rowH < i) {
             break;
         }
-        drawText(x, w->originY + i * EVO_SORT_MENU.rowH + 1, (s32)EVO_SORT_LABELS[i], 7, z);
+        drawText(x, w->originY + i * EVO_SORT_MENU.rowH + 1, (s32p)EVO_SORT_LABELS[i], 7, z);
     }
     updateMenuCursor(&EVO_SORT_MENU);
     if (EVO_SORT_MENU.active != 0 && (PAD_STATES[0]->pressed & 0x40)) {

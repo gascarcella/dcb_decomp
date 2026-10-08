@@ -24,9 +24,9 @@ void EVO_drawRankUpBanner(UiWindow *w) {
     s32 z = w->z;
 
     if (EVO_RANK_UP_STATE == 2) {
-        drawLargeText(x + 1, y + 1, (s32)"RANK MAX!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"RANK MAX!", 7, z);
     } else if (EVO_RANK_UP_STATE == 1) {
-        drawLargeText(x + 1, y + 1, (s32)"RANK UP!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"RANK UP!", 7, z);
     }
 }
 
@@ -36,8 +36,8 @@ void EVO_drawReceivedBanner(UiWindow *w) {
     s32 z = w->z;
 
     if (EVO_CARD_RECEIVED == 0) {
-        drawLargeText(x + 1, y + 1, (s32)"FULL SET!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"FULL SET!", 7, z);
     } else {
-        drawLargeText(x + 1, y + 1, (s32)"RECEIVED!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"RECEIVED!", 7, z);
     }
 }
