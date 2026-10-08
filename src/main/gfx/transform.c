@@ -93,12 +93,12 @@ void updateTransformMatrix(void *xform, s32 axisMode) {
     loadGteMatrix((s32)t);
 }
 
-void loadGteMatrix(s32 matrix) {
+void loadGteMatrix(s32p matrix) {
     SetTransMatrix();
     SetRotMatrix(matrix);
 }
 
-void initTransform(void *xform, s32 parent, s32 x, s32 y, s32 z, s16 rotX, s16 rotY, s16 rotZ) {
+void initTransform(void *xform, s32p parent, s32 x, s32 y, s32 z, s16 rotX, s16 rotY, s16 rotZ) {
     Transform *t = xform;
 
     t->trans.vx = x;

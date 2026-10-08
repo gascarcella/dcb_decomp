@@ -114,7 +114,7 @@ void resetWindowPrimPool(void) {
     WINDOW_PRIM_CURSOR = CURRENT_FRAME_BUFFER->windowPrimPool;
 }
 
-void openWindow(void *winPtr, void *rectPtr, s32 fromPtr, s16 *viewPtr, s32 flags, s32 style, s32 brightness, s32 frames) {
+void openWindow(void *winPtr, void *rectPtr, s32p fromPtr, s16 *viewPtr, s32 flags, s32 style, s32 brightness, s32 frames) {
     UiWindow *w = winPtr;
     Rect16 *r = rectPtr;
     Rect16 *from = (Rect16 *)fromPtr;

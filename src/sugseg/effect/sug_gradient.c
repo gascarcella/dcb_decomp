@@ -14,6 +14,8 @@ typedef struct {
     s32 wy1;
 } Blend;
 
+void SUG_blendCornerColors(Blend *blend, u8 *out);
+
 /* fills a grid of a2 x a3 cells, 4 colors each, by blending the corner colors; the kinds split it
    into 1, 2 or 4 blends around the middle color a8 */
 void SUG_fillGradientColors(void *a0, s32 a1, s32 a2, s32 a3, Bytes4 *c0, Bytes4 *c1, Bytes4 *c2, Bytes4 *c3, Bytes4 *a8) {

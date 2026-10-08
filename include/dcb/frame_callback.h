@@ -34,7 +34,7 @@ typedef struct {
 #error "WindowPrims: version not checked"
 #endif
 
-extern s32 WINDOW_PRIM_CURSOR;
+extern s32p WINDOW_PRIM_CURSOR;
 extern u16 WINDOW_PRIM_POOL_SIZE;
 extern u16 WINDOW_TEX_X;
 extern u16 WINDOW_TEX_Y;
@@ -48,7 +48,7 @@ extern Rect16 HSCROLL_PART_UVS[];
 extern Rect16 HSCROLL_BAR_UVS[];
 
 void clearFramePrimSlots(void);
-void addFrameCallback(s32 callback);
-void removeFrameCallback(s32 callback);
+void addFrameCallback(s32p callback);
+void removeFrameCallback(s32p callback);
 
 #endif /* DCB_FRAME_CALLBACK_H */

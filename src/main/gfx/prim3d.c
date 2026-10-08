@@ -3,7 +3,7 @@
 #include "game.h"
 #include "dcb/prim3d.h"
 
-void transformAndAddPolyFT3(s32 poly, s32 vert0, s32 vert1, s32 vert2, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyFT3(s32p poly, s32p vert0, s32p vert1, s32p vert2, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -24,7 +24,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyFT4(s32 poly, s32 vert0, s32 vert1, s32 vert2, s32 vert3, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyFT4(s32p poly, s32p vert0, s32p vert1, s32p vert2, s32p vert3, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -45,7 +45,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyGT4(s32 poly, s32 vert0, s32 vert1, s32 vert2, s32 vert3, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyGT4(s32p poly, s32p vert0, s32p vert1, s32p vert2, s32p vert3, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -66,7 +66,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyF3(s32 poly, s32 tpagePrim, s32 vert0, s32 vert1, s32 vert2, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyF3(s32p poly, s32p tpagePrim, s32p vert0, s32p vert1, s32p vert2, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -93,7 +93,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyF4(s32 poly, s32 tpagePrim, s32 vert0, s32 vert1, s32 vert2, s32 vert3, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyF4(s32p poly, s32p tpagePrim, s32p vert0, s32p vert1, s32p vert2, s32p vert3, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -120,7 +120,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyGT3(s32 poly, s32 vert0, s32 vert1, s32 vert2, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyGT3(s32p poly, s32p vert0, s32p vert1, s32p vert2, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -141,7 +141,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyG3(s32 poly, s32 tpagePrim, s32 vert0, s32 vert1, s32 vert2, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyG3(s32p poly, s32p tpagePrim, s32p vert0, s32p vert1, s32p vert2, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -168,7 +168,7 @@ block_3:
     }
 }
 
-void transformAndAddPolyG4(s32 poly, s32 tpagePrim, s32 vert0, s32 vert1, s32 vert2, s32 vert3, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
+void transformAndAddPolyG4(s32p poly, s32p tpagePrim, s32p vert0, s32p vert1, s32p vert2, s32p vert3, u8 semiTrans, u8 cullBackface, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -195,7 +195,7 @@ block_3:
     }
 }
 
-void transformAndAddLineF2(s32 line, s32 tpagePrim, s32 vert0, s32 vert1, u8 semiTrans, s32 fixedOtz) {
+void transformAndAddLineF2(s32p line, s32p tpagePrim, s32p vert0, s32p vert1, u8 semiTrans, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;
@@ -217,7 +217,7 @@ void transformAndAddLineF2(s32 line, s32 tpagePrim, s32 vert0, s32 vert1, u8 sem
     }
 }
 
-void transformAndAddLineG2(s32 line, s32 tpagePrim, s32 vert0, s32 vert1, u8 semiTrans, s32 fixedOtz) {
+void transformAndAddLineG2(s32p line, s32p tpagePrim, s32p vert0, s32p vert1, u8 semiTrans, s32 fixedOtz) {
     s32 depthCue;
     s32 flag;
     s32 otz;

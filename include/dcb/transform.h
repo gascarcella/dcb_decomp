@@ -14,9 +14,9 @@ typedef struct Transform {
 } Transform;
 
 void constrainRotationAxis(s32 axisMode, SVECTOR *rot, MATRIX *m);
-void loadGteMatrix(s32 matrix);
+void loadGteMatrix(s32p matrix);
 void updateTransformMatrix(void *xform, s32 axisMode);
-void initTransform(void *xform, s32 parent, s32 x, s32 y, s32 z, s16 rotX, s16 rotY, s16 rotZ);
+void initTransform(void *xform, s32p parent, s32 x, s32 y, s32 z, s16 rotX, s16 rotY, s16 rotZ);
 void getTransformWorldPos(void *xform, void *outPos);
 
 #include "dcb/prim_util.h"

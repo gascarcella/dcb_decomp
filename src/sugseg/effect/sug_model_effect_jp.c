@@ -61,10 +61,10 @@ void SUG_uploadShadedClut(ClutFade *fade) {
         }
         *dst++ = color;
     }
-    LoadImage((s16 *)&fade->rect, (s32)fade->faded);
+    LoadImage((s16 *)&fade->rect, (u32 *)fade->faded);
 }
 
-void *SUG_createModelEffect(s16 brightness, EffectTemplate *template, s32 modelId, s32 anim, s32 texAnimId, s32 vramSlot, u8 flags, s32 pak) {
+void *SUG_createModelEffect(s16 brightness, EffectTemplate *template, s32 modelId, s32 anim, s32 texAnimId, s32 vramSlot, u8 flags, s32p pak) {
     ModelEffect *fx;
     Rect16 rect;
     s32 slot;

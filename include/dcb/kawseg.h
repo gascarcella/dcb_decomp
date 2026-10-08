@@ -85,7 +85,7 @@ typedef struct {
     /* 0x004 */ struct RingPrims *ringPrims;
     /* 0x008 */ u8 unk8[0x40];
     /* 0x048 */ struct HudPrims *hudPrims;
-    /* 0x04C */ s32 effectArchive; /* CBTL_EFF.ARC */
+    /* 0x04C */ s32p effectArchive; /* CBTL_EFF.ARC */
     /* 0x050 */ u8 unk50[0x774];
     /* 0x7C4 */ DigivolvePlan *selected;
     /* 0x7C8 */ DigivolvePlan slots[4];
@@ -134,7 +134,7 @@ typedef struct ScriptRunner {
      Script *script;
      s32 *regs;
      s32 delay; /* frames to wait before running the script again */
-     s32 text; /* the message being shown */
+     s32p text; /* the message being shown */
 } ScriptRunner;
 
 typedef struct {

@@ -24,6 +24,7 @@ s32 KAW_resolveBattle();
 s32 KAW_checkDigivolveTarget();
 s32 KAW_checkAnyDigivolve();
 s32 KAW_setStatPenalty();
+void KAW_startTutorial(void);
 s32 KAW_showTutorialMessage();
 s32 KAW_tickTutorial();
 s32 KAW_tickCardCursor();
@@ -48,8 +49,8 @@ s32 KAW_checkDigimonBonuses();
 s32 KAW_checkHandBonuses();
 void KAW_showBonusBanner();
 s32 KAW_initHudPanels();
-s32 KAW_allocCardPolys();
-s32 KAW_createCursor(s32, s32, s32, s32, s32);
+s32p KAW_allocCardPolys();
+s32p KAW_createCursor(s32, s32, s32, s32, s32);
 s32 KAW_freeHudPanels();
 s32 KAW_freeCardPolys();
 #if VERSION_JP
@@ -115,7 +116,7 @@ void SUB_runPartnerEquipment();
 
 /* SUGSEG: the battle scenes */
 void SUG_updateScreenCopyQuads(void);
-s32 SUG_startTexAnim(s32, s32, RingEffect *, u8 *, s32);
+s32 SUG_startTexAnim(s32, s32, RingEffect *, u8 *, s32p);
 void SUG_tickTexAnim(u8 *);
 void SUG_freeTexAnim(u8 *);
 void SUG_runPolygonBattle();

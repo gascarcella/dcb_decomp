@@ -209,8 +209,8 @@ s32 openSlotVabHeader(SndSlot *slot, s16 vabId, s32 spuAddr) {
     return 0;
 }
 
-void transferSlotVabBody(SndSlot *slot, s32 vabBody, s32 vab) {
-    if (vabBody == 0 || SsVabTransBody(vabBody, slot->vab) == slot->vab) {
+void transferSlotVabBody(SndSlot *slot, s32p vabBody, s32 vab) {
+    if (vabBody == 0 || SsVabTransBody((u8 *)vabBody, slot->vab) == slot->vab) {
         SsVabTransCompleted(1);
     }
 }

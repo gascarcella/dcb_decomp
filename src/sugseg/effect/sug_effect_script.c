@@ -99,7 +99,7 @@ enum {
 typedef struct {
     s16 id;
     s16 active;
-    s32 value;
+    s32p value;
 #if VERSION_JP
     s32 unk8; /* jp: only SUG_initEffectSlots touches it, clearing it */
 #endif
@@ -109,7 +109,7 @@ typedef struct {
     EffectSlot slots[150];
     s32 modelSlots[3];
     u8 xform[0x4C];
-    s32 pak;
+    s32p pak;
     s32 count;
 } EffectSlots;
 

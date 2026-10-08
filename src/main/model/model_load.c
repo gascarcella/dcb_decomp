@@ -31,7 +31,7 @@ void relocateOmdObjects(Tmd18 *tmd) {
     }
 }
 
-void linkOmdObject(s32 tmd, GsDOBJ4 *obj, s32 index) {
+void linkOmdObject(s32p tmd, GsDOBJ4 *obj, s32 index) {
     obj->id = index + 1;
     obj->attribute = 0;
     obj->tmd = (u32 *)tmd;
@@ -144,9 +144,9 @@ s32 reuseLoadedModelTexture(Model *model) {
 /* format (us and eu): 0 for an OMD's objects, 1 for TMDs; jp only loads
    OMDs */
 #if VERSION_JP
-s32 loadModel(s32 slot, s32 id, s32 vramSlot, s32 pak) {
+s32 loadModel(s32 slot, s32 id, s32 vramSlot, s32p pak) {
 #elif VERSION_US || VERSION_EU
-s32 loadModel(s32 slot, s32 id, s32 vramSlot, s32 pak, s8 format) {
+s32 loadModel(s32 slot, s32 id, s32 vramSlot, s32p pak, s8 format) {
 #endif
     char path[16];
     TIM_IMAGE tim;

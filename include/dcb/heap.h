@@ -15,7 +15,7 @@ extern s32 HEAP_ARENA;
 extern HeapBlock HEAP_BLOCKS[0x400];
 
 void resetHeap(s32 initialize);
-s32 freeHeapBlock(void *ptr);
+s32p freeHeapBlock(void *ptr);
 s32 freeHeapBlocksByTag(s32 tag);
 void *allocPermanentHeapBlock(s32 size);
 s32 getLargestFreeHeapBlock(void);

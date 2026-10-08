@@ -13,7 +13,7 @@
 /* jp's memcard object starts at initMemoryCard: this data and the two
    functions that us keeps here are elsewhere in jp */
 #if VERSION_US || VERSION_EU
-s32 PLAYER_PROFILES = 0;
+s32p PLAYER_PROFILES = 0;
 void *SESSION_DATA = 0;
 
 void playMenuSound(u32 kind) {
@@ -355,7 +355,7 @@ s32 formatMemoryCard(s32 port) {
 #if VERSION_JP
 /* jp closes the new file only when it was created, keeps no copy of the
    header, and goes on whatever the card says */
-s32 startMemoryCardSave(s32 port, u8 blocks, s32 data, s32 fileName, McHeader *header) {
+s32 startMemoryCardSave(s32 port, u8 blocks, s32p data, s32p fileName, McHeader *header) {
     char name[32];
     s32 created;
     s32 fd;
@@ -376,7 +376,7 @@ s32 startMemoryCardSave(s32 port, u8 blocks, s32 data, s32 fileName, McHeader *h
     return 0;
 }
 #elif VERSION_US || VERSION_EU
-s32 startMemoryCardSave(s32 port, u8 blocks, s32 data, s32 fileName, McHeader *header) {
+s32 startMemoryCardSave(s32 port, u8 blocks, s32p data, s32p fileName, McHeader *header) {
     char name[32];
     s32 fd;
 
@@ -452,7 +452,7 @@ s32 stepMemoryCardSave(void) {
     return MEMORY_CARD_SECTORS_DONE * 100 / MEMORY_CARD_SECTORS_TOTAL;
 }
 
-s32 startMemoryCardLoad(s32 port, s32 data, s32 fileName) {
+s32 startMemoryCardLoad(s32 port, s32p data, s32p fileName) {
     char name[32];
     s32 fd;
 
@@ -528,7 +528,7 @@ s32 stepMemoryCardLoad(void) {
     return MEMORY_CARD_SECTORS_DONE * 100 / MEMORY_CARD_SECTORS_TOTAL;
 }
 
-s32 readMemoryCardSavePreview(s32 port, void *dst, s32 fileName) {
+s32 readMemoryCardSavePreview(s32 port, void *dst, s32p fileName) {
     char name[32];
     s32 fd;
 

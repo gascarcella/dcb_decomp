@@ -203,9 +203,9 @@ void *findDigimonCardByModelId(s32 modelId) {
     return card;
 }
 
-s32 loadSkill(s32 skillId, s32 pak) {
+s32p loadSkill(s32 skillId, s32p pak) {
     char path[32];
-    s32 skill;
+    s32p skill;
 
     skill = (s32)findPakChunk((Chunk *)pak, 2, skillId);
     if (skill == 0) {

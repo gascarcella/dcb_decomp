@@ -14,7 +14,7 @@ void SUG_setStageBrightness(u8 level) {
 
     SUG_STAGE_CLUT.level = level;
     if (SUG_STAGE_CLUT.level == 0xFF) {
-        LoadImage((s16 *)&SUG_STAGE_CLUT.rect, (s32)SUG_STAGE_CLUT.clut);
+        LoadImage((s16 *)&SUG_STAGE_CLUT.rect, (u32 *)SUG_STAGE_CLUT.clut);
         DrawSync(0);
     } else {
         SUG_uploadShadedClut(&SUG_STAGE_CLUT, 0);
@@ -95,7 +95,7 @@ void SUG_shadeModelClut(s32 slot, s32 target) {
         }
         SUG_uploadShadedClut(&fade, 0x8000);
     } else {
-        LoadImage((s16 *)&model->clutRect, (s32)model->clut);
+        LoadImage((s16 *)&model->clutRect, (u32 *)model->clut);
         DrawSync(0);
     }
 }

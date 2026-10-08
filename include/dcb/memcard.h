@@ -20,7 +20,7 @@ extern u8 *MEMORY_CARD_SAVE_HEADER;
 extern s32 MEMORY_CARD_WAIT_COUNTER;
 extern s32 MEMORY_CARD_TRANSFER_STEP;
 extern s32 MEMORY_CARD_FILE;
-extern s32 MEMORY_CARD_TRANSFER_DATA;
+extern s32p MEMORY_CARD_TRANSFER_DATA;
 extern s32 MEMORY_CARD_SECTORS_DONE;
 extern s32 MEMORY_CARD_SECTORS_TOTAL;
 extern u8 COMPLETE_SET_CARD_COUNTS[6];
@@ -36,11 +36,11 @@ s32 waitForMemoryCardHwEvent(s32 pollInterval);
 s32 ensureMemoryCardReady(s32 port);
 s32 getMemoryCardStatus(s32 port);
 s32 formatMemoryCard(s32 port);
-s32 startMemoryCardSave(s32 port, u8 blocks, s32 data, s32 fileName, McHeader *header);
+s32 startMemoryCardSave(s32 port, u8 blocks, s32p data, s32p fileName, McHeader *header);
 s32 stepMemoryCardSave(void);
-s32 startMemoryCardLoad(s32 port, s32 data, s32 fileName);
+s32 startMemoryCardLoad(s32 port, s32p data, s32p fileName);
 s32 stepMemoryCardLoad(void);
-s32 readMemoryCardSavePreview(s32 port, void *dst, s32 fileName);
+s32 readMemoryCardSavePreview(s32 port, void *dst, s32p fileName);
 void scanMemoryCardFiles(s32 port);
 
 #endif /* DCB_MEMCARD_H */

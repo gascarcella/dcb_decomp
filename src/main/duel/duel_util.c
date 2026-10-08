@@ -146,4 +146,9 @@ void runDuelMessageWindow(void) {
  * which the original code doesn't (GCC only warns about the mismatch).
  */
 extern u8 OVERLAY_AREA[];
+#ifdef PC_PORT
+/* the host doesn't let the definition add a const to game.h's declaration */
+s32p OVERLAY_LOAD_ADDR = (s32p)OVERLAY_AREA;
+#else
 const s32 OVERLAY_LOAD_ADDR = (s32)OVERLAY_AREA;
+#endif

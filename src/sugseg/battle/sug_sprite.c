@@ -39,7 +39,7 @@ extern const char SUG_FMT_SPRITE_PATH[];
 /* jp gives the sheet of a loaded sprite instead of its entry, and a free
    entry otherwise */
 #if VERSION_JP
-SpriteEntry *SUG_findSpriteEntry(s32 key, s32 subKey) {
+SpriteEntry *SUG_findSpriteEntry(s32 key, s32p subKey) {
     SpriteEntry *entry;
     SpriteEntry *free;
     s32 i;
@@ -57,7 +57,7 @@ SpriteEntry *SUG_findSpriteEntry(s32 key, s32 subKey) {
     return free;
 }
 #elif VERSION_US || VERSION_EU
-SpriteEntry *SUG_findSpriteEntry(s32 key, s32 subKey) {
+SpriteEntry *SUG_findSpriteEntry(s32 key, s32p subKey) {
     SpriteEntry *entry;
     SpriteEntry *free;
     s32 i;
@@ -175,7 +175,7 @@ void SUG_setSpriteFrameVerts(Sprite *sprite, s32 frame) {
 #endif
 
 #if VERSION_JP
-void SUG_initSprite(Sprite *sprite, s32 key, u16 scaleX, u16 scaleY, s16 x, s16 y, s16 z, s32 otz, s32 subKey) {
+void SUG_initSprite(Sprite *sprite, s32 key, u16 scaleX, u16 scaleY, s16 x, s16 y, s16 z, s32 otz, s32p subKey) {
     sprite->tex = (u8 *)SUG_findSpriteEntry(key, subKey);
     if (sprite->tex != NULL) {
         sprite->frames = (SpriteFrame *)(sprite->tex + sizeof(SpriteSheet));
@@ -193,7 +193,7 @@ void SUG_initSprite(Sprite *sprite, s32 key, u16 scaleX, u16 scaleY, s16 x, s16 
     }
 }
 #elif VERSION_US || VERSION_EU
-void SUG_initSprite(Sprite *sprite, s32 key, u16 scaleX, u16 scaleY, s16 x, s16 y, s16 z, s32 otz, s32 useOrigin, s32 subKey) {
+void SUG_initSprite(Sprite *sprite, s32 key, u16 scaleX, u16 scaleY, s16 x, s16 y, s16 z, s32 otz, s32 useOrigin, s32p subKey) {
     sprite->tex = SUG_findSpriteEntry(key, subKey)->data;
     if (sprite->tex != NULL) {
         sprite->frames = (SpriteFrame *)(sprite->tex + sizeof(SpriteSheet));
@@ -292,7 +292,7 @@ void SUG_drawSprite(Sprite *sprite, s16 brightness) {
 
 /* jp's sprite files hold several sheets, us's one */
 #if VERSION_JP
-void SUG_loadSprite(s32 id, s32 x, s32 y, s32 subKey) {
+void SUG_loadSprite(s32 id, s32 x, s32 y, s32p subKey) {
     char path[20];
     s32 task;
     SpriteEntry *entry;
@@ -357,7 +357,7 @@ void SUG_loadSprite(s32 id, s32 x, s32 y, s32 subKey) {
     }
 }
 #elif VERSION_US || VERSION_EU
-void SUG_loadSprite(s32 id, s32 x, s32 y, s32 subKey) {
+void SUG_loadSprite(s32 id, s32 x, s32 y, s32p subKey) {
     char path[20];
     s32 task;
     SpriteEntry *entry;

@@ -7,6 +7,7 @@
 #include "dcb/prim.h"
 #include "dcb/prim_util.h"
 #include "dcb/sug_tex_anim.h"
+#include "dcb/prim3d.h"
 
 typedef struct {
     u8 r;
@@ -19,8 +20,17 @@ typedef struct {
 void initLineF2Pair();
 
 void initPolyF3Pair();
+#ifdef PC_PORT
+/* prim.h's prototypes are in scope on the host: the calls drop the trailing 1,
+   and initPolyG3Pair takes its prims as s32 * */
+#define initPolyG3Pair(p, q, c0, c1, c2, abr, tp0, tp1, semi, extra) \
+    initPolyG3Pair((s32 *)(p), (s32 *)(q), c0, c1, c2, abr, tp0, tp1, semi)
+#define initPolyGT3Pair(p, q, c0, c1, c2, tpage, clut, uv, xy, semi, extra) \
+    initPolyGT3Pair(p, q, c0, c1, c2, tpage, clut, uv, xy, semi)
+#else
 void initPolyG3Pair();
 void initPolyGT3Pair();
+#endif
 void SUG_drawSphereLines(SphereEffect *fx, u8 cull, s32 n, s32 speed, s32 otz);
 void SUG_drawSphereF(SphereEffect *fx, s32 cull, s32 count, s32 speed, s32 otz);
 void SUG_drawSphereG(SphereEffect *fx, s32 cull, s32 count, s32 speed, s32 otz);
@@ -28,7 +38,7 @@ void SUG_drawSphereGT(SphereEffect *fx, s32 cull, s32 count, s32 speed, s32 otz)
 void SUG_setSphereColor(SphereEffect *fx, Bytes4 *rgb, s16 pulse, s16 pulseMode);
 
 SphereEffect *SUG_createSphereEffect(s16 brightness, u8 *color, s16 pulse, s16 pulseMode, EffectTemplate *template, s16 segments, s16 slices, s32 radius, u8 semiTrans,
-                           u8 abr, u8 primKind, u8 openBottom, s16 texAnimId, Rect16 *uv, s32 tpage, s32 clut, u8 cull, s32 otz, s32 pak) {
+                           u8 abr, u8 primKind, u8 openBottom, s16 texAnimId, Rect16 *uv, s32 tpage, s32 clut, u8 cull, s32 otz, s32p pak) {
     SphereEffect *fx;
     s32 rings;
     s32 total;

@@ -13,6 +13,8 @@ typedef unsigned int u32;
 typedef signed long long s64;
 typedef unsigned long long u64;
 
+#include "port.h"
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif

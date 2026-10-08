@@ -4,7 +4,7 @@
 #include "game.h"
 #include "dcb/scroll_bg.h"
 
-s32 tickEffectMotion(s32 fxAddr, s32 applyFlag);
+s32 tickEffectMotion(s32p fxAddr, s32 applyFlag);
 void updateEffectLinearMotion(EffectObject *fx);
 void updateEffectArcMotion(EffectObject *fx);
 void updateEffectWaveXMotion(EffectObject *fx);

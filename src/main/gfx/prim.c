@@ -76,7 +76,7 @@ void fillVramRect(s32 x, s32 y, s32 w, s32 h, u32 color) {
     rect.y = y;
     for (i = 0; i < h; i += rect.h, rect.y += rect.h) {
         rect.h = (h - i < rect.h) ? h - i : rect.h;
-        LoadImage((s16 *)&rect, (s32)buf);
+        LoadImage((s16 *)&rect, (u32 *)buf);
     }
     DrawSync(0);
     freeHeapBlock(buf);

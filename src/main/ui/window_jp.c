@@ -44,7 +44,7 @@ void resetWindowPrimPool(void) {
 
 /* colors is either a brightness (0 to 256: black fill, green lines) or the
    address of three colours, one per word */
-void openWindow(void *winPtr, void *rectPtr, s32 fromPtr, s16 *viewPtr, s32 flags, s32 colors, s32 frames) {
+void openWindow(void *winPtr, void *rectPtr, s32p fromPtr, s16 *viewPtr, s32 flags, s32 colors, s32 frames) {
     UiWindow *w = winPtr;
     Rect16 *r = rectPtr;
     Rect16 *from = (Rect16 *)fromPtr;

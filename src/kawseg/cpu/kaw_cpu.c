@@ -3,6 +3,7 @@
 #include "dcb/card_zones.h"
 #include "dcb/kawseg.h"
 #include "dcb/kaw_card_queries.h"
+#include "dcb/kaw_battle_sim.h"
 
 /* the bytes of a Player the battle simulations save and restore */
 typedef struct {

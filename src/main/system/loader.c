@@ -19,14 +19,14 @@
 
 s32 FILE_LOADER_BUSY = 0;
 
-void mountDriveTask(s32 path, s32 parentTask) {
+void mountDriveTask(s32p path, s32 parentTask) {
     resumeTask(parentTask, mountDrive(path) == 0 ? 1 : -1);
 }
 
-s32 loadFile(s32 path, s32 parentTask) {
+s32p loadFile(s32p path, s32 parentTask) {
     s32 size;
     CdFile *file;
-    s32 buf;
+    s32p buf;
 
     size = 0;
     /* jp's loadFile doesn't wait for the loader */
@@ -54,10 +54,10 @@ s32 loadFile(s32 path, s32 parentTask) {
     return buf;
 }
 
-s32 loadFileTagged(s32 *path, s32 parentTask, s32 heapTag) {
+s32p loadFileTagged(s32 *path, s32 parentTask, s32 heapTag) {
     s32 size;
     CdFile *file;
-    s32 buf;
+    s32p buf;
 
     size = 0;
     LOADER_TRACE(("GMload_heap_file2(%s)\n", path));
@@ -84,7 +84,7 @@ s32 loadFileTagged(s32 *path, s32 parentTask, s32 heapTag) {
     return buf;
 }
 
-void loadFileToAddress(s32 path, s32 *dst, s32 parentTask) {
+void loadFileToAddress(s32p path, s32 *dst, s32 parentTask) {
     s32 file;
     s32 size;
 

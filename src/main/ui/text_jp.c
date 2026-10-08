@@ -95,7 +95,7 @@ void initSystemSprites(s32 vramX, s32 vramY, s32 poolSize, s32 kanjiBuffers) {
     r.w = 0x40;
     r.h = 4;
     clut = (u16 *)LOADED_TIM.caddr;
-    LoadImage((s16 *)&r, (s32)clut);
+    LoadImage((s16 *)&r, (u32 *)clut);
     DrawSync(0);
     /* the same palettes, semi-transparent, in the four rows above */
     for (i = 0; i < 0x100; i++, clut++) {
@@ -107,7 +107,7 @@ void initSystemSprites(s32 vramX, s32 vramY, s32 poolSize, s32 kanjiBuffers) {
     r.y = SYSTEM_CLUT_Y - 4;
     r.w = 0x40;
     r.h = 4;
-    LoadImage((s16 *)&r, (s32)LOADED_TIM.caddr);
+    LoadImage((s16 *)&r, (u32 *)LOADED_TIM.caddr);
     DrawSync(0);
     for (i = 1; i < 5; i++) {
         uploadTim((u32 *)((u8 *)arc + arc[i]), -1, -1, -1, -1);
@@ -145,7 +145,7 @@ void resetSpritePool(void) {
     SPRITE_POOL_CURSOR = CURRENT_FRAME_BUFFER->spritePool;
 }
 
-void drawPageSprite(s32 x, s32 y, s32 uvRect, u16 tpage, s32 palette, s32 z) {
+void drawPageSprite(s32 x, s32 y, s32p uvRect, u16 tpage, s32 palette, s32 z) {
     drawPageSpriteColored(x, y, (Rect16 *)uvRect, (u8 *)&DEFAULT_TEXT_RGB, tpage, palette, z);
 }
 
@@ -218,7 +218,7 @@ void drawGlyphColored(s32 x, s32 y, u8 ch, s32 palette, u8 *rgb, s32 z, s32 w, s
     }
 }
 
-void drawTinyText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawTinyText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawTinyTextColored(x, y, (u8 *)text, palette, (u8 *)&DEFAULT_TEXT_RGB, z);
 }
 
@@ -296,7 +296,7 @@ void drawTinyTextColored(s32 x, s32 y, u8 *text, s32 palette, u8 *rgb, s32 z) {
     }
 }
 
-void drawText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawTextColored(x, y, (u8 *)text, (u8 *)&DEFAULT_TEXT_RGB, palette, z);
 }
 
@@ -525,7 +525,7 @@ void uploadKanji(u8 *sjis, Rect16 *rect) {
     dst = KANJI_BUFFERS + KANJI_BUFFER_INDEX * 0x48;
     rect->w = 3;
     rect->h = 11;
-    LoadImage((s16 *)rect, (s32)dst);
+    LoadImage((s16 *)rect, (u32 *)dst);
     KANJI_BUFFER_INDEX++;
     if (KANJI_BUFFER_INDEX == KANJI_BUFFER_COUNT) {
         KANJI_BUFFER_INDEX = 0;
@@ -1023,7 +1023,7 @@ s32 addKanji(u8 *sjis, KanjiGlyph *glyph) {
     return -1;
 }
 
-void drawIconText(s32 x, s32 y, s32 palette, s32 proportional, s32 z, s32 text) {
+void drawIconText(s32 x, s32 y, s32 palette, s32 proportional, s32 z, s32p text) {
     drawIconTextColored(x, y, palette, proportional, (u8 *)&DEFAULT_TEXT_RGB, z, (u8 *)text);
 }
 

@@ -22,6 +22,7 @@
 #include "dcb/sound.h"
 #include "dcb/opening_movie.h"
 #include "dcb/sound_play.h"
+#include "dcb/scroll_bg.h"
 #include "dcb/overlay_calls.h"
 
 void openSaveScreenFromMap(s32 saveMode) {

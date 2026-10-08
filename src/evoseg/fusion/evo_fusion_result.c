@@ -256,6 +256,6 @@ void EVO_uploadShadedClut(EvoClut *clut, u16 flags) {
         }
         *dst++ = color;
     }
-    LoadImage((s16 *)&clut->rect, (s32)clut->dst);
+    LoadImage((s16 *)&clut->rect, (u32 *)clut->dst);
     DrawSync(0);
 }

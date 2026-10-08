@@ -15,7 +15,7 @@
 /* jp keeps the player profiles, the rank titles and the complete set counts
    here (us and eu have them in memcard.c) */
 #if VERSION_JP
-s32 PLAYER_PROFILES = 0;
+s32p PLAYER_PROFILES = 0;
 void *SESSION_DATA = 0;
 
 /* the rank titles, lowest first */

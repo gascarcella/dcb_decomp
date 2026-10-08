@@ -387,7 +387,7 @@ void *initEffectObject(void *obj) {
 #define SET_TARGET_SCALE(fx) ((fx)->sxT = (fx)->sx, (fx)->syT = (fx)->sy, (fx)->szT = (fx)->sz, (fx)->swT = (fx)->sw)
 #endif
 
-s32 tickEffectMotion(s32 fxAddr, s32 applyFlag) {
+s32 tickEffectMotion(s32p fxAddr, s32 applyFlag) {
     EffectObject *fx = (EffectObject *)fxAddr;
     u8 applyMode = applyFlag;
     SVECTOR prevPos;

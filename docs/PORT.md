@@ -35,7 +35,7 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 | `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below). Decided game-side (2026-10-08): the ID is the overlay's 1-based index in `us.mk`'s `OVERLAYS` list (`port_inputs.py`), and at M1 the adapter maps `"P:\\kawseg.bin"` to it in `loadFileToAddress`'s hook |
 | `EXE_SYMBOLS` | `config/us/`'s symbol files (the EXE's names, and `symbols_overlay_calls.txt` for the 84 overlay functions the EXE calls) |
 | `GTEMAC` | **Not passed.** `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). psxstack's translator cannot take them: it rejects output operands (`gte_mfc2`'s `"=r"`), knows only `.word` commands (ours are the `.inc` mnemonics), keeps temporaries per macro (`gte_prefetchv3c` hands `$8`-`$13` to `gte_ldv3_prefetched`), and writes its override as `psyq/gtemac.h`, which never shadows `"gte.h"`. Decided (2026-10-08): M1 writes `port/include/gte.h`, a host-only header first on the include path, by hand over `psyq_gte_mtc2`/`mfc2`/`cmd`/`swc2_`; the probe stubs the macros with an override of its own meanwhile |
-| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours), fixed game-side at M1, byte-identical |
+| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching at M0 (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours); fixed game-side at M1, byte-identical: 45 same, 9 compatible, 0 mismatching |
 
 ## The host-compile probe
 ### The baseline (M0, 2026-10-08, at 3802dee)
@@ -49,6 +49,14 @@ result is the baseline M1 drives to zero; CI's `probe` job runs it and uploads `
 `game.h`'s macros), 37 implicit-function-declaration, 29 incompatible-pointer-types, 19 int-conversion, 9 other
 errors, 1 fatal. `link` over the 35 objects: 4 duplicate globals, 160 undefined (65 Psy-Q functions, 22 data globals,
 62 defined in failing units, 11 other).
+
+**After M1 step 1** (`include/port.h`, the declarations, the prototypes; 2026-10-08): **67 of 155 units compile; 88
+fail with 1,016 diagnostics:** 945 pointer-to-int-cast (the explicit casts: `drawText` and its siblings 445,
+`add`/`removeFrameCallback` 96, the GTE calls 138, `transformAndAdd*` 102, 111 assignments, 53 other calls), 29
+incompatible-pointer-types, 23 int-to-pointer-cast, 18 int-conversion, 1 fatal (`task.c`'s `<kernel.h>`); none of
+them in a header macro, no implicit declaration, no other error. Worst files: `sub_deck_screens.c` 142,
+`evo_shatter.c` 89, `sug_sphere.c` 62, `battle_hud.c` 59, `endseg.c` 53. `link` over the 67 objects: 5 duplicate
+globals (`D_801DDF38`, the overlay area's first word, is defined in `kaw_cpu.c`, `sai_data.c` and `sug_history.c`).
 
 ### The triage
 The 3,732 are 3,246 distinct sites (a site inside a header macro counts once per C line that expands it). Sorted by

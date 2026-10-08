@@ -56,7 +56,7 @@ void renderFullscreenBackground(void);
 void playModelAnimation(s32 modelSlot, s32 animId);
 void setModelAnimationPose(s32 modelSlot, s32 animId);
 void *findDigimonCardByModelId(s32 modelId);
-s32 loadSkill(s32 skillId, s32 pak);
+s32p loadSkill(s32 skillId, s32p pak);
 void loadSkillFromDisc(s32 skillId);
 
 #endif /* DCB_PLAYER_DATA_H */

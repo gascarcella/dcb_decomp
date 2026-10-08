@@ -51,7 +51,7 @@ void initDiscDrive(void) {
     DRIVE_DIRECTORY_CACHED = 0;
 }
 
-s32 mountDrive(s32 path) {
+s32 mountDrive(s32p path) {
     CdFile *file;
 
     file = openDiscFile((s8 *)path, 0);

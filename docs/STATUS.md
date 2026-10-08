@@ -24,6 +24,11 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
 - **The baseline** (`scripts/probe.sh`, CI's `probe` job): 35 of 155 units compile; 120 fail with 3,732 gating
   diagnostics (3,246 sites), 3,637 of them int/pointer casts; 4 duplicate overlay globals. The triage by kind, and
   what each needs, is `docs/PORT.md` "The host-compile probe". About 1,900 sites follow from some 40 declarations.
+- **M1 step 1, the hook header and the declarations** (#4): `include/port.h` (the PS1 side of the hooks, `s32p`/`u32p`),
+  `s32p` at the pointer-holding declarations, `setaddr` through `PTR_TO_U32`, the missing prototypes, `game.h`'s
+  Psy-Q prototypes agreeing with the stack's (`decls`: 45 same, 9 compatible, 0 mismatching). The probe: **67 of 155
+  units compile; 88 fail with 1,016 diagnostics**, 945 of them explicit `(s32)` casts of pointers (step 2), no
+  implicit declaration left; 5 duplicate overlay globals (`D_801DDF38` shows up now that its units compile).
 - `game.json` has no heap (the game's is its own data); the shim compiles against the stack's declarations.
 - Decided (2026-10-08): the hooks use a pointer-width typedef, `s32p` (`docs/PORT.md` "Open questions" 2).
 - The stack work is in (psxstack #7, #25, #26 with #28, #27, released as v0.3.0).

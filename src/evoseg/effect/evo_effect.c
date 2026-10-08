@@ -104,7 +104,7 @@ void EVO_getEffectWorldPos(void *xform, EvoObject *obj);
 void EVO_createEffectEntry(s32 index, s32 kind, s32 *vars, EvoEffectScript *loader);
 
 EvoModelFx *EVO_createModelEffect(s16 level, EvoFx *fx, s32 modelId, s32 anim, s32 unused, s32 vramSlot, u8 flags,
-                          s32 loop, s32 pak, s32 clutBank) {
+                          s32 loop, s32p pak, s32 clutBank) {
     EvoModelFx *obj;
     s32 slot;
 
@@ -249,9 +249,9 @@ void (*EVO_EFFECT_TICK_FUNCS[5])(EvoFx *) = {
     (EvoFxFunc)EVO_tickModelEffect,
 };
 
-s32 EVO_loadEffectPak(s32 index) {
+s32p EVO_loadEffectPak(s32 index) {
     char path[32];
-    s32 file;
+    s32p file;
 
     sprintf(path, "C:\\EVO_PAK\\%d.PAK", index);
     file = loadFileTagged((s32 *)path, getCurrentTaskId(), 0x12C);
@@ -280,7 +280,7 @@ void EVO_playCardEffect(s32 index, s32 player, s32 mode) {
 
 /* the players and modes are KAWSEG's; EVOSEG's scripts ignore them */
 void EVO_playEffectScript(s32 index, s32 player1, s32 player2, s32 mode1, s32 mode2) {
-    s32 data;
+    s32p data;
 
     EVO_EFFECT_PLAYER = 0;
     EVO_EFFECT_SPRITE_1 = 0;

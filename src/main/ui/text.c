@@ -46,7 +46,7 @@ void initSystemSprites(s32 vramX, s32 vramY, s32 poolSize) {
     r.y = SYSTEM_CLUT_Y;
     r.w = 0x20;
     r.h = 8;
-    LoadImage((s16 *)&r, (s32)image->caddr);
+    LoadImage((s16 *)&r, (u32 *)image->caddr);
     DrawSync(0);
     freeHeapBlock(tim);
     pool = allocPermanentHeapBlock(SPRITE_POOL_SIZE * sizeof(SprtPacket) * 2);
@@ -79,7 +79,7 @@ void resetSpritePool(void) {
     SPRITE_POOL_CURSOR = CURRENT_FRAME_BUFFER->spritePool;
 }
 
-void drawPageSprite(s32 x, s32 y, s32 uvRect, u16 tpage, s32 palette, s32 z) {
+void drawPageSprite(s32 x, s32 y, s32p uvRect, u16 tpage, s32 palette, s32 z) {
     drawPageSpriteColored(x, y, (Rect16 *)uvRect, (u8 *)&DEFAULT_TEXT_RGB, tpage, palette, z);
 }
 
@@ -152,7 +152,7 @@ void drawGlyphColored(s32 x, s32 y, u8 ch, s32 palette, u8 *rgb, s32 z, s32 w, s
     }
 }
 
-void drawTinyText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawTinyText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawTinyTextColored(x, y, (u8 *)text, palette, (u8 *)&DEFAULT_TEXT_RGB, z);
 }
 
@@ -245,7 +245,7 @@ void drawTinyTextColored(s32 x, s32 y, u8 *text, s32 palette, u8 *rgb, s32 z) {
     }
 }
 
-void drawSmallText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawSmallText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawSmallTextColored(x, y, (u8 *)text, palette, (u8 *)&DEFAULT_TEXT_RGB, z);
 }
 
@@ -344,7 +344,7 @@ void drawSmallTextColored(s32 x, s32 y, u8 *text, s32 palette, u8 *rgb, s32 z) {
     }
 }
 
-void drawVerticalText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawVerticalText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawVerticalTextColored(x, y, (u8 *)text, palette, (u8 *)&DEFAULT_TEXT_RGB, z);
 }
 
@@ -397,7 +397,7 @@ void drawVerticalTextColored(s32 x, s32 y, u8 *text, s32 palette, u8 *rgb, s32 z
     }
 }
 
-void drawMediumText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawMediumText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawMediumTextColored(x, y, (u8 *)text, palette, (u8 *)&DEFAULT_TEXT_RGB, z);
 }
 
@@ -488,7 +488,7 @@ void drawMediumTextColored(s32 x, s32 y, u8 *text, s32 palette, u8 *rgb, s32 z) 
     }
 }
 
-void drawLargeText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawLargeText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawLargeTextColored(x, y, (u8 *)text, palette, (u8 *)&DEFAULT_TEXT_RGB, z);
 }
 
@@ -545,7 +545,7 @@ void drawLargeTextColored(s32 x, s32 y, u8 *text, s32 palette, u8 *rgb, s32 z) {
     }
 }
 
-void drawText(s32 x, s32 y, s32 text, s32 palette, s32 z) {
+void drawText(s32 x, s32 y, s32p text, s32 palette, s32 z) {
     drawTextColored(x, y, (u8 *)text, (u8 *)&DEFAULT_TEXT_RGB, palette, z);
 }
 
@@ -966,7 +966,7 @@ void drawIconColored(s32 x, s32 y, s32 iconSet, s32 icon, u8 *rgb, s32 z) {
  * with "b0" .. "b2". Digits and two-byte characters all draw the same
  * 12x12 tile of the system texture.
  */
-void drawIconText(s32 x, s32 y, s32 palette, s32 unused, s32 z, s32 text) {
+void drawIconText(s32 x, s32 y, s32 palette, s32 unused, s32 z, s32p text) {
     drawIconTextColored(x, y, palette, unused, (u8 *)&DEFAULT_TEXT_RGB, z, (u8 *)text);
 }
 

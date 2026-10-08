@@ -14,7 +14,7 @@ void setPrimRgb3(void *prim, u8 r, u8 g, u8 b);
 void setPrimRgb0(void *prim, u8 r, u8 g, u8 b);
 s32 stepColorToward(s32 step, u8 *red, s32 targetRed, u8 *green, s32 targetGreen, u8 *blue, s32 targetBlue);
 void stepPrimFade(u8 fadeOut, s16 step, u8 *state, u8 *prim);
-void uploadClut256(s32 clutData, s16 x, s16 y);
+void uploadClut256(s32p clutData, s16 x, s16 y);
 void setPolyGTRgb1(POLY_GT3 *poly, u8 r, u8 g, u8 b);
 void setPolyGTRgb2(POLY_GT3 *poly, u8 r, u8 g, u8 b);
 void setPolyG4Rgb3(POLY_G4 *poly, u8 r, u8 g, u8 b);
