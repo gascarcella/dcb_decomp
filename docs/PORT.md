@@ -267,15 +267,17 @@ first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then co
 1. Fibers in psxstack ([psxstack#25](https://github.com/gascarcella/psxstack/issues/25)): the API (create, switch, destroy), Windows (fibers) and Linux (`ucontext` or hand-written
    switches), AddressSanitizer annotations, save states holding every stack. When may a vblank preempt? Only at the
    pump's points: are they enough for `memcard.c`'s spin?
-2. **The hooking strategy** for the thousands of int/pointer cast sites ("The host-compile probe"): dw2003's per-site
-   `PTR_TO_S32`/`S32_TO_PTR` macros, or a pointer-width integer typedef (`s32` on the PS1, `intptr_t` under `PC_PORT`)
-   at the declarations of the pointer-holding globals, parameters and locals and at the `(s32)&x` casts, with the
-   macros kept where an integer lives in a PS1-sized layout. Both leave the PS1 bytes unchanged; the typedef is the
-   smaller diff and changes more of upstream's declarations. Decided after the triage, with juandav's view (7).
+2. ~~The hooking strategy~~ Decided (2026-10-08): **a pointer-width integer typedef**, `s32p`/`u32p` (`s32`/`u32` on
+   the PS1, `intptr_t`/`uintptr_t` under `PC_PORT`, defined in `include/port.h`), at the declarations of the
+   pointer-holding globals, parameters, return values and fields and at the `(s32)&x` casts ("The host-compile
+   probe": ~40 declarations silence ~1,900 sites, ~950 casts are rewritten with it); psxstack's `PTR_TO_U32` for
+   `setaddr`, `PTR_TO_S32` only where an integer lives in a PS1-sized layout (`HeapBlock.addr`, the task context).
+   Both sides are byte-identical; the diff stays readable for upstream.
 3. The stale KAWSEG addresses (0x801E6424, 0x801E651C): what happens on the PS1 when they run? With the emulator
    (issue #3), before the adapter resolves them at M1.
 4. Psy-Q declarations ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)): this game has no recovered
    `include/psyq/`, so the shim cannot compile here until psxstack owns its declarations. It blocks M1's link, not
    M0.
 5. Would upstream take the hooks? They leave the PS1 build identical, and upstream's CONTRIBUTING.md forbids
-   `NON_MATCHING`, not `PC_PORT`. Ask juandav with the triage's numbers and the strategy of (2), through the owner.
+   `NON_MATCHING`, not `PC_PORT`. Not asked yet (the owner's call, 2026-10-08): the hooks stay in the fork for now;
+   the 36 missing prototypes and the 4 duplicate overlay names are upstream PR candidates on their own.

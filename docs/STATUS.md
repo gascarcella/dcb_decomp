@@ -26,8 +26,9 @@ v0.2.1 (the same pin as dw2003recomp).
   what each needs, is `docs/PORT.md` "The host-compile probe". About 1,900 sites follow from some 40 declarations.
 - `game.json`'s heap is a placeholder until psxstack makes `memory.heap` optional (psxstack #26); the shim cannot
   compile against this tree until psxstack owns its Psy-Q declarations (psxstack #7).
-- Next: the hooking-strategy decision (`docs/PORT.md` "Open questions" 2) and the stack work (psxstack #7, #25, #26,
-  #27), then issue #3 (the oracle) and #4 (M1).
+- Decided (2026-10-08): the hooks use a pointer-width typedef, `s32p` (`docs/PORT.md` "Open questions" 2).
+- In progress: the stack work (psxstack #7, #25, #26 with #28, #27), each a psxstack pull request; then the pin
+  bump here, issue #3 (the oracle) and #4 (M1).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).
