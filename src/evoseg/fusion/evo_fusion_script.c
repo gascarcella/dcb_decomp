@@ -30,7 +30,7 @@ void EVO_runFusionScript(EvoProgram *data) {
             case 10:
                 switch (data->script->eventArg) {
                 case 0:
-                    if (EVO_addTextLine((u8 *)data->vars[4]) == -1) {
+                    if (EVO_addTextLine(GAME_S32_TO_PTR(u8 *, data->vars[4])) == -1) {
                         EVO_FUSION.scriptState = 1;
                         return;
                     }

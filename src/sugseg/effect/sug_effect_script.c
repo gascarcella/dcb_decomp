@@ -1042,7 +1042,7 @@ void SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
 
     template = &buf;
     SUG_initEffectFromParams(template, params, ctx);
-    entry = (Entry16 *)params->vramEntries;
+    entry = GAME_S32_TO_PTR(Entry16 *, params->vramEntries); /* a script register (op 8) */
     if (entry != NULL) {
         entry += ctx->modelSlots[0];
     }

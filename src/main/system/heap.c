@@ -12,6 +12,26 @@
 #define HEAP_SIZE 0x148000
 #endif
 
+/* A block's addr: free blocks keep their address without the KSEG0 bit, so
+   they're > 0; a block in use has bit 31 set, which makes it the KSEG0 address
+   the game gets. On the host addr is pointer-wide (s32p, heap.h) and its top
+   bit is the in-use flag: a free block holds the pointer, a used one the
+   pointer with the flag. HEAP_ADDR_FREE(a): the free form; HEAP_ADDR_USED(a):
+   the in-use form; HEAP_ADDR_PTR(a): the pointer of an in-use addr;
+   HEAP_PTR_ADDR(p): the in-use addr of the pointer the game holds. */
+#ifdef PC_PORT
+#define HEAP_ADDR_FLAG ((s32p)((u32p)1 << (sizeof(s32p) * 8 - 1)))
+#define HEAP_ADDR_FREE(a) ((a) & ~HEAP_ADDR_FLAG)
+#define HEAP_ADDR_USED(a) ((a) | HEAP_ADDR_FLAG)
+#define HEAP_ADDR_PTR(a) ((void *)((a) & ~HEAP_ADDR_FLAG))
+#define HEAP_PTR_ADDR(p) ((s32p)(p) | HEAP_ADDR_FLAG)
+#else
+#define HEAP_ADDR_FREE(a) ((a) & 0x3FFFFFFF)
+#define HEAP_ADDR_USED(a) ((a) | 0x80000000)
+#define HEAP_ADDR_PTR(a) ((void *)(a))
+#define HEAP_PTR_ADDR(p) ((s32)(p))
+#endif
+
 /* initialize: make the whole arena one free block; otherwise free every block
    a task owns, keeping the permanent ones */
 void resetHeap(s32 initialize) {
@@ -21,7 +41,7 @@ void resetHeap(s32 initialize) {
     if (initialize != 0) {
         block = HEAP_BLOCKS;
         /* free blocks keep their address without the KSEG0 bit, so they're > 0 */
-        block->addr = (s32)&HEAP_ARENA & 0x3FFFFFFF;
+        block->addr = HEAP_ADDR_FREE((s32p)&HEAP_ARENA);
         block->size = HEAP_SIZE;
         block->tag = -1;
         i = 0x3FF;
@@ -38,7 +58,7 @@ void resetHeap(s32 initialize) {
     for (i = 0x3FF; i >= 0 && block->addr != 0; i--, block++) {
         /* freeing merges entries: look at this one again */
         while (block->addr < 0 && block->tag >= 0) {
-            if (freeHeapBlock((void *)block->addr) != 0) {
+            if (freeHeapBlock(HEAP_ADDR_PTR(block->addr)) != 0) {
                 break;
             }
         }
@@ -65,9 +85,9 @@ void *allocHeapBlock(s32 size, s32 ownerTag) {
     HeapBlock *block;
     HeapBlock *shiftBlock;
     s32 i;
-    s32 blockAddr;
+    s32p blockAddr;
     s32 freeSize;
-    s32 ptr;
+    s32p ptr;
 
     size = (size + 3) & ~3;
     if (size == 0) {
@@ -79,7 +99,7 @@ void *allocHeapBlock(s32 size, s32 ownerTag) {
         if (blockAddr >= 0) {
             freeSize = block->size;
             if (freeSize >= size) {
-                ptr = blockAddr | 0x80000000;
+                ptr = HEAP_ADDR_USED(blockAddr);
                 block->addr = ptr;
                 block->size = size;
                 freeSize -= size;
@@ -97,7 +117,7 @@ void *allocHeapBlock(s32 size, s32 ownerTag) {
                     shiftBlock->tag = -1;
                 }
                 restoreInterrupts();
-                return (void *)ptr;
+                return HEAP_ADDR_PTR(ptr);
             }
         }
     }
@@ -118,14 +138,14 @@ void *allocTaskHeapBlock(s32 size) {
 void *shrinkHeapBlock(void *ptr, s32 size) {
     HeapBlock *block;
     s32 i;
-    s32 blockAddr;
+    s32p blockAddr;
     s32 leftover;
 
     size = (size + 3) & ~3;
     disableInterrupts();
     block = HEAP_BLOCKS;
     for (i = 0x3FF; i >= 0 && (blockAddr = block->addr) != 0; i--, block++) {
-        if (blockAddr == (s32)ptr) {
+        if (blockAddr == HEAP_PTR_ADDR(ptr)) {
             leftover = block->size - size;
             if (leftover < 0) {
                 restoreInterrupts();
@@ -135,7 +155,7 @@ void *shrinkHeapBlock(void *ptr, s32 size) {
                 block->size = size;
                 block++;
 #if VERSION_JP || VERSION_EU
-                blockAddr = (s32)ptr + size;
+                blockAddr = HEAP_PTR_ADDR(ptr) + size;
 #elif VERSION_US
                 blockAddr += size;
 #endif
@@ -148,7 +168,7 @@ void *shrinkHeapBlock(void *ptr, s32 size) {
                         block--;
                     }
                 }
-                block->addr = blockAddr & 0x3FFFFFFF;
+                block->addr = HEAP_ADDR_FREE(blockAddr);
                 block->size = leftover;
                 block->tag = -1;
             }
@@ -170,7 +190,7 @@ s32p freeHeapBlock(void *ptr) {
     HeapBlock *block;
     HeapBlock *nextBlock;
     s32 i;
-    s32 blockAddr;
+    s32p blockAddr;
     s32 size;
 
     if (ptr == 0) {
@@ -181,13 +201,13 @@ s32p freeHeapBlock(void *ptr) {
     for (i = 0x3FF; i >= 0 && (blockAddr = block->addr) != 0; i--, block++) {
 #if VERSION_EU
         /* compared through xor: eu masks ptr, not the equal blockAddr */
-        if ((blockAddr ^ (s32)ptr) == 0) {
+        if ((blockAddr ^ HEAP_PTR_ADDR(ptr)) == 0) {
 #elif VERSION_JP || VERSION_US
-        if (blockAddr == (s32)ptr) {
+        if (blockAddr == HEAP_PTR_ADDR(ptr)) {
 #else
 #error "main/system/heap: version not checked"
 #endif
-            blockAddr = (s32)ptr & 0x3FFFFFFF;
+            blockAddr = HEAP_ADDR_FREE(HEAP_PTR_ADDR(ptr));
             size = block->size;
             nextBlock = block;
             if (block != HEAP_BLOCKS && block[-1].addr > 0) {
@@ -235,10 +255,38 @@ s32 freeHeapBlocksByTag(s32 tag) {
     for (blocksLeft = 0x3FF; blocksLeft >= 0 && block->addr != 0; blocksLeft--, block++) {
         /* freeing it merges the next block into this one: look at it again */
         while (block->addr < 0 && block->tag == tag) {
-            if (freeHeapBlock((void *)block->addr) != 0) {
+            if (freeHeapBlock(HEAP_ADDR_PTR(block->addr)) != 0) {
                 break;
             }
         }
     }
     return 0;
 }
+
+#ifdef PC_PORT
+/* GAME_PTR_TO_S32 and GAME_S32_TO_PTR (include/port.h): a heap pointer kept in
+   an s32 is the PS1 address of the same byte of HEAP_ARENA */
+#if VERSION_US
+#define HEAP_ARENA_ADDR 0x8008C848 /* config/us/symbols.txt */
+#else
+#error "main/system/heap: the host knows us's HEAP_ARENA address only"
+#endif
+
+s32 game_ptr_to_s32(const void *p) {
+    u32p ofs = (u32p)p - (u32p)&HEAP_ARENA;
+
+    if (p != NULL && ofs < HEAP_SIZE) {
+        return (s32)(HEAP_ARENA_ADDR + ofs);
+    }
+    return PTR_TO_S32(p);
+}
+
+void *game_s32_to_ptr(s32 v) {
+    u32 ofs = (u32)v - HEAP_ARENA_ADDR;
+
+    if (ofs < HEAP_SIZE) {
+        return (u8 *)&HEAP_ARENA + ofs;
+    }
+    return S32_TO_PTR(void *, v);
+}
+#endif

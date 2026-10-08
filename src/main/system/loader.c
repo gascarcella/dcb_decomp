@@ -85,7 +85,7 @@ s32p loadFileTagged(char *path, s32 parentTask, s32 heapTag) {
 }
 
 void loadFileToAddress(s32p path, s32 *dst, s32 parentTask) {
-    s32 file;
+    s32p file;
     s32 size;
 
     size = 0;
@@ -95,11 +95,15 @@ void loadFileToAddress(s32p path, s32 *dst, s32 parentTask) {
         } while (FILE_LOADER_BUSY != 0);
     }
     FILE_LOADER_BUSY = 1;
-    file = (s32)openDiscFile((s8 *)path, 1);
+    file = (s32p)openDiscFile((s8 *)path, 1);
     if (file != 0) {
+#ifdef PC_PORT
+        size = ((CdFile *)file)->size;
+#else
         size = (*(s32 *)((s8 *)file + 0x24));
-        readDiscFile(file, size, dst);
-        closeDiscFile((s32 *) file);
+#endif
+        readDiscFile((CdFile *)file, size, (u8 *)dst);
+        closeDiscFile((CdFile *) file);
     }
     LOADED_FILE_SIZE = size;
     resumeTask(parentTask);

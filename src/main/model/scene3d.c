@@ -37,7 +37,7 @@ void renderSceneModels(FrameBuffer *buffer, s32 bufferIndex) {
     s32 flag;
     u32 *ot;
     u32 otDepth;
-    u32 packet;
+    u32p packet;
     Model *model;
     GsDOBJ4 *obj;
     ModelLink *link;
@@ -48,7 +48,7 @@ void renderSceneModels(FrameBuffer *buffer, s32 bufferIndex) {
     ot = SCENE_3D->ot[bufferIndex].org;
     otDepth = 0xFFF;
     if (SCENE_3D_ENABLED != 0) {
-        packet = (u32)buffer->scenePackets;
+        packet = (u32p)buffer->scenePackets;
         colorMatrix = SCENE_LIGHT_COLORS;
         for (i = 0; i < 24; i++) {
 #if VERSION_JP
@@ -108,9 +108,15 @@ void renderSceneModels(FrameBuffer *buffer, s32 bufferIndex) {
                 SCENE_3D->root.coord.t[0] = 0;
                 SCENE_3D->modelState[i] = 2;
             }
-            scratch = (s32 *)0x1F800000;
+            scratch = SCRATCHPAD(s32 *, 0);
+#ifdef PC_PORT
+            /* the words are SortWork's tpage and clut, which sit further in on the host */
+            SORT_WORK->tpage = model->tpageOffset;
+            SORT_WORK->clut = model->clutOffset;
+#else
             scratch[12] = model->tpageOffset;
             scratch[13] = model->clutOffset;
+#endif
             obj = model->obj;
             for (j = 0; j < model->nobj; j++, obj++) {
                 obj->coord2->flg = 0;
@@ -133,9 +139,9 @@ void renderSceneModels(FrameBuffer *buffer, s32 bufferIndex) {
                 gte_SetRotMatrix(&localScreen);
                 gte_SetTransMatrix(&localScreen);
                 if (obj->tmd[0] != 0) {
-                    packet = sortEnvMappedModelObject((u32 *)obj->tmd[5], ot + 1, packet, (void *)otDepth);
+                    packet = sortEnvMappedModelObject(OMD_OBJ_DATA(obj->tmd), ot + 1, packet, (void *)(u32p)otDepth);
                 } else {
-                    packet = sortModelObject((u32 *)obj->tmd[5], ot + 1, packet, (void *)otDepth);
+                    packet = sortModelObject(OMD_OBJ_DATA(obj->tmd), ot + 1, packet, (void *)(u32p)otDepth);
                 }
             }
             PopMatrix();

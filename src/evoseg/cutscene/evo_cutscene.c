@@ -21,6 +21,9 @@
 #include "dcb/evoseg.h"
 #include "dcb/evo_shatter.h"
 #include "dcb/evo_fusion.h"
+#ifdef PC_PORT
+#include "dcb/tmd_sort.h" /* SORT_WORK */
+#endif
 
 /* libgs's GsSortObject4J function table (_GsFCALL) */
 #define GsDivMODE_NDIV 0
@@ -552,9 +555,15 @@ void EVO_renderCutsceneModels(FrameBuffer *buffer, s32 bufferIndex) {
                 EVO_startShatter(0);
                 EVO_SHATTER_STARTED = 1;
             }
-            scratch = (s32 *)0x1F800000;
+            scratch = SCRATCHPAD(s32 *, 0);
+#ifdef PC_PORT
+            /* the words are SortWork's tpage and clut, which sit further in on the host */
+            SORT_WORK->tpage = model->tpageOffset;
+            SORT_WORK->clut = model->clutOffset;
+#else
             scratch[12] = model->tpageOffset;
             scratch[13] = model->clutOffset;
+#endif
             obj = model->obj;
             for (j = 0; j < model->nobj; j++, obj++) {
                 obj->coord2->flg = 0;
@@ -566,7 +575,7 @@ void EVO_renderCutsceneModels(FrameBuffer *buffer, s32 bufferIndex) {
                     if (EVO_PART_DRAW_MODES[j] != 16) {
                         EVO_renderDissolvingObject(obj, EVO_PART_DRAW_MODES[j]);
                     } else {
-                        GsSortObject4(obj, &SCENE_3D->ot[bufferIndex], 2, (u32 *)0x1F800000);
+                        GsSortObject4(obj, &SCENE_3D->ot[bufferIndex], 2, SCRATCHPAD(u32 *, 0));
                     }
                 }
             }

@@ -216,11 +216,11 @@ u32 *emitTexturedTriangle(u32 *packet, u32 *ot, s32 gouraud, u32 code) {
         len = 0x07000000;
         next += 8;
     }
-    if (otz >= (u32)SORT_WORK->otSize) {
+    if (otz >= (u32)(u32p)SORT_WORK->otSize) {
         return packet;
     }
     tag = len | ot[otz];
-    ot[otz] = (u32)packet;
+    ot[otz] = PTR_TO_U32(packet);
     *packet = tag;
     return next;
 }
@@ -259,11 +259,11 @@ u32 *emitTexturedQuad(u32 *packet, u32 *ot, s32 gouraud, u32 code) {
         len = 0x09000000;
         next += 10;
     }
-    if (otz >= (u32)SORT_WORK->otSize) {
+    if (otz >= (u32)(u32p)SORT_WORK->otSize) {
         return packet;
     }
     tag = len | ot[otz];
-    ot[otz] = (u32)packet;
+    ot[otz] = PTR_TO_U32(packet);
     *packet = tag;
     return next;
 }
@@ -291,11 +291,11 @@ u32 *emitUntexturedTriangle(u32 *packet, u32 *ot, s32 gouraud, u32 code) {
         len = 0x04000000;
         next += 5;
     }
-    if (otz >= (u32)SORT_WORK->otSize) {
+    if (otz >= (u32)(u32p)SORT_WORK->otSize) {
         return packet;
     }
     tag = len | ot[otz];
-    ot[otz] = (u32)packet;
+    ot[otz] = PTR_TO_U32(packet);
     *packet = tag;
     return next;
 }
@@ -326,11 +326,11 @@ u32 *emitUntexturedQuad(u32 *packet, u32 *ot, s32 gouraud, u32 code) {
         len = 0x05000000;
         next += 6;
     }
-    if (otz >= (u32)SORT_WORK->otSize) {
+    if (otz >= (u32)(u32p)SORT_WORK->otSize) {
         return packet;
     }
     tag = len | ot[otz];
-    ot[otz] = (u32)packet;
+    ot[otz] = PTR_TO_U32(packet);
     *packet = tag;
     return next;
 }
@@ -607,19 +607,23 @@ void sortModelPrimitives(SortWork *w) {
             }
         }
     }
-    SORT_WORK->packet = (u32)packet;
+    SORT_WORK->packet = (u32p)packet;
     SORT_WORK->data = cursor;
 }
 
-u32 sortModelObject(u32 *data, u32 *ot, u32 packet, void *otSize) {
+u32p sortModelObject(u32 *data, u32 *ot, u32p packet, void *otSize) {
     SortWork *work;
     s32 partCount;
 
     work = SORT_WORK;
     work->data = data;
     work->ot = ot;
+#ifdef PC_PORT
+    work->packet = packet; /* a host pointer: no KSEG bits to strip */
+#else
     work->packet = packet & 0xFFFFFF;
-    work->work = (u32 *)0x1F80007C;
+#endif
+    work->work = SCRATCHPAD(u32 *, SORT_WORK_BUFFER);
     work->otSize = otSize;
     partCount = *data++;
     work->data = data;
@@ -630,15 +634,19 @@ u32 sortModelObject(u32 *data, u32 *ot, u32 packet, void *otSize) {
     return SORT_WORK->packet;
 }
 
-u32 sortEnvMappedModelObject(u32 *data, u32 *ot, u32 packet, void *otSize) {
+u32p sortEnvMappedModelObject(u32 *data, u32 *ot, u32p packet, void *otSize) {
     SortWork *work;
     s32 partCount;
 
     work = SORT_WORK;
     work->data = data;
     work->ot = ot;
+#ifdef PC_PORT
+    work->packet = packet; /* a host pointer: no KSEG bits to strip */
+#else
     work->packet = packet & 0xFFFFFF;
-    work->work = (u32 *)0x1F80007C;
+#endif
+    work->work = SCRATCHPAD(u32 *, SORT_WORK_BUFFER);
     work->otSize = otSize;
     partCount = *data++;
     work->data = data;
@@ -787,11 +795,11 @@ u32 *emitEnvMapTriangle(u32 *packet, u32 *ot, s32 gouraud, u32 code) {
     gte_swc2(13, 16, packet);
     gte_swc2(14, 24, packet);
     gte_mfc2(7, otz);
-    if (otz >= (u32)work->otSize) {
+    if (otz >= (u32)(u32p)work->otSize) {
         return packet;
     }
     tag = ot[otz] | 0x07000000;
-    ot[otz] = (u32)packet;
+    ot[otz] = PTR_TO_U32(packet);
     *packet = tag;
     return packet + 8;
 }
@@ -961,6 +969,6 @@ void sortEnvMappedPrimitives(SortWork *w) {
             }
         }
     }
-    SORT_WORK->packet = (u32)packet;
+    SORT_WORK->packet = (u32p)packet;
     SORT_WORK->data = cursor;
 }

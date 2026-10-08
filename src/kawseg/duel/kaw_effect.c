@@ -154,6 +154,13 @@ void KAW_playEffectScript(s32 entry, s32 player1, s32 player2, s32 mode1, s32 mo
 }
 
 #define EFFECT_PARAMS(regs) ((EffectParams *)((u8 *)(regs) + 0x248))
+/* an EffectTemplate's word 0x26 is the EffectObject's parent, which is
+   pointer-wide on the host (scroll_bg.h) */
+#ifdef PC_PORT
+#define TEMPLATE_PARENT(template) (((EffectObject *)(template))->parent)
+#else
+#define TEMPLATE_PARENT(template) ((template)->data[0x26])
+#endif
 
 s32 KAW_tickEffectScript(EffectTable *table) {
     s32 i;
@@ -485,11 +492,11 @@ void KAW_getEffectWorldPos(void *xform, u8 *fx) {
 void KAW_initEffectFromParams(EffectTemplate *template, u8 *fx, EffectTable *table) {
     KAW_setEffectParams((EffectObject *)template, fx);
     if (EFFECT_PARAMS(fx)->parent == -2) {
-        template->data[0x26] = 0;
+        TEMPLATE_PARENT(template) = 0;
     } else if (EFFECT_PARAMS(fx)->parent == -1) {
-        template->data[0x26] = (s32)&KAW_EFFECT_ROOT;
+        TEMPLATE_PARENT(template) = (s32p)&KAW_EFFECT_ROOT;
     } else {
-        template->data[0x26] = (s32)table->entries[EFFECT_PARAMS(fx)->parent].obj;
+        TEMPLATE_PARENT(template) = (s32p)table->entries[EFFECT_PARAMS(fx)->parent].obj;
     }
 }
 

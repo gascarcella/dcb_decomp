@@ -33,6 +33,12 @@ typedef u32 u32p;
 #define SLOT_FUNC(type, addr) ((type)(addr))
 #define OVERLAY_FN(tier, fn) (fn)
 #define SLOT_PTR(tier, type, addr) ((type)(addr))
+/* the scratchpad, the 1 KB of fast RAM at 0x1F800000: a pointer `ofs` bytes in */
+#define SCRATCHPAD(type, ofs) ((type)(0x1F800000 + (ofs)))
+/* a pointer into the game's own memory kept in an s32 (a script register, an
+   s32 field), and back: the address itself on the PS1 */
+#define GAME_PTR_TO_S32(p) ((s32)(p))
+#define GAME_S32_TO_PTR(type, v) ((type)(v))
 
 #else
 
@@ -42,6 +48,20 @@ typedef u32 u32p;
 
 typedef intptr_t s32p;
 typedef uintptr_t u32p;
+
+/* The scratchpad: a static buffer of the adapter's (port/game/game.c), larger than the PS1's 1 KB because the host's
+   structs in it are wider (SortWork: include/dcb/tmd_sort.h). Nothing saves it or reads it from the disc. */
+#define PORT_SCRATCHPAD_SIZE 0x800
+extern u8 port_scratchpad[PORT_SCRATCHPAD_SIZE];
+#define SCRATCHPAD(type, ofs) ((type)(port_scratchpad + (ofs)))
+
+/* A pointer kept in an s32 on the PS1 (docs/PORT.md "Memory and pointers"): one into the game's heap (HEAP_ARENA)
+   becomes the PS1 address of the same byte, so the 32-bit word holds what it holds on the PS1; NULL is 0; anything
+   else goes to psxstack's PTR_TO_S32 (the overlay slot; fatal elsewhere). Defined in src/main/system/heap.c. */
+s32 game_ptr_to_s32(const void *p);
+void *game_s32_to_ptr(s32 v);
+#define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
+#define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
 
 #endif
 

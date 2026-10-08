@@ -56,7 +56,7 @@ void initGraphics(void) {
 #endif
     InitGeom();
     /* clear the first 1 KB of the scratchpad */
-    scratchpad = (s32 *)0x1F800000;
+    scratchpad = SCRATCHPAD(s32 *, 0);
     for (i = 0; i < 0x100; i++) {
         *scratchpad++ = 0;
     }

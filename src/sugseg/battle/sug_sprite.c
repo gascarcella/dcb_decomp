@@ -233,7 +233,7 @@ void SUG_drawSprite(Sprite *sprite, s16 brightness) {
     u8 u0, u1, v0, v1;
 
     poly = &sprite->polys[FRAME_BUFFER_INDEX];
-    m = (MATRIX *)0x1F800008;
+    m = SCRATCHPAD(MATRIX *, 0x8);
     if (sprite->frame < 0) {
         return;
     }

@@ -169,11 +169,11 @@ void runSceneCameraTask(s32 preset) {
     lookAtCoords = (s32 *)&CAMERA_LOOK_AT;
     while (1) {
         /* GTE work area in the scratchpad */
-        viewTrans = (VECTOR *)0x1F800004;
-        view = (MATRIX *)0x1F800014;
-        offset = (SVECTOR *)0x1F80003C;
-        angles = (SVECTOR *)0x1F800034;
-        gteFlag = (s32 *)0x1F800000;
+        viewTrans = SCRATCHPAD(VECTOR *, 0x4);
+        view = SCRATCHPAD(MATRIX *, 0x14);
+        offset = SCRATCHPAD(SVECTOR *, 0x3C);
+        angles = SCRATCHPAD(SVECTOR *, 0x34);
+        gteFlag = SCRATCHPAD(s32 *, 0);
         view->t[0] = view->t[1] = view->t[2] = 0;
         gte_SetTransMatrix(view);
         if (target->model < 0 || SCENE_3D->modelState[target->model] <= 0) {

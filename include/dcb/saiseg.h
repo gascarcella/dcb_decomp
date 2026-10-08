@@ -68,7 +68,7 @@ typedef struct {
 } OpponentList;
 
 typedef struct {
-    s32 unk0;
+    s32p unk0; /* the script file */
     Script *script;
     s32 *regs;
 } ScriptRunner;

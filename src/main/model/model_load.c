@@ -25,7 +25,10 @@ void relocateOmdObjects(Tmd18 *tmd) {
         objCount = tmd->nobj;
         obj = tmd->obj;
         for (i = 0; i < objCount; i++) {
+            /* the host keeps the offset (OMD_OBJ_DATA, anim_control.h) */
+#ifndef PC_PORT
             obj->unk14 = (s32)tmd + obj->unk14;
+#endif
             obj++;
         }
     }

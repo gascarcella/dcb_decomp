@@ -3,7 +3,7 @@
 
 #include "game.h"
 
-#define SORT_WORK ((SortWork *)0x1F800000)
+#define SORT_WORK SCRATCHPAD(SortWork *, 0)
 #define STRIP_DRAW(draw)                                                                                            \
     {                                                                                                                \
         gte_avsz3();                                                                                                 \
@@ -23,7 +23,7 @@ typedef struct {
     /* 0x00 */ u32 *data;
     /* 0x04 */ u32 *work;
     /* 0x08 */ u32 *ot;
-    /* 0x0C */ u32 packet;
+    /* 0x0C */ u32p packet; /* the next primitive's address: on the PS1 without the KSEG bits */
     /* 0x10 */ s32 pass;
     /* 0x14 */ u32 code;
     /* 0x18 */ u32 textured;
@@ -37,6 +37,14 @@ typedef struct {
     /* 0x3C */ MATRIX screenMatrix;
     /* 0x5C */ MATRIX envMatrix;
 } SortWork;
+
+/* where the transformed vertices go in the scratchpad: right after SortWork,
+   which is wider on the host */
+#ifdef PC_PORT
+#define SORT_WORK_BUFFER ((sizeof(SortWork) + 15) & ~15)
+#else
+#define SORT_WORK_BUFFER 0x7C
+#endif
 
 extern ModelTextureSlot MODEL_TEXTURE_SLOTS[];
 
@@ -56,8 +64,8 @@ u32 *transformAndLightVertices(u32 *, u32 *);
 void sortModelPrimitives(SortWork *);
 u32 *transformVerticesWithEnvMap(u32 *, u32 *);
 void sortEnvMappedPrimitives(SortWork *w);
-u32 sortModelObject(u32 *data, u32 *ot, u32 packet, void *otSize);
-u32 sortEnvMappedModelObject(u32 *data, u32 *ot, u32 packet, void *otSize);
+u32p sortModelObject(u32 *data, u32 *ot, u32p packet, void *otSize);
+u32p sortEnvMappedModelObject(u32 *data, u32 *ot, u32p packet, void *otSize);
 void loadEnvGteVertex0(s32 gouraud, u32 index, u8 *workBuf);
 void loadEnvGteVertex1(s32 gouraud, u32 index, u8 *workBuf);
 void loadEnvGteVertex2(s32 gouraud, u32 index, u8 *workBuf);

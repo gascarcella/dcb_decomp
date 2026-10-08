@@ -624,6 +624,8 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     /* 0x000 */ u8 unk0[0x140]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    /* 0x000 */ u8 unk0[0x140]; /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
 #elif VERSION_US || VERSION_EU
     /* 0x000 */ u8 unk0[0x13C];
 #endif

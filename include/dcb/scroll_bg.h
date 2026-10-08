@@ -36,6 +36,8 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     s32 data[0x50]; /* an EffectObject: jp's has one more word */
+#elif defined(PC_PORT)
+    s32 data[0x50] __attribute__((aligned(8))); /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
 #elif VERSION_US || VERSION_EU
     s32 data[0x4F];
 #endif
@@ -68,7 +70,7 @@ typedef struct {
 #if VERSION_JP
     /* 0x098 */ EffectTrail *trail; /* jp: the fields below are 4 bytes further */
 #endif
-    /* 0x098 */ s32 parent;
+    /* 0x098 */ s32p parent; /* the transform it hangs from */
     /* 0x09C */ VECTOR dir; /* unit vector from the start to the target, 0x1000 = 1.0 */
     /* 0x0AC */ s32 sx0;
     /* 0x0B0 */ s32 sy0;
@@ -124,6 +126,13 @@ typedef struct {
     /* 0x138 */ u8 fadeState;
     /* 0x139 */ u8 suspended;
 } EffectObject;
+#ifdef PC_PORT
+/* the views of an EffectObject (EffectTemplate, EvoFx, EffectInit, the effects
+   that start with one) count on this layout */
+_Static_assert(__builtin_offsetof(EffectObject, parent) == 0x98 && sizeof(EffectObject) == 0x140 &&
+                   sizeof(EffectTemplate) == sizeof(EffectObject),
+               "the host's EffectObject");
+#endif
 #if VERSION_JP
 /* jp's streak particles are older: no swirl and no length step, so its
    particles and their set are smaller */
