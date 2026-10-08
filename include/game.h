@@ -1545,7 +1545,11 @@ s32 CdPosToInt(void *);
 s32 CdSync(s32, s32);
 extern int CdSync(int, int);
 void SetDrawTPage(void *, s32, s32, s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SetTexWindow(void *, s16 *);
+#else
 s32 SetTexWindow(void *, s16 *);
+#endif
 void GetDispEnv(DISPENV *);
 void SetDrawArea(DR_AREA *, Rect16 *);
 extern int printf(const char *, ...);
@@ -1556,14 +1560,22 @@ s32 PadGetState(s32);
 s32 PadInfoMode(s32, s32, s32);
 void disableInterrupts(void);
 void restoreInterrupts(void);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+s32 catan(s32);
+#else
 long catan(long);
+#endif
 s32 resumeTask();
 s32 OpenTIM(u32 *);
 TIM_IMAGE *ReadTIM(TIM_IMAGE *);
 void SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
 void SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 s32 MargePrim(void *, void *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SetDrawMode(void *, s32, s32, s32, s32 *);
+#else
 s32 SetDrawMode(void *, s32, s32, s32, s32 *);
+#endif
 void SetPolyFT3(POLY_FT3 *);
 void SetPolyGT3(POLY_GT3 *);
 void SetPolyGT4(POLY_GT4 *);
@@ -1584,28 +1596,49 @@ void SetTile1(void *);
 void SetTile8(void *);
 void SetTile16(void *);
 void SetTile(TILE *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void AddPrim(void *, void *);
+#else
 s32 AddPrim(void *, void *);
+#endif
 s32 RotAverageNclip3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotTransPers3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotAverageNclip4(SVECTOR *, SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotTransPers4(SVECTOR *, SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+MATRIX *RotMatrix(void *, void *);
+MATRIX *TransMatrix(MATRIX *, VECTOR *);
+#else
 s32 RotMatrix(void *, void *);
 s32 TransMatrix(MATRIX *, VECTOR *);
+#endif
 MATRIX *ScaleMatrix(void *, void *);
 void composeTransformMatrix(SVECTOR *, VECTOR *, VECTOR *, MATRIX *, s32);
 MATRIX *MulMatrix2(MATRIX *, MATRIX *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void RotTrans(u16 *, void *, s32 *);
+void SetRotMatrix(MATRIX *);
+void SetTransMatrix(MATRIX *);
+MATRIX *RotMatrixYXZ(void *, void *);
+#else
 s32 RotTrans(u16 *, void *, s32 *);
 s32 SetRotMatrix(MATRIX *);
 s32 SetTransMatrix();
 s32 RotMatrixYXZ(void *, void *);
+#endif
 void GsInitCoordinate2(GsCOORDINATE2 *, GsCOORDINATE2 *);
 void *bzero(void *, s32);
 void StoreImage2(Rect16 *, u32 *);
 void GsMapModelingData(u32 *);
 void GsLinkObject4(u32p, void *, s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void PushMatrix(void);
+void PopMatrix(void);
+#else
 s32 PushMatrix();
 s32 PopMatrix();
+#endif
 void GsGetLws(GsCOORDINATE2 *, MATRIX *, MATRIX *);
 void *memset(void *, s32, s32);
 void SetGeomOffset(s32, s32);
@@ -1661,14 +1694,22 @@ DirEntry *nextfile(DirEntry *);
 char *strcpy(char *, const char *);
 s32 rsin(s32);
 s32 rcos(s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+s32 SquareRoot0(s32);
+#else
 long SquareRoot0(long);
+#endif
 void VectorNormal(VECTOR *, VECTOR *);
 int abs(int);
 s32 endTask(s32);
 MATRIX *CompMatrix(MATRIX *, MATRIX *, MATRIX *);
 s32 RotAverage4(SVECTOR *, SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 MATRIX *MulMatrix(MATRIX *, MATRIX *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void MatrixNormal(MATRIX *, MATRIX *);
+#else
 MATRIX *MatrixNormal(MATRIX *, MATRIX *);
+#endif
 MATRIX *TransposeMatrix(MATRIX *, MATRIX *);
 
 #endif /* GAME_H */
