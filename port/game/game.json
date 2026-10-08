@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "dcb",
+  "title": "Digimon Digital Card Battle",
+  "env_prefix": "DCB",
+  "discs": [
+    {
+      "label": "the USA disc (SLUS-01328)",
+      "serial": "SLUS-01328",
+      "sha1": "b3945b3e76c1fcc554a7614e2b4211d974990105",
+      "size": 215661936,
+      "region": "NTSC-U",
+      "cue": "dcb_us.cue"
+    }
+  ],
+  "video": {
+    "rate": 60,
+    "rates": [60]
+  },
+  "memory": {
+    "ram": { "base": "0x80000000", "size": "0x200000" },
+    "slots": [
+      { "name": "overlay", "base": "0x801DDF38", "size": "0x1EAF8" }
+    ],
+    "heap": { "start": "0x801FCA30", "end": "0x80200000" }
+  },
+  "launcher": {
+    "about": "Digimon Digital Card Battle (USA, SLUS-01328) on the PC port, built from juandav's decompilation (ReGame-Labs/dcb_decomp).",
+    "disc_hint": "Your own dump of the USA disc: a .cue whose first FILE line names the .bin, or the .bin itself.",
+    "website": "https://github.com/gascarcella/dcb_decomp"
+  }
+}
