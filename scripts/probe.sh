@@ -38,9 +38,9 @@ log() { printf '\033[1;34m[probe]\033[0m %s\n' "$*"; }
 log "configure: cmake -S port -B build/port"
 cfg=(-S port -B build/port -G Ninja "-DPSXSTACK_PYTHON=$PY")
 [[ -n "${PSXSTACK_DIR:-}" ]] && cfg+=("-DPSXSTACK_DIR=$PSXSTACK_DIR")
-cmake "${cfg[@]}" 2>&1 | tee "$OUT/configure.txt" | grep -E "^-- (Game|port_inputs|port_gen)|CMake Error" || true
+cmake "${cfg[@]}" 2>&1 | tee "$OUT/configure.txt" | grep -E "^-- (Game|port_inputs|port_bss|port_gen)|CMake Error" || true
 grep -q "CMake Error" "$OUT/configure.txt" && { echo "probe.sh: the configure failed (build/port_inventory/configure.txt)" >&2; exit 1; }
-{ echo "== configure"; grep -E "^-- (Game|port_inputs|port_gen)" "$OUT/configure.txt"; echo; } >> "$SUMMARY"
+{ echo "== configure"; grep -E "^-- (Game|port_inputs|port_bss|port_gen)" "$OUT/configure.txt"; echo; } >> "$SUMMARY"
 
 log "probe: every us unit at -m64 (port/tools/port_inventory.py probe)"
 set +e
