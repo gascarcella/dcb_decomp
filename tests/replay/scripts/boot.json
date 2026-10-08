@@ -1,0 +1,36 @@
+{
+  "name": "boot",
+  "description": "Boot the disc and reach the title screen: the executable loads OPENSEG for the opening movie (DIGIMON.MOV, about 7,000 frames, not skippable), then runTitleMenu reloads OPENSEG and OPEN_runTitleScreen shows the logo and waits for START. Checkpoints once OPENSEG is loaded and at the title's 'press start' state. Every step waits on game state.",
+  "max_frames": 9000,
+  "default_timeout": 6000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x8006E050",
+      "size": 4,
+      "value": "0x800C8964",
+      "comment": "PLAYER_PROFILES allocated by initPlayerData, at the address probes.lua hashes"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 8,
+      "comment": "OPENSEG loaded (its first word, the overlay id 8): the opening movie's overlay"
+    },
+    {
+      "type": "checkpoint",
+      "name": "openseg_loaded"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F51A0",
+      "size": 4,
+      "value": 6,
+      "timeout": 8000,
+      "comment": "OPEN_TITLE_STATE 6: the logo's animation is over and 'PRESS START' blinks (open_title.c states 6-7)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title"
+    }
+  ]
+}

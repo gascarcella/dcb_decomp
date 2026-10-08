@@ -26,8 +26,12 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
   what each needs, is `docs/PORT.md` "The host-compile probe". About 1,900 sites follow from some 40 declarations.
 - `game.json` has no heap (the game's is its own data); the shim compiles against the stack's declarations.
 - Decided (2026-10-08): the hooks use a pointer-width typedef, `s32p` (`docs/PORT.md` "Open questions" 2).
-- The stack work is in (psxstack #7, #25, #26 with #28, #27, released as v0.3.0). In progress: issue #3 (the
-  oracle and the replays); next #4 (M1).
+- The stack work is in (psxstack #7, #25, #26 with #28, #27, released as v0.3.0).
+- **The emulator oracle (issue #3) is in:** `scripts/setup.sh redux`, `scripts/check_emulator.sh`, and four replay
+  scripts (`boot`, `title`, `new_game`, `first_duel`) with their records, each deterministic over two runs, on
+  PCSX-Redux's interpreter core (its dynarec cannot run this game: `docs/PORT.md` "Testing"). CI's `replay` job runs
+  them. `tests/port/run.py` is written for M1 and cannot run before the port links.
+- Next: #4 (M1).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

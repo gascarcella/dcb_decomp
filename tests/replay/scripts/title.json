@@ -1,0 +1,56 @@
+{
+  "name": "title",
+  "description": "The boot, then START at the title: the menu (New Game / Continue / Battle with Friend) opens with its cursor on Continue. Checkpoint at the menu.",
+  "max_frames": 9000,
+  "default_timeout": 6000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x8006E050",
+      "size": 4,
+      "value": "0x800C8964",
+      "comment": "PLAYER_PROFILES allocated by initPlayerData, at the address probes.lua hashes"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 8,
+      "comment": "OPENSEG loaded (its first word, the overlay id 8): the opening movie's overlay"
+    },
+    {
+      "type": "checkpoint",
+      "name": "openseg_loaded"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F51A0",
+      "size": 4,
+      "value": 6,
+      "timeout": 8000,
+      "comment": "OPEN_TITLE_STATE 6: the logo's animation is over and 'PRESS START' blinks (open_title.c states 6-7)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "START"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F51A0",
+        "size": 4,
+        "value": 8
+      },
+      "timeout": 600,
+      "comment": "START opens the menu (OPEN_TITLE_STATE 8)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title_menu"
+    }
+  ]
+}

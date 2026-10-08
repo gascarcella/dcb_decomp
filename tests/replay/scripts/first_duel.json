@@ -1,0 +1,322 @@
+{
+  "name": "first_duel",
+  "description": "new_game, then Beginner City's script on CROSS until KAWSEG loads: the first duel (the tutorial against Betamon) starts. Checkpoint when KAWSEG is resident.",
+  "max_frames": 20000,
+  "default_timeout": 6000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x8006E050",
+      "size": 4,
+      "value": "0x800C8964",
+      "comment": "PLAYER_PROFILES allocated by initPlayerData, at the address probes.lua hashes"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 8,
+      "comment": "OPENSEG loaded (its first word, the overlay id 8): the opening movie's overlay"
+    },
+    {
+      "type": "checkpoint",
+      "name": "openseg_loaded"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F51A0",
+      "size": 4,
+      "value": 6,
+      "timeout": 8000,
+      "comment": "OPEN_TITLE_STATE 6: the logo's animation is over and 'PRESS START' blinks (open_title.c states 6-7)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "START"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F51A0",
+        "size": 4,
+        "value": 8
+      },
+      "timeout": 600,
+      "comment": "START opens the menu (OPEN_TITLE_STATE 8)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title_menu"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 60,
+      "comment": "the menu's fade-in (state 8 ignores the pad while the fade runs)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor from Continue (choice 1) to New Game (0)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "confirm New Game: OPEN_runUserRegistration"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 12,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4F28",
+        "size": 4,
+        "value": 1
+      },
+      "timeout": 1500,
+      "comment": "through the greeting, the sound and polygon-battle dialogs (their default is the first option) to the name entry (OPEN_INTRO_TEXT.step 1)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 40
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the letter under the cursor (A) as the name's first character"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "START"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "jump to the side menu's OK"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "OK: 'Is this name OK?' opens, its cursor on No (initDialog's default)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4F28",
+        "size": 4,
+        "value": 2
+      },
+      "timeout": 600,
+      "comment": "Yes: the name is accepted (step 2)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "name_entered"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 20,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4F2C",
+        "size": 4,
+        "value": 6
+      },
+      "timeout": 1500,
+      "comment": "the partner pages (2-4), the starter select (step 3) and its prompt (page 5): the first press once that text is shown puts the deck list under the pad (page 6: Veemon under the cursor)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "choose the deck under the cursor: 'Is this deck OK?' opens, its cursor on No (initDialog's default)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4F28",
+      "size": 4,
+      "value": 4,
+      "timeout": 900,
+      "comment": "the starter deck is given and the registration goes on (step 4)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "starter_chosen"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 12,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F80BD",
+        "size": 1,
+        "value": 3
+      },
+      "timeout": 3000,
+      "comment": "through the rest of the registration (its Yes/No dialogs default to Yes; the longer 'tell me about the game' path) to the save screen's file select (OPEN_MEMCARD.state 3: the fresh card read, 15 free blocks)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "File 1: 'Creating a Digital Card Battle File. Is this OK?' opens, its cursor on No"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "Yes: the save is written (state 4, then 25)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F80BD",
+      "size": 1,
+      "value": 12,
+      "timeout": 1500,
+      "comment": "'Save complete' (state 12) waits for a press"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 60,
+      "comment": "the message settles"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 20,
+      "until": {
+        "type": "wait_stage",
+        "stage": 6
+      },
+      "timeout": 3000,
+      "comment": "close the save screen (state 12 waits for CROSS), then the last page ('Enjoy Digital Card Battle!', kind 11 ends the registration on a press once its text is shown); runTitleMenu loads SAISEG (overlay id 6) and starts SAI_runArea: Beginner City"
+    },
+    {
+      "type": "checkpoint",
+      "name": "saiseg"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 12,
+      "until": {
+        "type": "wait_stage",
+        "stage": 5
+      },
+      "timeout": 12000,
+      "comment": "through the first area's script until KAWSEG loads"
+    },
+    {
+      "type": "checkpoint",
+      "name": "first_duel"
+    }
+  ]
+}

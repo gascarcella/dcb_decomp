@@ -92,3 +92,51 @@ jobs:
         name: probe-summary
         path: build/port_inventory/summary.txt
         if-no-files-found: ignore
+
+  # The emulator replays (docs/PORT.md "Testing"; issue #3): the pad scripts of tests/replay/scripts/ run in the
+  # pinned PCSX-Redux from the data checkout and must give the records of tests/replay/records/. Needs the disc
+  # image (rebuilt from the data checkout's xz parts) and the emulator zip, both through the deploy key, so only the
+  # fork's own runs have it, as the build job. The stack's runners are psxstack's tools/replay/ (the submodule must
+  # be at a tag that has them; until the pin bump the job checks the stack out at the commit that merged them,
+  # psxstack 67abb63, and points PSXSTACK_DIR at it).
+  replay:
+    if: >-
+      github.repository == 'gascarcella/dcb_decomp' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    name: emulator replays (us)
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - uses: actions/checkout@v5
+      with:
+        repository: gascarcella/dcb-gamedata
+        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
+        path: gamedata-checkout
+        sparse-checkout: |
+          gamedata/us
+          tools/prebuilt
+        persist-credentials: false
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - uses: actions/checkout@v5
+      with:
+        repository: gascarcella/psxstack
+        ref: 67abb63
+        path: psxstack-main
+        persist-credentials: false
+
+    - run: python3 -m venv .venv
+
+    - run: |
+        export DCB_GAMEDATA="$PWD/gamedata-checkout" PSXSTACK_DIR="$PWD/psxstack-main"
+        scripts/setup.sh disc redux
+        scripts/check_emulator.sh
+        .venv/bin/python tests/replay/replay.py check -j 2

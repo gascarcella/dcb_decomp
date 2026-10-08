@@ -15,6 +15,9 @@
 #   gamedata    disks/us/ from the data checkout (scripts/gamedata_dir.sh): SLUS_013.28 and P.DRV, as symlinks
 #   disc        (not by default) the whole USA disc image, disks/us/dcb_us.bin + .cue, rebuilt from the data
 #               checkout's xz parts and checked by SHA-1: what the emulator and the port read (215 MB)
+#   redux       (not by default) the pinned PCSX-Redux, the test oracle, into bin/redux through psxstack's installer
+#               (tools/replay/redux.sh): the zip from the data checkout's tools/prebuilt/, SHA-256 checked; test with
+#               scripts/check_emulator.sh. $PSXSTACK_DIR names another checkout of the stack than the submodule
 #   link        in a git worktree: bin/, .venv and disks/ of the main checkout, symlinked (worktrees share them)
 #
 # Worktrees: everything built goes into the MAIN checkout (bin/, .venv) and is symlinked into the worktree; run
@@ -31,6 +34,10 @@ BINUTILS_SHA256=f6e4d41fd5fc778b06b7891457b3620da5ecea1006c6a4a41ae998109f85a800
 PYTHON_VER=3.12
 # The USA disc image (SLUS-01328, one MODE2/2352 track); its executable and P.DRV have upstream's SHA-1s.
 DISC_US_SHA1=b3945b3e76c1fcc554a7614e2b4211d974990105
+# PCSX-Redux, the emulator the replays run in (docs/PORT.md "Testing"): the same build dw2003recomp pins, as the data
+# checkout keeps it (tools/prebuilt/). It cannot be downloaded from distrib.app by its changeset, so there is no URL.
+REDUX_ZIP=PCSX-Redux-bf4c9ceb-linux-x86_64.zip
+REDUX_SHA256=5c0138d8a948c021e67aaba62648924c0a6e05d9d933c945d2c5077b4c758980
 
 log() { printf '\033[1;34m[setup]\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m[setup]\033[0m %s\n' "$*" >&2; exit 1; }
@@ -176,6 +183,16 @@ step_disc() {
     mv "$d/dcb_us.bin.part" "$d/dcb_us.bin"
     cp "$gd/gamedata/us/dcb_us.cue" "$d/dcb_us.cue"
     log "disc: disks/us/dcb_us.bin (+ .cue), SHA-1 checked"
+}
+
+step_redux() {
+    local gd installer stack
+    stack="${PSXSTACK_DIR:-$ROOT/psxstack}"
+    installer="$stack/tools/replay/redux.sh"
+    [[ -f "$installer" ]] || die "redux: $installer is missing: a psxstack with tools/replay/ (the submodule at a tag that has it, or PSXSTACK_DIR=<checkout>)"
+    gd="$("$ROOT/scripts/gamedata_dir.sh")" || die "redux: no data checkout: the emulator zip is $REDUX_ZIP of its tools/prebuilt/"
+    [[ -f "$gd/tools/prebuilt/$REDUX_ZIP" ]] || die "redux: $gd/tools/prebuilt/$REDUX_ZIP is missing"
+    bash "$installer" --dest "$MAIN/bin/redux" --zip "$gd/tools/prebuilt/$REDUX_ZIP" --sha256 "$REDUX_SHA256"
 }
 
 step_link() {
