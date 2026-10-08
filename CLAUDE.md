@@ -53,7 +53,8 @@ psxstack checkout vX.Y.Z`, commit the submodule). dw2003recomp bumps its own pin
 - **Hooks keep the PS1 build identical** (psxstack `GAME_CONTRACT.md` "Layering", rule 5). Each macro's PS1 side
   expands to the original code exactly. Host-only code sits under `#ifdef PC_PORT`, and `<psxstack/hooks.h>` is
   included only there. Rebuild (`scripts/build.sh`) after every change to `src/`, `include/`, `config/`, `mk/` or the
-  `Makefile`. A file that `jp` or `eu` also compiles must not change their code either: until those discs are in the
+  `Makefile`. The port's tools and the replay tools read the stack from the submodule, or from `$PSXSTACK_DIR` when it
+  names another checkout (stack work in progress). A file that `jp` or `eu` also compiles must not change their code either: until those discs are in the
   data checkout, keep such edits to `#ifdef PC_PORT` blocks and macros whose PS1 side is the original text.
 - **Upstream's conventions for anything in the decompilation** (`CONTRIBUTING.md`: names, fake-match markers, file
   layout, versions). They are not dw2003recomp's: here functions are camelCase (`spawnTask`), globals SCREAMING_CASE
@@ -75,17 +76,22 @@ psxstack checkout vX.Y.Z`, commit the submodule). dw2003recomp bumps its own pin
 | `tools/` | upstream | Their build helpers (`try_match.py`, `hacks.py`, `check_names.py`, `rename.py`, `extract_drv.py`, `objdiff_generate.py`, `dl_deps.sh`, …) |
 | `external/` | upstream | Submodules: maspsx, m2c, decomp-permuter, psyq_headers |
 | `Makefile`, `Dockerfile`, `.github/workflows/build.yaml`, `docker.yaml` | upstream | The build and their CI (its build job runs only in ReGame-Labs; its `names` job runs here too) |
-| `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh`, `probe.sh` (the port's configure and host-compile probe) |
+| `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh`, `probe.sh` (the port's configure and host-compile probe), `check_emulator.sh` (the emulator boots the disc) |
 | `docs/` | ours | `STATUS.md`, `PORT.md`, `DECISIONS.md`, `THIRD_PARTY.md` |
+| `tests/` | ours | `replay/` (the emulator oracle: `replay.py` configures psxstack's runner, `probes.lua` this game's state probes, `scripts/*.json` the pad scripts, `expected/*.json` their records), `port/run.py` (the port's replay test, from M1) |
 | `psxstack/` | ours (submodule) | The stack at its pinned tag |
 | `port/` | ours | The port's game side, as in dw2003recomp: `CMakeLists.txt` (`psxstack_add_game()`), `game/` (the adapter, `game.json`), `tools/` (`port_inputs.py`: the unit and overlay lists from `mk/version/us.mk`; `port_inventory.py`: psxstack's host-compile probe configured for this tree), later `include/` (host-only headers such as `gte.h`) and `mods/`. Our tools live here, not in upstream's `tools/` |
-| `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`) and the port's disc-free `probe` job (`scripts/probe.sh`) |
-| `bin/`, `.venv/`, `disks/`, `build/`, `asm/`, `expected/`, `assets/` | untracked | The toolchain (`bin/cross`: binutils + cpp wrapper, `bin/python`, upstream's downloads), the venv, the disc files, build outputs |
+| `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`), the port's disc-free `probe` job (`scripts/probe.sh`) and the `replay` job (the disc and the emulator from the data checkout) |
+| `bin/`, `.venv/`, `disks/`, `build/`, `asm/`, `expected/`, `assets/` | untracked | The toolchain (`bin/cross`: binutils + cpp wrapper, `bin/python`, upstream's downloads, `bin/redux` the emulator), the venv, the disc files, build outputs |
 
 ## Commands
 ```sh
 scripts/setup.sh            # main checkout, once: submodules, binutils (bin/cross), Python 3.12, .venv, upstream's deps, disks/us from ../dcb-gamedata
 scripts/setup.sh disc       # the whole disc image, disks/us/dcb_us.bin + .cue (for the emulator and the port), SHA-1 checked
+scripts/setup.sh redux      # the pinned PCSX-Redux into bin/redux (the data checkout's zip, through psxstack's tools/replay/redux.sh)
+scripts/check_emulator.sh   # the disc boots headless in the emulator (OPENSEG loaded)
+.venv/bin/python tests/replay/replay.py check [-j N]            # the emulator replays against tests/replay/records/ (CI's replay job)
+.venv/bin/python tests/replay/replay.py run tests/replay/scripts/X.json [--record] [--repeat 2] [-v] [--prelude LUA]   # one script; --record writes its expected file
 scripts/worktree_init.sh    # a fresh worktree: link bin/ .venv disks/, submodules at their pins (run first!)
 scripts/build.sh [--clean]  # make generate + make + make compare for VERSION (default us); every binary must say OK
 scripts/probe.sh            # the port: cmake configure (build/port), then the host-compile probe and link check over every us unit (no disc)

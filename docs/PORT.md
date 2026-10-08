@@ -255,6 +255,40 @@ A first grep for definitions in psxstack's `psyq/` and `runtime/`. Confirm with 
 The game also uses libc's `sprintf` (345 calls), `rand` (87), `str*`, `memset`, `bzero` and `bcopy`. Their
 Psy-Q-specific behaviour (`rand`'s sequence, `sprintf`'s formats) needs a check against the emulator.
 
+## Testing
+The oracle is the game in PCSX-Redux (dw2003recomp's DECISIONS "The port is checked against the emulator"); the
+runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configured here. The stack is the submodule
+(`$PSXSTACK_DIR` names another checkout of it, for stack work).
+
+| Check | What it proves | Where |
+|---|---|---|
+| Byte-identical PS1 build | No hook or `#ifdef PC_PORT` changes a PS1 byte | `scripts/build.sh` (CI `build (us)`) |
+| Host-compile probe | Every unit compiles at `-m64` with pointer/int casts and implicit declarations as errors; no duplicate global | `scripts/probe.sh` (CI `probe`; the count is the baseline until M1) |
+| The emulator boots the disc | PCSX-Redux (`scripts/setup.sh redux`, the pin in the data checkout) loads OPENSEG for the opening movie | `scripts/check_emulator.sh` (`tests/replay/replay.py boot`) |
+| Emulator replays | Four pad scripts replayed from boot, each twice byte-identical: `boot` (the title, frame 7866), `title` (the menu), `new_game` (the registration: name, starter, the save to a fresh card, SAISEG at 11681), `first_duel` (Beginner City's script into KAWSEG at 14211), with the player profile hashed at every checkpoint | `tests/replay/replay.py check` (CI `replay`), `tests/replay/scripts/`, `expected/`, `probes.lua` |
+| The port against the emulator | The port replays the same scripts and reaches the emulator's checkpoints (the cross-core view: names, stages, maps, stable profile hashes, the overlay sequence) twice byte-identical | `tests/port/run.py`: written, **not runnable until M1** (the port does not link) |
+
+**The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG
+4, KAWSEG 5, SAISEG 6, SUBSEG 7, OPENSEG 8, EVOSEG 9, ENDSEG 10; 0 before a load); `map` the profile's `areaId`;
+`random_index` libc's `rand()` state (`D_801DDC10`); the checkpoint image the player's profile, `PlayerProfile`
+(0x2774 bytes, pointer-free, what a save writes), at its fixed heap address 0x800C8964 (the scripts assert it). The
+stable hash zeroes `profileId` (drawn from `rand()` at creation) and `playTime`. The port's adapter implements the
+same at M1 (`game_state_*`).
+
+**The core.** PCSX-Redux's dynarec cannot run this game: the overlay loader's first CD read never completes
+(`FILE_LOADER_BUSY` stays 1, the vblank event stops after about 165 frames; with OpenBIOS and the retail BIOS alike,
+and the log shows an unanswered pad command 0x43), while the interpreter core plays it. Every emulator run here is
+on the interpreter (`tests/replay/replay.py` adds `-interpreter` to every command and marks the records
+`"core": "interpreter"`); psxstack's runner assumes the dynarec is the recording core, so the driver wraps it until
+the stack lets a game choose (a psxstack issue). The port's test compares the cross-core view, which does not
+depend on the core.
+
+**What the scripts know about the game:** dialogs opened by `initDialog` start with their cursor on No unless the
+caller sets `choice = 1`; the name entry's, the starter deck's and the save screen's "create a file" dialogs do not,
+so the scripts press LEFT before confirming them; the registration's own Yes/No pages do, so a plain CROSS takes the
+longer "tell me about the game" path. The opening movie cannot be skipped (about 7,000 frames). A fresh card from
+the emulator is formatted (15 free blocks); the save goes to File 1.
+
 ## Open questions
 Decided on 2026-10-08 (the choices are in "The contract, for this game" and above): the heap (`memory.heap` becomes
 optional in psxstack, [psxstack#26](https://github.com/gascarcella/psxstack/issues/26)), overlay identity and the

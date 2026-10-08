@@ -1,0 +1,56 @@
+{
+ "script": "boot",
+ "script_sha1": "a5bcfec8b1f01e47599848b616ef09362173efc9",
+ "emulator": {
+  "name": "pcsx-redux",
+  "version": "bf4c9ceb",
+  "build_id": 359,
+  "changeset": "bf4c9cebdd1c649dd006736bb012fc7f1d6fd988"
+ },
+ "bios": {
+  "name": "openbios",
+  "sha1": "8f1269a22179433c8b22b4c804f11c0a076450c5"
+ },
+ "tree_commit": "d61c873e93febc69a942333aaf95599bf581aad3",
+ "frames": 7866,
+ "checkpoints": [
+  {
+   "name": "openseg_loaded",
+   "frame": 827,
+   "stage": 8,
+   "map": 0,
+   "random_index": 2053034931,
+   "gamestate_sha1": "0ace2b305e0f7cd353b680c67a2d5a83cf83e305",
+   "gamestate_sha1_stable": "89a7f7b4fc11d17462ff33899f662844c3a46564"
+  },
+  {
+   "name": "title",
+   "frame": 7866,
+   "stage": 8,
+   "map": 0,
+   "random_index": 1806829430,
+   "gamestate_sha1": "cdf865b289caba140b1c65b49f88f1d62c1d2ca7",
+   "gamestate_sha1_stable": "42b4a247a92dd151f895466d59495e5eec6d5f29"
+  }
+ ],
+ "overlay_sequence": [
+  {
+   "file": 0,
+   "frame": 1,
+   "stage": 0
+  },
+  {
+   "file": 0,
+   "frame": 827,
+   "stage": 8
+  }
+ ],
+ "map_sequence": [
+  {
+   "frame": 1,
+   "map": 0
+  }
+ ],
+ "inputs": [],
+ "core": "interpreter"
+}

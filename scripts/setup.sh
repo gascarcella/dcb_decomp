@@ -15,6 +15,10 @@
 #   gamedata    disks/us/ from the data checkout (scripts/gamedata_dir.sh): SLUS_013.28 and P.DRV, as symlinks
 #   disc        (not by default) the whole USA disc image, disks/us/dcb_us.bin + .cue, rebuilt from the data
 #               checkout's xz parts and checked by SHA-1: what the emulator and the port read (215 MB)
+#   redux       (not by default) the pinned PCSX-Redux, the test oracle, into bin/redux through psxstack's installer
+#               (tools/replay/redux.sh): the zip from the data checkout's tools/prebuilt/, SHA-256 checked; test with
+#               scripts/check_emulator.sh. $PSXSTACK_DIR names another checkout of the stack than the submodule
+#               (stack work in progress)
 #   link        in a git worktree: bin/, .venv and disks/ of the main checkout, symlinked (worktrees share them)
 #
 # Worktrees: everything built goes into the MAIN checkout (bin/, .venv) and is symlinked into the worktree; run
@@ -31,6 +35,31 @@ BINUTILS_SHA256=f6e4d41fd5fc778b06b7891457b3620da5ecea1006c6a4a41ae998109f85a800
 PYTHON_VER=3.12
 # The USA disc image (SLUS-01328, one MODE2/2352 track); its executable and P.DRV have upstream's SHA-1s.
 DISC_US_SHA1=b3945b3e76c1fcc554a7614e2b4211d974990105
+# PCSX-Redux, the emulator the replays run in (docs/PORT.md "Testing"): the same build dw2003recomp pins, as the data
+# checkout keeps it (tools/prebuilt/). It cannot be downloaded from distrib.app by its changeset, so there is no URL.
+REDUX_ZIP=PCSX-Redux-bf4c9ceb-linux-x86_64.zip
+REDUX_SHA256=5c0138d8a948c021e67aaba62648924c0a6e05d9d933c945d2c5077b4c758980
+# Its AppImage is built against glibc 2.43: on an older host (Ubuntu 24.04, CI: 2.39) the installer unpacks this
+# pinned runtime sysroot (Ubuntu 26.04 "resolute" packages, SHA-256 each; dw2003recomp's list) from the Ubuntu
+# archive and runs the binary through that glibc's loader. DCB_UBUNTU_MIRROR: another archive (CI uses the runners').
+REDUX_UBUNTU="${DCB_UBUNTU_MIRROR:-http://archive.ubuntu.com/ubuntu}"
+REDUX_SYSROOT_DEBS=(
+    "pool/main/g/glibc/libc6_2.43-2ubuntu2_amd64.deb c13775dc0c984403f3fcad229d14507a9f387763bd07ace1e5f93897ee6b8434"
+    "pool/main/g/gcc-16/libgcc-s1_16-20260322-1ubuntu1_amd64.deb 2fb4d81c14fdf34251639ae82f5181f9f98480ea16125d535571ac1be9db3065"
+    "pool/main/g/gcc-16/libstdc++6_16-20260322-1ubuntu1_amd64.deb a32b9ad585e39bdc7bd15d1eae6293461e6d466859a1dd2f7862d1e40f89b9d8"
+    "pool/main/f/fontconfig/libfontconfig1_2.17.1-3ubuntu1_amd64.deb 72ba4fc43155566b46442b741a6892d5d1f1581ba58cdfd037aabf47ad9080f7"
+    "pool/main/f/freetype/libfreetype6_2.14.2+dfsg-1_amd64.deb a76ad9102039122ef72b01c9c364e7d8967331414cbe19151c01d1391ff9fe25"
+    "pool/main/h/harfbuzz/libharfbuzz0b_12.3.2-2_amd64.deb ec93ea39ddeb5a98179b60eab4af234b6c676f1958106645d1f4b19280d4cd09"
+    "pool/main/f/fribidi/libfribidi0_1.0.16-5_amd64.deb 47fb50e96401a46c06d5122cd04cc42316f65530b9f868d2d450576a379d5d34"
+    "pool/main/e/expat/libexpat1_2.7.4-1_amd64.deb ef78089497946219cac03209d951bbfff93480104e791b770a7bf6429452e475"
+    "pool/main/g/gmp/libgmp10_6.3.0+dfsg-5ubuntu2_amd64.deb a9bbe9d4a4bcd5875bbd0f53e67c379bc881d1c1a80522d51dfb4b107cc31819"
+    "pool/main/z/zlib/zlib1g_1.3.dfsg+really1.3.1-1ubuntu3_amd64.deb c45bbbf9c87457d90b8ba38720c5f01b9388c380d40f303c26f5c4953932da26"
+    "pool/main/libx/libx11/libx11-6_1.8.13-1_amd64.deb 7e643e76063b94df9159c8b8fd4b8bf53d2fbf119c9889a5cc6842b6be272e4f"
+    "pool/main/libx/libx11/libx11-xcb1_1.8.13-1_amd64.deb e20ab288f2f756800ae25e7a827ae70aee64272f692dd3cb8f706764b6767de9"
+    "pool/main/libx/libxcb/libxcb1_1.17.0-2ubuntu1_amd64.deb 069e64705e4a5721a223b4d22643bbaeaa63a6efbb56ebd3d7c4a31c4a26fa1c"
+    "pool/main/libx/libxcb/libxcb-dri3-0_1.17.0-2ubuntu1_amd64.deb 2e0e3916c647a74e081621f385aa296dab3052b2582b0781d9fbea2f15696ef4"
+    "pool/main/libd/libdrm/libdrm2_2.4.131-1_amd64.deb b87e6f715d0795a88b53fbe268004a1acbd0d728da0cc0ab9108aff5ab4e1929"
+)
 
 log() { printf '\033[1;34m[setup]\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m[setup]\033[0m %s\n' "$*" >&2; exit 1; }
@@ -176,6 +205,20 @@ step_disc() {
     mv "$d/dcb_us.bin.part" "$d/dcb_us.bin"
     cp "$gd/gamedata/us/dcb_us.cue" "$d/dcb_us.cue"
     log "disc: disks/us/dcb_us.bin (+ .cue), SHA-1 checked"
+}
+
+step_redux() {
+    local gd installer stack debs
+    stack="${PSXSTACK_DIR:-$ROOT/psxstack}"
+    installer="$stack/tools/replay/redux.sh"
+    [[ -f "$installer" ]] || die "redux: $installer is missing: a psxstack with tools/replay/ (the submodule at a tag that has it, or PSXSTACK_DIR=<checkout>)"
+    gd="$("$ROOT/scripts/gamedata_dir.sh")" || die "redux: no data checkout: the emulator zip is $REDUX_ZIP of its tools/prebuilt/"
+    [[ -f "$gd/tools/prebuilt/$REDUX_ZIP" ]] || die "redux: $gd/tools/prebuilt/$REDUX_ZIP is missing"
+    debs="$(mktemp)"
+    printf '%s\n' "${REDUX_SYSROOT_DEBS[@]}" > "$debs"
+    bash "$installer" --dest "$MAIN/bin/redux" --zip "$gd/tools/prebuilt/$REDUX_ZIP" --sha256 "$REDUX_SHA256" \
+         --sysroot-debs "$debs" --mirror "$REDUX_UBUNTU"
+    rm -f "$debs"
 }
 
 step_link() {
