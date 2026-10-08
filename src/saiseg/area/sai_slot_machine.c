@@ -648,7 +648,7 @@ void SAI_runSlotMachine(s32 unused, s32 parent) {
     SAI_resetSlotMachine();
     openKanjiPage(0xF, 0xE7);
     clearKanjiPage(0xF);
-    addFrameCallback((s32)SAI_renderSlotMachine);
+    addFrameCallback((s32p)SAI_renderSlotMachine);
     spawnTask(0, -1, 0, 0x200, screenFadeTask, 1, 2, 4, 0);
     waitFrames(30);
     spawnTask(0, -1, 0, 0x800, runWindowTask, &SAI_SLOT_BET_WINDOW, getCurrentTaskId());
@@ -671,7 +671,7 @@ void SAI_runSlotMachine(s32 unused, s32 parent) {
     spawnTask(0, -1, 0, 0x200, screenFadeTask, 0, 2, 4, 0);
     waitFrames(30);
     waitFrames(30);
-    removeFrameCallback((s32)SAI_renderSlotMachine);
+    removeFrameCallback((s32p)SAI_renderSlotMachine);
     waitFrames(2);
     clearKanjiPage(0xF);
     closeKanjiPage(0xF);

@@ -159,14 +159,14 @@ void SAI_drawDigiPartsList(UiWindow *window) {
     s32 icon;
     s32 palette;
 
-    drawText(x + 0x40, y + 1, (s32)"Earned Digi-Parts List", 6, 0);
+    drawText(x + 0x40, y + 1, (s32p)"Earned Digi-Parts List", 6, 0);
     count = 0;
     for (i = 0; i < 128; i++) {
         if ((SAI_OWNED_DIGI_PARTS[i / 8] >> (i % 8)) & 1) {
             count++;
             if (count >= (window->view.y - 15) / 13 && (window->view.y + window->rect.h - 15) / 13 >= count) {
                 sprintf(buf, "%3.3d", i);
-                drawText(x + 2, y + 15 + (count - 1) * 13, (s32)buf, 5, z);
+                drawText(x + 2, y + 15 + (count - 1) * 13, (s32p)buf, 5, z);
                 if (i < 7) {
                     icon = 0;
                 } else if (i < 10) {
@@ -194,7 +194,7 @@ void SAI_drawDigiPartsList(UiWindow *window) {
                 if (i >= 41 && i < 121) {
                     palette = 5;
                 }
-                drawText(x + 0x30, y + 15 + (count - 1) * 13, (s32)SAI_DIGI_PARTS[i].name, palette, z);
+                drawText(x + 0x30, y + 15 + (count - 1) * 13, (s32p)SAI_DIGI_PARTS[i].name, palette, z);
             }
         }
     }
@@ -214,7 +214,7 @@ void SAI_drawDigiPartsList(UiWindow *window) {
         }
     }
     if (count == 0) {
-        drawText(x + 0x1A, y + 0xE, (s32)"None", 7, 0);
+        drawText(x + 0x1A, y + 0xE, (s32p)"None", 7, 0);
     }
 }
 
@@ -250,7 +250,7 @@ void SAI_grantDigiPart(s32 ability, s32 task) {
     rect.w = 0xF0;
     rect.h = 0xA8;
     openWindow(&SAI_DIGI_PARTS_WINDOW, &rect, -1, (s16 *)-1, 10, 0x16, 0x80, 12);
-    SAI_DIGI_PARTS_WINDOW.label = (s32)SAI_STR_GET_DIGIPARTS_LIST;
+    SAI_DIGI_PARTS_WINDOW.label = (s32p)SAI_STR_GET_DIGIPARTS_LIST;
     /*
      * Dead code in the original: this loop's result is never used. GCC deletes
      * the store only after register allocation, which is why the ROM's loop
@@ -273,7 +273,7 @@ void SAI_grantDigiPart(s32 ability, s32 task) {
     SAI_OWNED_DIGI_PARTS[ability / 8] |= 1 << (ability % 8);
     grantPartnerAbility(0, ability);
     playSoundEffect(3);
-    addFrameCallback((s32)SAI_drawDigiPartsWindow);
+    addFrameCallback((s32p)SAI_drawDigiPartsWindow);
     do {
         waitFrames(1);
     } while (!(PAD_STATES[0]->pressed & PAD_CROSS));
@@ -281,7 +281,7 @@ void SAI_grantDigiPart(s32 ability, s32 task) {
     win = &SAI_DIGI_PARTS_WINDOW;
     animateWindowTo(win, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)SAI_drawDigiPartsWindow);
+    removeFrameCallback((s32p)SAI_drawDigiPartsWindow);
     waitFrames(1);
     SAI_AREA_MODE = AREA_MODE_SCRIPT;
     resumeTask(task);

@@ -21,7 +21,7 @@ void SAI_drawMessageWindow(UiWindow *window) {
     y = window->originY;
     z = window->z;
     if (SAI_PLAYER_STATS_STATE == 2) {
-        drawText(x + 2, y, (s32)SAI_PLAYER_DATA_HELP[SAI_PLAYER_DATA_ROW], 7, z);
+        drawText(x + 2, y, (s32p)SAI_PLAYER_DATA_HELP[SAI_PLAYER_DATA_ROW], 7, z);
         return;
     }
     if (SAI_AREA.waitingForCross != 0 && SAI_AREA.typing == 0) {
@@ -135,7 +135,7 @@ s32 SAI_typeTextLine(s32 x, s32 y, TextLine *line, s32 z) {
 #error "saiseg/ui/sai_text: version not checked"
 #endif
     if (line->length == line->shown) {
-        drawText(x, y, (s32)line, 7, z);
+        drawText(x, y, (s32p)line, 7, z);
         return -1;
     }
 #if VERSION_US
@@ -171,13 +171,13 @@ s32 SAI_typeTextLine(s32 x, s32 y, TextLine *line, s32 z) {
         }
         dst[0] = *src;
         dst[1] = 0;
-        drawText(x, y, (s32)buf, 7, z);
+        drawText(x, y, (s32p)buf, 7, z);
         line->shown += 1;
     } else {
         *dst++ = src[0];
         dst[0] = src[1];
         dst[1] = 0;
-        drawText(x, y, (s32)buf, 7, z);
+        drawText(x, y, (s32p)buf, 7, z);
         line->shown += 2;
     }
     return 1;

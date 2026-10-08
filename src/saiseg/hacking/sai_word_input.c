@@ -194,14 +194,14 @@ void SAI_drawWordInputGrid(UiWindow *window) {
             gap = 11;
         }
         dx = (i % 10) * 17 + 4;
-        drawText(x + dx + gap, y + (i / 10) * 14, (s32)text, 7, z);
+        drawText(x + dx + gap, y + (i / 10) * 14, (s32p)text, 7, z);
     }
     for (i = 0; i < 7; i++) {
         marks[i] = 4;
     }
     marks[window->view.y / window->rect.h] = 5;
-    drawText(window->rect.x + 0xCC, window->rect.y + 0x63, (s32)"OK", 6, z);
-    drawText(window->rect.x + 0xCC, window->rect.y + 0x71, (s32)"Cancel", 6, z);
+    drawText(window->rect.x + 0xCC, window->rect.y + 0x63, (s32p)"OK", 6, z);
+    drawText(window->rect.x + 0xCC, window->rect.y + 0x71, (s32p)"Cancel", 6, z);
     SAI_moveWordInputCursor();
     if (SAI_WORD_INPUT.mode == 0) {
         if (PAD_STATES[0]->repeat & PAD_CROSS) {
@@ -279,7 +279,7 @@ void SAI_drawKeywordField(UiWindow *window) {
     s32 z = window->z;
 
     sprintf(text, "*s0%s", SAI_WORD_INPUT.text);
-    drawText(x, y, (s32)text, 7, z);
+    drawText(x, y, (s32p)text, 7, z);
     if (PAD_STATES[0]->repeat & PAD_L1) {
         if (SAI_WORD_INPUT.cursor != 0) {
             playSoundEffect(2);
@@ -305,9 +305,9 @@ void SAI_drawWordInputHelp(UiWindow *window) {
     s32 z = window->z;
     s32 unused[2]; /* unused, but it is in the original stack frame */
 
-    drawText(x, y, (s32)"*b0 Insert", 7, z);
-    drawText(x + 8, y + 13, (s32)"*b2 OK", 7, z);
-    drawText(x, y + 26, (s32)"*b1 Delete", 7, z);
+    drawText(x, y, (s32p)"*b0 Insert", 7, z);
+    drawText(x + 8, y + 13, (s32p)"*b2 OK", 7, z);
+    drawText(x, y + 26, (s32p)"*b1 Delete", 7, z);
 }
 
 void SAI_drawWordInputWindows(void) {
@@ -345,7 +345,7 @@ void SAI_runWordInput(char *word) {
     view.w = rect.w;
     view.h = SAI_WORD_INPUT.rows * 14;
     openWindow(&SAI_WORD_GRID_WINDOW, &rect, -1, (s16 *)&view, 10, 0x26, 0x80, 12);
-    SAI_WORD_GRID_WINDOW.label = (s32)"WORD INPUT";
+    SAI_WORD_GRID_WINDOW.label = (s32p)"WORD INPUT";
     cursorRect.x = SAI_WORD_GRID_WINDOW.originX + 4;
     cursorRect.y = SAI_WORD_GRID_WINDOW.originY + 1;
     cursorRect.w = 12;
@@ -356,20 +356,20 @@ void SAI_runWordInput(char *word) {
     rect.w = 0x34;
     rect.h = 0x28;
     openWindow(&SAI_WORD_HELP_WINDOW, &rect, -1, (s16 *)-1, 8, 0x26, 0x80, 12);
-    SAI_WORD_HELP_WINDOW.label = (s32)"HELP";
+    SAI_WORD_HELP_WINDOW.label = (s32p)"HELP";
     rect.x = 0x78;
     rect.y = 0x1C;
     rect.w = 0x48;
     rect.h = 0xE;
     openWindow(&SAI_KEYWORD_WINDOW, &rect, -1, (s16 *)-1, 8, 0x26, 0x80, 12);
-    SAI_KEYWORD_WINDOW.label = (s32)"KEYWORD";
+    SAI_KEYWORD_WINDOW.label = (s32p)"KEYWORD";
     cursorRect.x = SAI_KEYWORD_WINDOW.originX;
     cursorRect.y = SAI_KEYWORD_WINDOW.originY + 13;
     cursorRect.w = 12;
     cursorRect.h = 0;
     initCursorHighlight(&SAI_KEYWORD_CURSOR, &rect, (Bytes4 *)-1);
     playSoundEffect(3);
-    addFrameCallback((s32)SAI_drawWordInputWindows);
+    addFrameCallback((s32p)SAI_drawWordInputWindows);
     while (1) {
         waitFrames(FRAME_INTERVAL);
         if (SAI_WORD_INPUT.result == 0) {
@@ -393,7 +393,7 @@ void SAI_runWordInput(char *word) {
     animateWindowTo(&SAI_WORD_GRID_WINDOW, (Rect16 *)-1);
     animateWindowTo(&SAI_KEYWORD_WINDOW, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)SAI_drawWordInputWindows);
+    removeFrameCallback((s32p)SAI_drawWordInputWindows);
     for (i = 0; i < 10; i++) {
         if (strcmp(word, SAI_KEYWORDS[i]) == 0) {
             SAI_SCRIPT[0]->regs[1] = i;

@@ -190,7 +190,7 @@ void SAI_runArea(s32 resume) {
     ((SessionData *)SESSION_DATA)->npcDeckIndex[0] = -1;
     SAI_createAreaName();
     SAI_createLocationLabel();
-    addFrameCallback((s32)SAI_drawAreaHud);
+    addFrameCallback((s32p)SAI_drawAreaHud);
     if (SAI_ICON_RUNNING != 1) {
         if (SAI_SCRIPT[0]->regs[0xB8] != 0) {
             if (SESSION->resumeMode == 1) {
@@ -233,7 +233,7 @@ void SAI_runArea(s32 resume) {
     do {
         waitFrames(1);
     } while (SAI_AREA.openPanel != 0);
-    removeFrameCallback((s32)SAI_drawAreaHud);
+    removeFrameCallback((s32p)SAI_drawAreaHud);
     SAI_saveScriptFlags();
     SAI_unlockArmorsFromFlags(SAI_SCRIPT[0]->regs);
     if (SAI_SCRIPT[0]->regs[0xB8] != 0 && (SAI_EXIT_ACTION == AREA_EXIT_EQUIPMENT || SAI_EXIT_ACTION == AREA_EXIT_DECK_EDITOR)) {
@@ -306,7 +306,7 @@ void SAI_createPanel(void) {
     SAI_initPanelCover();
     SAI_createPanelFrame();
     SAI_createPanelFrameShadow();
-    addFrameCallback((s32)SAI_drawPanel);
+    addFrameCallback((s32p)SAI_drawPanel);
 }
 
 void SAI_drawPanel(void) {
@@ -321,7 +321,7 @@ void SAI_drawPanel(void) {
 }
 
 void SAI_freePanel(void) {
-    removeFrameCallback(SAI_drawPanel);
+    removeFrameCallback((s32p)SAI_drawPanel);
     waitFrames(1);
     SAI_freeSprite(SAI_SPRITES[0]);
     SAI_freePanelFrame();

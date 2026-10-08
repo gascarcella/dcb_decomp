@@ -195,7 +195,7 @@ void SAI_runPartnerGet(s32 task) {
     view.w = 0x10E;
     view.h = SAI_PARTNER_LIST.count * 72;
     openWindow(&SAI_PARTNER_GET_WINDOW, &rect, -1, (s16 *)&view, 10, 0x86, 0x80, 12);
-    SAI_PARTNER_GET_WINDOW.label = (s32)"PARTNER GET";
+    SAI_PARTNER_GET_WINDOW.label = (s32p)"PARTNER GET";
     SAI_PARTNER_GET_WINDOW.labelPalette = 7;
     cursorRect.x = SAI_PARTNER_GET_WINDOW.originX + 4;
     cursorRect.y = SAI_PARTNER_GET_WINDOW.originY + 1;
@@ -204,7 +204,7 @@ void SAI_runPartnerGet(s32 task) {
     initCursorHighlight(&SAI_PARTNER_GET_CURSOR, &cursorRect, (Bytes4 *)-1);
     waitFrames(FRAME_INTERVAL);
     playSoundEffect(3);
-    addFrameCallback((s32)SAI_drawPartnerGetWindow);
+    addFrameCallback((s32p)SAI_drawPartnerGetWindow);
     do {
 #if VERSION_US
     wait:
@@ -244,7 +244,7 @@ void SAI_runPartnerGet(s32 task) {
     playSoundEffect(4);
     freeHeapBlock(file);
     waitFrames(20);
-    removeFrameCallback((s32)SAI_drawPartnerGetWindow);
+    removeFrameCallback((s32p)SAI_drawPartnerGetWindow);
     obtainPartner(0, SAI_AREA.partners[SAI_PARTNER_CURSOR.cursor]);
     SAI_AREA.mode = AREA_MODE_SCRIPT;
     SAI_setPartnerObtainedFlag(SAI_AREA.partners[SAI_PARTNER_CURSOR.cursor]);

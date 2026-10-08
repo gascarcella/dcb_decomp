@@ -110,7 +110,7 @@ void SAI_initPathPolys(void) {
     s32 j;
 
     for (i = 0; i < 2; i++) {
-        DB(i).primSlots[1] = (s32)(SAI_WORLD_MAP.pathPolys[i] = allocHeapBlock(20 * sizeof(PolyF4), 0x28));
+        DB(i).primSlots[1] = (s32p)(SAI_WORLD_MAP.pathPolys[i] = allocHeapBlock(20 * sizeof(PolyF4), 0x28));
         poly = SAI_WORLD_MAP.pathPolys[i];
         for (j = 0; j < 20; j++, poly++) {
             SetPolyF4(poly);
@@ -841,7 +841,7 @@ void SAI_fadeOutRegion(void) {
             SAI_WORLD_MAP.state = MAP_CLOSING;
             playSoundEffect(11);
         }
-        removeFrameCallback((s32)SAI_drawMapPaths);
+        removeFrameCallback((s32p)SAI_drawMapPaths);
         SAI_MAP_ANIMATING = 0;
     }
     SAI_WORLD_MAP.alpha = alpha;
@@ -1369,7 +1369,7 @@ void SAI_initMapPaths(void) {
             }
         }
     }
-    addFrameCallback((s32)SAI_drawMapPaths);
+    addFrameCallback((s32p)SAI_drawMapPaths);
 }
 
 void SAI_drawMapPaths(FrameBuffer *fb) {

@@ -36,7 +36,7 @@ void SAI_openErrorWindow(UiWindow *window, WindowDef *def) {
 void SAI_drawErrorText(UiWindow *window) {
     char buf[0x48]; /* unused, but it is in the original stack frame */
 
-    drawText(window->originX, window->originY, (s32)SAI_STR_SYSTEM_ERROR, 0, window->z);
+    drawText(window->originX, window->originY, (s32p)SAI_STR_SYSTEM_ERROR, 0, window->z);
 }
 
 void (*SAI_ERROR_WINDOW_DRAW_FUNCS[5])() = {
@@ -57,7 +57,7 @@ void SAI_drawErrorWindows(void) {
 
 void SAI_runSystemErrorHack(void) {
     stopMusic();
-    addFrameCallback((s32)SAI_drawErrorWindows);
+    addFrameCallback((s32p)SAI_drawErrorWindows);
     setBackgroundScrollMode(1);
     spawnTask(0, -1, 0, 0x800, runHackingSequence, 0, getCurrentTaskId(), 0, 0);
     waitFrames(360);
@@ -98,7 +98,7 @@ void SAI_runSystemErrorHack(void) {
     playSoundEffect(0x19);
     waitFrames(120);
     SAI_glitchVram(1);
-    removeFrameCallback((s32)SAI_drawErrorWindows);
+    removeFrameCallback((s32p)SAI_drawErrorWindows);
     waitFrames(170);
     playSoundEffect(0x18);
     waitFrames(30);

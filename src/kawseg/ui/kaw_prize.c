@@ -124,15 +124,15 @@ void KAW_drawPrizeResult(RewardWindow *w) {
     y = w->window.originY;
     z = w->window.z;
     if (((PlayerProfile *)PLAYER_PROFILES)->rewardResults[w->index] < 0) {
-        drawLargeText(x + 1, y + 1, (s32)"FULL SET!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"FULL SET!", 7, z);
     } else {
-        drawLargeText(x + 1, y + 1, (s32)"RECEIVED!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"RECEIVED!", 7, z);
     }
 }
 
 void KAW_drawPrizeTitle(UiWindow *window) {
-    drawText(window->originX + 2, window->originY + 1, (s32)"Earned a Prize Pack", 7, 0);
-    drawText(window->originX + 0x92, window->originY + 1, (s32)CARD_PACK_NAMES[((u8 *)SESSION_DATA)[0x73]], 6, 0);
+    drawText(window->originX + 2, window->originY + 1, (s32p)"Earned a Prize Pack", 7, 0);
+    drawText(window->originX + 0x92, window->originY + 1, (s32p)CARD_PACK_NAMES[((u8 *)SESSION_DATA)[0x73]], 6, 0);
 }
 
 void KAW_renderPrizeScreen(void) {
@@ -180,7 +180,7 @@ void KAW_runPrizeScreen(void) {
         openWindow(&KAW_PRIZE_SCREEN->prizes[i].window, &rect, -1, (s16 *)-1, 0, 0x36, 0x80, 12);
     }
     playSoundEffect(0xA3);
-    addFrameCallback((s32)KAW_renderPrizeScreen);
+    addFrameCallback((s32p)KAW_renderPrizeScreen);
     waitFrames(20);
     KAW_waitForCross();
     playSoundEffect(0xA0);
@@ -206,7 +206,7 @@ void KAW_runPrizeScreen(void) {
         animateWindowTo(&KAW_PRIZE_SCREEN->prizes[i].window, (Rect16 *)-1);
     }
     waitFrames(30);
-    removeFrameCallback((s32)KAW_renderPrizeScreen);
+    removeFrameCallback((s32p)KAW_renderPrizeScreen);
     waitFrames(2);
     freeHeapBlock(KAW_PRIZE_SCREEN);
     waitFrames(2);

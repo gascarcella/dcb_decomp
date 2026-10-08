@@ -69,7 +69,7 @@ s32 KAW_showTutorialMessage(s32 y, u8 *src) {
         }
         *dst++ = *src++;
     } while (src[-1] != 0);
-    KAW_DUEL->tutorialScript->text = (s32)text;
+    KAW_DUEL->tutorialScript->text = (s32p)text;
     measureText((u8 *)KAW_DUEL->tutorialScript->text);
     w = (TEXT_WIDTH + 1) / 2;
     rect.w = w * 2;
@@ -78,7 +78,7 @@ s32 KAW_showTutorialMessage(s32 y, u8 *src) {
     rect.x = (320 - rect.w) / 2;
     rect.y = y - rect.h / 2;
     openWindow(&KAW_TUTORIAL_WINDOW, &rect, -1, (s16 *)-1, 8, 0x15, 0x80, 8);
-    KAW_TUTORIAL_WINDOW.label = (s32)"TUTORIAL";
+    KAW_TUTORIAL_WINDOW.label = (s32p)"TUTORIAL";
     KAW_TUTORIAL_WINDOW.palette = 4;
     playSoundEffect(0xA3);
     PAD_INPUT_ENABLED = 0;

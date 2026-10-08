@@ -88,7 +88,7 @@ void KAW_runEffectScript(EffectTable *table);
 void KAW_getEffectParams(EffectObject *o, u8 *fx, s32 current);
 void KAW_setEffectParams(EffectObject *o, u8 *fx);
 void KAW_getEffectWorldPos(void *xform, u8 *fx);
-void KAW_createEffectEntry(s32 index, s32 kind, s32 params, EffectTable *table);
+void KAW_createEffectEntry(s32 index, s32 kind, s32p params, EffectTable *table);
 
 /* per effect kind: what updates it each frame, creates it and frees it */
 void (*KAW_EFFECT_TICK_FUNCS[4])(u8 *) = {
@@ -159,7 +159,7 @@ s32 KAW_tickEffectScript(EffectTable *table) {
     s32 i;
 
     PushMatrix();
-    tickEffectMotion((s32)&KAW_EFFECT_ROOT, 0);
+    tickEffectMotion((s32p)&KAW_EFFECT_ROOT, 0);
     PopMatrix();
     table->regs[0] = 1;
     KAW_runEffectScript(table);
@@ -191,7 +191,7 @@ void KAW_getCardPosition(s32 index, u8 *fx) {
     s32p base;
 
     if (index >= 0) {
-        base = (s32)CARD_ANIMS;
+        base = (s32p)CARD_ANIMS;
         anim = (CardAnim *)(index * 36 + base);
         EFFECT_PARAMS(fx)->px = anim->spr->pos.vx;
         EFFECT_PARAMS(fx)->py = anim->spr->pos.vy;
@@ -356,7 +356,7 @@ void KAW_runEffectScript(EffectTable *table) {
             case 12:
                 switch (table->script->eventArg) {
                 case 0:
-                    KAW_createEffectEntry((s16)table->script->params[0], (s16)table->script->params[1], (s32)vars, table);
+                    KAW_createEffectEntry((s16)table->script->params[0], (s16)table->script->params[1], (s32p)vars, table);
                     break;
                 case 1:
                     vars[1] = rsin((s16)table->script->params[1]) * (s16)table->script->params[0] / 4096;
@@ -558,11 +558,11 @@ void KAW_createStreaksFromParams(u8 *fx, EffectTable *table) {
                           *(s32 *)(fx + 0x114), *(s32 *)(fx + 0x124));
 }
 
-u8 *(*KAW_EFFECT_CREATE_FUNCS[4])(s32, EffectTable *) = {
-    (u8 *(*)(s32, EffectTable *))KAW_createFadeRectFromParams,
-    (u8 *(*)(s32, EffectTable *))KAW_createRingFromParams,
-    (u8 *(*)(s32, EffectTable *))KAW_createEffectObjectFromParams,
-    (u8 *(*)(s32, EffectTable *))KAW_createStreaksFromParams,
+u8 *(*KAW_EFFECT_CREATE_FUNCS[4])(s32p, EffectTable *) = {
+    (u8 *(*)(s32p, EffectTable *))KAW_createFadeRectFromParams,
+    (u8 *(*)(s32p, EffectTable *))KAW_createRingFromParams,
+    (u8 *(*)(s32p, EffectTable *))KAW_createEffectObjectFromParams,
+    (u8 *(*)(s32p, EffectTable *))KAW_createStreaksFromParams,
 };
 
 void KAW_freeFadeRect(void *ptr) {
@@ -576,7 +576,7 @@ void (*KAW_EFFECT_FREE_FUNCS[4])(u8 *) = {
     (void (*)(u8 *))freeStreakParticles,
 };
 
-void KAW_createEffectEntry(s32 index, s32 kind, s32 params, EffectTable *table) {
+void KAW_createEffectEntry(s32 index, s32 kind, s32p params, EffectTable *table) {
     if (KAW_EFFECT_CREATE_FUNCS[kind] != NULL) {
         table->entries[index].kind = kind;
         table->entries[index].active = 0;
