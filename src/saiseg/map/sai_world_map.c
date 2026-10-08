@@ -1383,7 +1383,7 @@ void SAI_drawMapPaths(FrameBuffer *fb) {
     for (i = 0; i < SAI_WORLD_MAP.pathCount; i++) {
         buildRotTransMatrix(&SAI_WORLD_MAP.paths[i].pos, &SAI_WORLD_MAP.paths[i].rot, &matrix);
         CompMatrix((MATRIX *)SCENE_3D->viewMatrix, &matrix, &matrix);
-        SetRotMatrix((s32)&matrix);
+        SetRotMatrix((MATRIX *)&matrix);
         SetTransMatrix(&matrix);
         corners[0].vx = 0;
         corners[0].vy = 2;

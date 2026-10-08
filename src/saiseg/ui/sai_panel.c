@@ -45,7 +45,7 @@ void SAI_drawPanelCover(void) {
 
     buildRotTransMatrix(&SAI_AREA.pos, &SAI_AREA.rot, &matrix);
     CompMatrix((MATRIX *)SCENE_3D->viewMatrix, &matrix, &matrix);
-    SetRotMatrix((s32)&matrix);
+    SetRotMatrix((MATRIX *)&matrix);
     SetTransMatrix(&matrix);
     corners[0] = SAI_AREA.corners[0];
     corners[1] = SAI_AREA.corners[1];

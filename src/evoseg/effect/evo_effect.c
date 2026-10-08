@@ -223,8 +223,8 @@ s32 EVO_tickFadeRect(EvoFadeRect *f) {
         }
     }
     if (*(u32 *)&poly->r0 & 0xFFFFFF) {
-        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], (s32)poly);
-        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], (s32)tpage);
+        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], poly);
+        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], tpage);
     }
     if (doneIn != 0 && (f->mode == 1 || f->mode == 3)) {
         f->state = 2;
@@ -254,7 +254,7 @@ s32p EVO_loadEffectPak(s32 index) {
     s32p file;
 
     sprintf(path, "C:\\EVO_PAK\\%d.PAK", index);
-    file = loadFileTagged((s32 *)path, getCurrentTaskId(), 0x12C);
+    file = loadFileTagged((char *)path, getCurrentTaskId(), 0x12C);
     if (file != 0) {
         return file;
     }

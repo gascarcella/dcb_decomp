@@ -544,8 +544,8 @@ void KAW_showBonusBanner(s32 player, s32 id) {
         (&BANNER->banner[FRAME_BUFFER_INDEX])->y2 = y - h + h * 2;
         (&BANNER->banner[FRAME_BUFFER_INDEX])->x3 = 0x140;
         (&BANNER->banner[FRAME_BUFFER_INDEX])->y3 = y - h + h * 2;
-        AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, (s32)&BANNER->banner[FRAME_BUFFER_INDEX]);
-        AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, (s32)&BANNER->bannerMode[FRAME_BUFFER_INDEX]);
+        AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, &BANNER->banner[FRAME_BUFFER_INDEX]);
+        AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, &BANNER->bannerMode[FRAME_BUFFER_INDEX]);
         frame++;
     } while (frame < 120);
 }

@@ -207,7 +207,7 @@ void SAI_drawSprite(Sprite3D *sprite) {
 
     buildRotTransMatrix(&sprite->pos, &sprite->rot, &matrix);
     CompMatrix((MATRIX *)SCENE_3D->viewMatrix, &matrix, &matrix);
-    SetRotMatrix((s32)&matrix);
+    SetRotMatrix((MATRIX *)&matrix);
     SetTransMatrix(&matrix);
     corners[0] = sprite->corners[0];
     corners[1] = sprite->corners[1];

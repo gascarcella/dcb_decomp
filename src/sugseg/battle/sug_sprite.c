@@ -312,7 +312,7 @@ void SUG_loadSprite(s32 id, s32 x, s32 y, s32p subKey) {
     data = findPakChunk((Chunk *)subKey, 3, id);
     if (data == NULL) {
         sprintf(path, "E:\\SPRITE\\%d.a2d", id);
-        data = (u8 *)loadFileTagged((s32 *)path, task, 0x80);
+        data = (u8 *)loadFileTagged((char *)path, task, 0x80);
     } else {
         copy = allocHeapBlock(((s32 *)data)[-1], 0x80);
         bcopy(data, copy, ((s32 *)data)[-1]);
@@ -375,7 +375,7 @@ void SUG_loadSprite(s32 id, s32 x, s32 y, s32p subKey) {
     data = findPakChunk((Chunk *)subKey, 3, id);
     if (data == NULL) {
         sprintf(path, "E:\\SPRITE\\%d.a2d", id);
-        data = (u8 *)loadFileTagged((s32 *)path, task, 0x80);
+        data = (u8 *)loadFileTagged((char *)path, task, 0x80);
     } else {
         copy = allocHeapBlock(((s32 *)data)[-1], 0x80);
         bcopy(data, copy, ((s32 *)data)[-1]);
