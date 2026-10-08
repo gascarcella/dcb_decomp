@@ -2,7 +2,7 @@
 
 _Last updated: 2026-10-08_
 
-The fork is set up, and the PC port links and boots to the title screen headless (M1 in progress). Upstream's decompilation is complete: every function and all
+The fork is set up, and the PC port links and replays the four scripts headless (M1 in progress); M2 (rendering) has started. Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
 ## The PS1 build
@@ -82,6 +82,15 @@ runners).
   no report the base did not have. The `saiseg` and `first_duel` hashes match too, with the bytes the game never writes and the
   `rand()` starter card (`cardCollection` 28 and 137) in `VOLATILE_RANGES`: **all four scripts pass the port test and
   gate CI** (about 100 s).
+- **M2 (rendering) started: the port's VRAM and pictures against the emulator's** (`tests/port/vram.py`, CI's `replay`
+  job; `docs/PORT.md` "Testing"). At the four scripts' 7 checkpoints and 3 later frames (the title, SAISEG's first
+  area), keyed by name: the whole VRAM is equal at `openseg_loaded`, `title+120`, `saiseg` and `first_duel` (KAWSEG
+  loaded: every texture of the registration and SAISEG); the textures and CLUTs at every dump but `saiseg+120`; the
+  displayed picture at all but five. The emulator is not CPU-bound at any of them (a frame every vsync), so frames can
+  be compared throughout. Known, in `tests/port/vram_known.json`: two pixels' mask bit at `title` and one column at
+  `title_menu` (the software GPU against PCSX-Redux, psxstack#54: probably the emulator's known rounding and mode-2
+  behaviour); `name_entered`, `starter_chosen`, `saiseg+120`, `saiseg+600` differ by animation phase, the port
+  reaching them after other frame counts (#33).
 - **The duel's views and sizes (#30, #31):** `EvoModel`, `ModelData` and the other views of the duel's objects by PS1
   offsets (the duel state, the profile, the players, the HUD panels, the camera, the effects' transforms) agree with
   the host's layout, and the heap blocks of host-grown types take the host's size (`docs/PORT.md` "Memory and
@@ -90,7 +99,8 @@ runners).
   Digivolve and Battle phases, with no crash (frame 26460, where the blind presses stall at a card select); the
   sanitizer build has no report the base did not have. The emulator cannot replay frame-timed presses there (its
   timing differs): a duel replay script needs waits on the duel's state.
-- Next: a replay script through the tutorial duel, and the rest of the duel (#4).
+- Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: align the phase-shifted
+  dumps (#33), then the duel's VRAM.
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

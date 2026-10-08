@@ -78,7 +78,7 @@ psxstack checkout vX.Y.Z`, commit the submodule). dw2003recomp bumps its own pin
 | `Makefile`, `Dockerfile`, `.github/workflows/build.yaml`, `docker.yaml` | upstream | The build and their CI (its build job runs only in ReGame-Labs; its `names` job runs here too) |
 | `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh`, `probe.sh` (the port's configure and host-compile probe), `gte_test.sh` (the host GTE macros' test), `check_emulator.sh` (the emulator boots the disc) |
 | `docs/` | ours | `STATUS.md`, `PORT.md`, `DECISIONS.md`, `THIRD_PARTY.md` |
-| `tests/` | ours | `replay/` (the emulator oracle: `replay.py` configures psxstack's runner, `probes.lua` this game's state probes, `scripts/*.json` the pad scripts, `expected/*.json` their records), `port/run.py` (the port's replay test, from M1), `port/gte_host_test.c` (the host GTE macros, `scripts/gte_test.sh`) |
+| `tests/` | ours | `replay/` (the emulator oracle: `replay.py` configures psxstack's runner, `probes.lua` this game's state probes, `scripts/*.json` the pad scripts, `expected/*.json` their records), `port/run.py` (the port's replay test, from M1), `port/vram.py` + `vram.lua` + `vram_known.json` (M2: the VRAM and pictures against the emulator's), `port/gte_host_test.c` (the host GTE macros, `scripts/gte_test.sh`) |
 | `psxstack/` | ours (submodule) | The stack at its pinned tag |
 | `port/` | ours | The port's game side, as in dw2003recomp: `CMakeLists.txt` (`psxstack_add_game()`), `game/` (the adapter, `game.json`), `tools/` (`port_inputs.py`: the unit and overlay lists from `mk/version/us.mk`; `port_bss.py`: the executable's game `.bss` as C, a generated MAIN unit; `port_inventory.py`: psxstack's host-compile probe configured for this tree), `include/` (host-only headers first on the port's include path: `gte.h`, the 40 GTE macros on psxstack's software GTE), later `mods/`. Our tools live here, not in upstream's `tools/` |
 | `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`), the port's disc-free `probe` job (`scripts/probe.sh`, then `scripts/gte_test.sh`) and the `replay` job (the disc and the emulator from the data checkout) |
@@ -98,6 +98,7 @@ scripts/probe.sh            # the port: cmake configure (build/port), then the h
 .venv/bin/python port/tools/port_inventory.py probe|link|counts [--sites KIND]   # the probe alone; build/port_inventory/
 scripts/gte_test.sh         # the host GTE macros (port/include/gte.h) against psxstack's software GTE; no disc
 scripts/tasks_test.sh       # the task scheduler (task.c + port/game/tasks.c) on psxstack's fibers; no disc
+.venv/bin/python tests/port/vram.py [SCRIPT ...] [-j 4] [--keep]   # M2: VRAM, textures and picture vs the emulator per checkpoint (known: tests/port/vram_known.json; PNGs in build/port-vram/)
 cmake -S port -B build/port -G Ninja [-DPSXSTACK_DIR=$PWD/../psxstack]           # the port's configure (M0: configures; the build links from M1)
 . .venv/bin/activate        # then upstream's commands work as their README says (the toolchain is in .venv/bin):
 make generate               #   splat: asm/us, build/us/generated (after config changes)
