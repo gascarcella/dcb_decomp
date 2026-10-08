@@ -3,6 +3,15 @@
 #include "dcb/menu.h"
 #include "dcb/evoseg.h"
 
+#ifdef PC_PORT
+/* the host links every overlay: names other overlays also give their bytes
+   take this one's prefix */
+#define D_801F5254 EVO_D_801F5254
+#define D_801F535C EVO_D_801F535C
+#define D_801F540C EVO_D_801F540C
+#define D_801F5454 EVO_D_801F5454
+#endif
+
 /* not referenced by any code; the values are leftovers, not the same in
    every version */
 #if VERSION_US

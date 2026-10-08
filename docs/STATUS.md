@@ -53,6 +53,12 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
   host"). `scripts/tasks_test.sh` (CI's `probe` job) runs seven tasks through the game's scheduler against the order
   derived from the PS1's rules. The probe: **156 of 156 units compile, 0 diagnostics** (`-m64` and `-m32`); `link`:
   the 5 duplicate overlay globals, 328 undefined.
+- **M1 step 3c, the overlays and the adapter:** `loadFileToAddress` tells the overlay manager which overlay it read
+  (`game_overlay_id`, from `port_inputs.py`'s `overlay_ids.h`); the EXE's 211 calls into overlays need no tag (each
+  name is its overlay's own and links directly); the stale KAWSEG addresses are never reached (no effect script
+  creates kind 0) and halt on the host; no duplicate global left; the adapter's probes (`port/game/state.c`: stage,
+  map, the profile image in its PS1 layout, the scripts' `wait_mem` targets, `VOLATILE`); `PLATFORM_WAIT` in the
+  CD and memory card polls (`docs/PORT.md` "Overlays", "Busy-waits", "Testing").
 - Next: #4 (M1).
 
 ## Upstream

@@ -106,6 +106,20 @@ void loadFileToAddress(s32p path, s32 *dst, s32 parentTask) {
         closeDiscFile((CdFile *) file);
     }
     LOADED_FILE_SIZE = size;
+#ifdef PC_PORT
+    /* Every overlay is linked into the host binary: the read above put the
+       file's bytes in the overlay area as on the PS1 (the frame log and the
+       scripts' stage checks read its first word), and this makes it the
+       area's current overlay, with its .data and .bss as the file holds them
+       (docs/PORT.md "Overlays") */
+    if (size != 0) {
+        int32_t overlay = game_overlay_id((const char *)path);
+
+        if (overlay != 0) {
+            OVERLAY_COPY(1, overlay, dst, dst, size);
+        }
+    }
+#endif
     resumeTask(parentTask);
     FILE_LOADER_BUSY = 0;
 }

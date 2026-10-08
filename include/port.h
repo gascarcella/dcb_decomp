@@ -72,6 +72,18 @@ void *game_s32_to_ptr(s32 v);
     (s32p)(a), (s32p)(b), (s32p)(c), (s32p)(d), (s32p)(e), (s32p)(f), (s32p)(g), (s32p)(h), (s32p)(i)
 #define PORT_S32P_ARGS9(...) PORT_S32P_ARGS9_(__VA_ARGS__, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
+/*
+ * The overlays (docs/PORT.md "Overlays"). The host links every overlay in, and
+ * the executable's calls into them (include/dcb/overlay_calls.h) are calls by
+ * name: each name is its own overlay's, prefixed, so the linker binds it to
+ * the right host function and nothing needs a tag. loadFileToAddress, which
+ * reads an overlay into the area, tells the overlay manager which one it was:
+ * game_overlay_id (port/game/game.c) maps the loader's path ("P:\\kawseg.bin")
+ * to the overlay's file ID (port/tools/port_inputs.py: its 1-based index in
+ * mk/version/us.mk's OVERLAYS); 0 for a path that is not an overlay.
+ */
+int32_t game_overlay_id(const char *path);
+
 #endif
 
 #endif /* PORT_H */

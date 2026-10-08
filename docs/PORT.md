@@ -146,7 +146,8 @@ of them inside two header macros that one typedef covers.
 - **Duplicate globals** (`link`): `D_801F5254`, `D_801F535C`, `D_801F5454` in `evo_bss.c` and `sai_bss.c`,
   `D_801F540C` in `evo_bss.c` and `open_bss.c`: overlay data sharing an address and a splat name. psxstack links
   every overlay statically, so they need distinct names (an upstream rename with the overlay prefix, as
-  CONTRIBUTING.md asks, or `PC_PORT` renames).
+  CONTRIBUTING.md asks, or `PC_PORT` renames). Done at M1 with `PC_PORT` renames, with `D_801DDF38` ("Overlays",
+  "On the host"): `link` finds none.
 
 ### What got in the way in psxstack v0.2.1
 Fixed in v0.3.0 (psxstack #28, #7): the GTE override is written at the game's header's path, the inventory takes a
@@ -230,14 +231,43 @@ override and derived symbol file with the pin bump.
   - The drives are A B C E F G M P; P holds the overlays.
   - There are 38 load sites, all in the EXE. No overlay loads another.
 - **Calls into an overlay:** 211 references in 13 EXE files, 29 of them `spawnTask` entries. They use absolute
-  addresses in the overlay area; there is no jump table. The EXE assumes the right overlay is resident. Each is a
-  `SLOT_FUNC`/`LATE_FUNC` site on the host.
+  addresses in the overlay area; there is no jump table. The EXE assumes the right overlay is resident.
 - **Overlays calling the EXE:** they reference EXE symbols as absolute addresses (`Makefile:221-226`).
 - **Stale addresses:**
   - KAWSEG calls `SUG_createFadeRect` (0x801E6424) and has a table entry at 0x801E651C (`kaw_effect.c:98, 511`).
     Both point into KAWSEG's own `KAW_chooseSupportCard`, so they look stale (leftovers from SUGSEG's layout).
-  - The adapter must know what those sites do at run time before it resolves them.
   - The `undefined_syms_{sai,sub,open}seg.txt` files define 81 symbols in the middle of overlay structs.
+- **On the host** (M1):
+  - *The load.* `loadFileToAddress` keeps its disc read into the area (`OVERLAY_LOAD_ADDR` is the base of the
+    port's slot, `port_slot1`), so `LOADED_FILE_SIZE`, the bytes in the slot and `resumeTask` are the PS1's; then,
+    in a `PC_PORT` block, `OVERLAY_COPY(1, game_overlay_id(path), dst, dst, size)` makes the overlay the slot's
+    current one and restores its `.data`/`.bss` as the file holds them. `game_overlay_id` (`port/game/game.c`)
+    maps `"P:\\kawseg.bin"` to the file ID through `overlay_ids.h`, which `port/tools/port_inputs.py` writes from
+    the same `OVERLAYS` list as `overlays.txt`; another drive is 0 (no overlay), an overlay this version lacks is
+    fatal. psxstack's copy time (`size * 12 / 677376` vsyncs after the load, dw2003's `memcpy`) also runs here,
+    where the PS1 has no copy: 1 or 2 frames per load, a stack issue.
+  - *Calls by name.* Every overlay function the EXE calls (`include/dcb/overlay_calls.h`, the 84 names of
+    `symbols_overlay_calls.txt`) is its own overlay's global, under the overlay's prefix, and all 84 are defined in
+    the overlays' C. The host links every overlay in, so the linker binds each call, each `spawnTask` entry and
+    each table entry to the right host function: no tag, no `SLOT_FUNC`/`LATE_FUNC`, no edit at the 211 sites
+    (unlike dw2003, whose overlays share unnamed addresses). The PS1's precondition, the right overlay loaded,
+    is the game's. A function pointer the EXE stores is a host pointer, and psxstack's `OVERLAY_FN` passes those
+    unchanged: the scheduler's trampoline may still call entries through `OVERLAY_FN(1, entry)`, which then also
+    covers a tag if one ever appears.
+  - *Data by name.* `KAW_RESULT_SCREEN_STATE` is KAWSEG's global; `OPEN_MEMCARD_CANCELLED` (inside
+    `OPEN_MEMCARD`) is, in the EXE, `*game_open_memcard_cancelled()`, the adapter's pointer to the field
+    (`overlay_calls.h`). OPENSEG's own use of the name (`open_memcard.c`) is among the 81 `undefined_syms` aliases,
+    still to map.
+  - *The stale addresses are never reached* (US disc): only effect kind 0, the fade rect, uses them, and the 31
+    scripts of `CBTL_EFF.ARC`, KAWSEG's only source of effect scripts, create 240 effects, all of constant kinds 1
+    (201), 2 (6) and 3 (33). On the PS1 they would enter `KAW_chooseSupportCard` mid-body (0x801E6424 is a load
+    delay slot, 0x801E651C a branch) and return through a frame it never built. Kind 0 is SUGSEG's (its skill
+    scripts use it). The host stops there (`PLATFORM_HALT` in two `PC_PORT` stand-ins in `kaw_effect.c`) instead of
+    calling SUGSEG's linked but unloaded functions.
+  - *Duplicate names.* Each overlay's first word, `D_801DDF38` in all seven, and `D_801F5254`, `D_801F535C`,
+    `D_801F540C`, `D_801F5454` (EVOSEG with SAISEG or OPENSEG) take their overlay's prefix under `PC_PORT`
+    (`#define D_801DDF38 KAW_D_801DDF38`); `link` shows no duplicate. An upstream rename to the prefixed names
+    (CONTRIBUTING.md "Overlay symbols") would make the defines unnecessary: the owner's call.
 
 ### Memory and pointers
 - **The game heap:** `src/main/system/heap.c` manages `HEAP_ARENA` (0x8008C848, `HEAP_SIZE` 0x148000, inside the
@@ -304,11 +334,25 @@ override and derived symbol file with the pin bump.
 These loops spin without yielding:
 - `open_movie.c:403` (`isdone`, set by the `DecDCTout` callback).
 - `open_movie.c:366, 383` (`StGetNext` retries, the ring filled from the CD interrupt).
-- `memcard.c:178-192` (a counter another task increments: progress needs preemption).
+- `memcard.c`'s polls for the card's events (`waitForMemoryCardEvent`, `waitForMemoryCardHwEvent`) with
+  `pollInterval` 0: they spin until an event or until `MEMORY_CARD_WAIT_COUNTER`, which another task increments
+  once a frame, reaches 0x259.
 - Nine `while (CdInit()/CdControlB()/CdRead() == 0)` loops in `cd_file.c`.
 
 About 140 more polling loops call `waitFrames`/`yieldTask` and are fine once the scheduler works. `VSync` is called
 in 10 places.
+
+**On the host** (M1): the nine `cd_file.c` loops have `PLATFORM_WAIT()` as their body (empty on the PS1). The
+memory card polls run `PLATFORM_WAIT()` in a `PC_PORT` block when they do not wait frames (the us/eu and the jp
+forms; jp's hardware poll never waits). Nothing on the PS1 yields there: the event comes from the card's
+interrupt, and the counter moves only when the vblank interrupt preempts the polling task (`handleVsyncPreemption`
+switches to the main task when the interrupted one's priority is not 0) so that the screen's task runs. The host's
+tick stands for those interrupts: `port_wait` runs the pending ones (the card's, once the shim's LIBCARD exists) and
+the game's vblank handler, whose `port_fiber_preempt` (the scheduler's fibers) switches at the tick's end, so the wait progresses as on the PS1 and
+the timeout counts frames as there. The movie's spins get **no** hook: they are Sony's sample player, the same as
+dw2003's title movie, and the shim already models them (`StGetNext` runs a vsync tick once per 5000 empty polls,
+`DecDCTout` runs its callback before it returns, so `isdone` is set when the loop starts). A `PLATFORM_WAIT` there
+would make their timeouts (2000 x 2000 polls, 0x800000 iterations) count frames instead of polls.
 
 ### Interrupt-context code
 - The vblank preemption handler (above).
@@ -377,9 +421,15 @@ runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configure
 **The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG
 4, KAWSEG 5, SAISEG 6, SUBSEG 7, OPENSEG 8, EVOSEG 9, ENDSEG 10; 0 before a load); `map` the profile's `areaId`;
 `random_index` libc's `rand()` state (`D_801DDC10`); the checkpoint image the player's profile, `PlayerProfile`
-(0x2774 bytes, pointer-free, what a save writes), at its fixed heap address 0x800C8964 (the scripts assert it). The
+(0x2774 bytes, what a save writes), at its fixed heap address 0x800C8964 (the scripts assert it). The
 stable hash zeroes `profileId` (drawn from `rand()` at creation) and `playTime`. The port's adapter implements the
-same at M1 (`game_state_*`).
+same at M1 (`port/game/state.c`): the stage from the current overlay's own first word, the map, the image and the
+scripts' `wait_mem` targets (`PLAYER_PROFILES` as the PS1 address of its heap block, OPENSEG's objects while OPENSEG
+is loaded). The profile is not pointer-free: each partner keeps two pointers into the card database and each saved
+deck thirty (`Partner.baseCard`/`armorCard`, `CardSlot.card`, heap addresses on the PS1), so the host's struct is
+0x2A78 bytes and the adapter writes the image field by field in the PS1 layout, the pointers as PS1 heap addresses.
+`random_index` stays 0 on the host: psxstack's shim has no LIBC2 `rand`, and without one the host libc's links in
+its place (another sequence and `RAND_MAX`).
 
 **The core.** PCSX-Redux's dynarec cannot run this game: the overlay loader's first CD read never completes
 (`FILE_LOADER_BUSY` stays 1, the vblank event stops after about 165 frames; with OpenBIOS and the retail BIOS alike,

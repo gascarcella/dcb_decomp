@@ -3,6 +3,14 @@
 #include "dcb/menu.h"
 #include "dcb/saiseg.h"
 
+#ifdef PC_PORT
+/* the host links every overlay: names other overlays also give their bytes
+   take this one's prefix */
+#define D_801F5254 SAI_D_801F5254
+#define D_801F535C SAI_D_801F535C
+#define D_801F5454 SAI_D_801F5454
+#endif
+
 /* the u8 arrays among these are not referenced by any code */
 UiWindow SAI_STATS_HINT_WINDOW = { 0 };
 u8 D_801F437C[12] = { 0 };

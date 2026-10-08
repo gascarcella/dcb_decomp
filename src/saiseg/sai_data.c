@@ -7,6 +7,11 @@
    own: the player data screen's, the error windows' and the VRAM glitch's. */
 
 /* not referenced by any code */
+#ifdef PC_PORT
+/* the overlay's first word: every overlay has one under this name, and the
+   host links them all (port/game/game.c reads it for the stage probe) */
+#define D_801DDF38 SAI_D_801DDF38
+#endif
 const s32 D_801DDF38 = 6;
 
 /* where the five windows of SAI_ERROR_WINDOWS open */

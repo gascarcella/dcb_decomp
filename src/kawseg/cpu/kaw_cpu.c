@@ -17,6 +17,11 @@ typedef struct {
 } PlayerSnapshot;
 
 /* not referenced by any code */
+#ifdef PC_PORT
+/* the overlay's first word: every overlay has one under this name, and the
+   host links them all (port/game/game.c reads it for the stage probe) */
+#define D_801DDF38 KAW_D_801DDF38
+#endif
 const s32 D_801DDF38 = 5;
 
 s32 KAW_simulateBattles(s32 self) {
