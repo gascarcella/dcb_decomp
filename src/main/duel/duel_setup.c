@@ -81,7 +81,7 @@ void initDuelPlayers(s32 isCpuDuel) {
         if (((SessionData *)SESSION_DATA)->opponentDeckIndex == 0) {
             KAW_startTutorial();
             for (i = 0; i < 2; i++) {
-                linkDeckCardData(i, DUEL_PLAYERS[i]);
+                linkDeckCardData(i, (PlayerDeck *)DUEL_PLAYERS[i]);
             }
         } else {
             loadPresetDeckForPlayer(0);
@@ -104,7 +104,7 @@ void initDuelPlayers(s32 isCpuDuel) {
                     }
                 }
             }
-            linkDeckCardData(1, DUEL_PLAYERS[1]);
+            linkDeckCardData(1, (PlayerDeck *)DUEL_PLAYERS[1]);
         }
     } else {
         for (i = 0; i < 2; i++) {

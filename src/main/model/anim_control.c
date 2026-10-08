@@ -149,9 +149,9 @@ s32p loadAnimationData(s32 id, s32 anim, s32 slot, Chunk *pak) {
             sprintf(path, "M:\\HDF%03d\\%c.hdf", id, anim + 'a');
             chunkSub = anim;
         }
-        animData = (s32)findPakChunk(pak, 1, chunkSub);
+        animData = (s32p)findPakChunk(pak, 1, chunkSub);
         if (animData == 0) {
-            animData = loadFileTagged((s32 *)path, getCurrentTaskId(), slot + ANIM_HEAP_TAG);
+            animData = loadFileTagged(path, getCurrentTaskId(), slot + ANIM_HEAP_TAG);
             if (animData == 0) {
                 return 0;
             }

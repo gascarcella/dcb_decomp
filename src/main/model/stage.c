@@ -128,7 +128,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id) {
     KeyFrame *key;
 
     sprintf(path, "F:\\%03d.PAK", id);
-    pak = loadFileTagged((s32 *)path, getCurrentTaskId(), slot + 0x1F4);
+    pak = loadFileTagged(path, getCurrentTaskId(), slot + 0x1F4);
     if (loadModel(slot, id, -1, pak) == 0) {
         return pak;
     }
@@ -160,7 +160,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id, s8 format, s32 loadAllAnims) {
     } else {
         sprintf(path, "F:\\%03d.PAK", id);
     }
-    pak = loadFileTagged((s32 *)path, getCurrentTaskId(), slot + 0x1F4);
+    pak = loadFileTagged(path, getCurrentTaskId(), slot + 0x1F4);
     if (loadModel(slot, id, -1, pak, format) == 0) {
         return pak;
     }
@@ -176,7 +176,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id, s8 format, s32 loadAllAnims) {
     } else {
         setModelAnimationData(SCENE_3D->models[slot],
                               (s32 *)decompressToHeap(
-                                  (s32)findPakChunk((Chunk *)((Model *)SCENE_3D->models[slot])->pak, 1, 7), slot + 0x84),
+                                  (s32p)findPakChunk((Chunk *)((Model *)SCENE_3D->models[slot])->pak, 1, 7), slot + 0x84),
                               7);
         applyAnimationFirstFrame(slot, 7);
     }
@@ -253,7 +253,7 @@ void runDuelStageTask(s32 stageId) {
     }
     DUEL->loadBusy = 1;
     DUEL->stopStageTask = 0;
-    pak = loadFile((s32) "A:\\BATTLE.PAK", getCurrentTaskId());
+    pak = loadFile((s32p) "A:\\BATTLE.PAK", getCurrentTaskId());
     if (pak != 0) {
         uploadTimList(findPakChunk((Chunk *)pak, 5, 0x68));
         BATTLE_START_SKILL = (void *)loadSkill(999, pak);
@@ -383,7 +383,7 @@ void showArenaStage(s16 rotX) {
     uploadTim((u32 *)findPakChunk((Chunk *)STAGE_PAK, 5, ((Model *)scene->models[23])->id), 0x3C0, 0, 0x3F0, 0x70);
     DrawSync(0);
 #elif VERSION_US || VERSION_EU
-    tim = decompressForTask((s32)findPakChunk((Chunk *)STAGE_PAK, 5, ((Model *)scene->models[23])->id));
+    tim = decompressForTask((s32p)findPakChunk((Chunk *)STAGE_PAK, 5, ((Model *)scene->models[23])->id));
     uploadTim((u32 *)tim, 0x3C0, 0, 0x3F0, 0x70);
     DrawSync(0);
     freeHeapBlock((void *)tim);
@@ -404,7 +404,7 @@ void showArenaStage(s16 rotX) {
 
 void unloadArenaStage(void) {
     unloadModel(0x17);
-    freeHeapBlock(STAGE_PAK);
+    freeHeapBlock((void *)STAGE_PAK);
 }
 
 /* Every texAnimDelay frames, moves the stage's CLUT to the next frame of its

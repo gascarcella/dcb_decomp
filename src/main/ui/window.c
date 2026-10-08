@@ -81,7 +81,7 @@ void initWindowPrimPool(s32 count) {
     pool = allocPermanentHeapBlock(WINDOW_PRIM_POOL_SIZE * sizeof(WindowPrims) * 2);
     tpage = GetTPage(0, 0, WINDOW_TEX_X, WINDOW_TEX_Y);
     for (i = 0; i < 2; i++) {
-        prims = (WindowPrims *)(((Graphics *)&GRAPHICS)->buffers[i].windowPrimPool = (s32)(pool + WINDOW_PRIM_POOL_SIZE * i));
+        prims = (WindowPrims *)(((Graphics *)&GRAPHICS)->buffers[i].windowPrimPool = (s32p)(pool + WINDOW_PRIM_POOL_SIZE * i));
         for (windowIndex = 0; windowIndex < WINDOW_PRIM_POOL_SIZE; windowIndex++, prims++) {
             for (j = 0; j < 4; j++) {
                 initPrimByType(0xC, &prims->ft4a[j], 0, 0);

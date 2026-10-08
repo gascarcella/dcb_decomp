@@ -6,7 +6,7 @@
 extern s32 FILE_LOADER_BUSY;
 
 void mountDriveTask(s32p path, s32 parentTask);
-s32p loadFileTagged(s32 *path, s32 parentTask, s32 heapTag);
+s32p loadFileTagged(char *path, s32 parentTask, s32 heapTag);
 void loadFileToAddress();
 s32p loadFile();
 

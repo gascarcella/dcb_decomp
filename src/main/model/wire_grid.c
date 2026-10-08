@@ -45,7 +45,7 @@ void renderWireGrid(FrameBuffer *buffer, s32 bufferIndex) {
     vertex = GRID_VERTICES;
     screenXY = GRID_SCREEN_XY;
     for (i = 0; i < GRID_COLUMNS * GRID_ROWS; i++, vertex++, screenXY++) {
-        if ((vertex->pad = RotTransPers((s32)vertex, (s32)screenXY, &interp, &flag)) < 0x3C) {
+        if ((vertex->pad = RotTransPers(vertex, screenXY, &interp, &flag)) < 0x3C) {
             vertex->pad = -1;
         }
     }
@@ -63,7 +63,7 @@ void renderWireGrid(FrameBuffer *buffer, s32 bufferIndex) {
                 line->r0 = color >> 1;
                 line->g0 = color + 0x40;
                 line->b0 = (0x80 - color) / 2;
-                AddPrim((s32 *)&buffer->ot[vertex[1].pad < vertex[0].pad ? vertex[0].pad : vertex[1].pad], (s32)line++);
+                AddPrim((s32 *)&buffer->ot[vertex[1].pad < vertex[0].pad ? vertex[0].pad : vertex[1].pad], line++);
             }
         }
     }
@@ -83,7 +83,7 @@ void renderWireGrid(FrameBuffer *buffer, s32 bufferIndex) {
                 line->r0 = color >> 1;
                 line->g0 = color + 0x40;
                 line->b0 = (0x80 - color) / 2;
-                AddPrim((s32 *)&buffer->ot[columnVertex[1].pad < columnVertex[0].pad ? columnVertex[0].pad : columnVertex[1].pad], (s32)line++);
+                AddPrim((s32 *)&buffer->ot[columnVertex[1].pad < columnVertex[0].pad ? columnVertex[0].pad : columnVertex[1].pad], line++);
             }
         }
     }
@@ -128,7 +128,7 @@ void createWireGrid(s32 width, s32 depth, s32 cols, s32 rows, s32 unused, s32 ve
             vertex++;
         }
     }
-    addFrameCallback((s32)renderWireGrid);
+    addFrameCallback((s32p)renderWireGrid);
 }
 
 void freeWireGrid(void) {

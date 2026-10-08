@@ -40,7 +40,7 @@ s32p loadFile(s32p path, s32 parentTask) {
     buf = 0;
     if (file != 0) {
         size = file->size;
-        buf = (s32)allocHeapBlock(size, parentTask);
+        buf = (s32p)allocHeapBlock(size, parentTask);
         if (buf == 0) {
             closeDiscFile(file);
         } else {
@@ -54,7 +54,7 @@ s32p loadFile(s32p path, s32 parentTask) {
     return buf;
 }
 
-s32p loadFileTagged(s32 *path, s32 parentTask, s32 heapTag) {
+s32p loadFileTagged(char *path, s32 parentTask, s32 heapTag) {
     s32 size;
     CdFile *file;
     s32p buf;
@@ -69,7 +69,7 @@ s32p loadFileTagged(s32 *path, s32 parentTask, s32 heapTag) {
     buf = 0;
     if (file != 0) {
         size = file->size;
-        buf = (s32)allocHeapBlock(size, heapTag);
+        buf = (s32p)allocHeapBlock(size, heapTag);
         if (buf == 0) {
             closeDiscFile(file);
         } else {

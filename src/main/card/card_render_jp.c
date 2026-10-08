@@ -109,7 +109,7 @@ void renderHudPanel(Panel *panel, s32 index, s32 z) {
 
     buildRotTransMatrix(&panel->pos, &panel->rot, &matrix);
     CompMatrix((MATRIX *)SCENE_3D->viewMatrix, &matrix, &matrix);
-    SetRotMatrix((s32)&matrix);
+    SetRotMatrix(&matrix);
     SetTransMatrix(&matrix);
     v[0].vx = 0;
     v[0].vy = 0;

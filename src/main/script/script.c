@@ -332,8 +332,8 @@ s32 runScriptToNextEvent(Script *script, s32 *regs) {
         }
         unalignedPc = (u32)pc + 3;
         pc = (u8 *)(unalignedPc & ~3);
-        script->offset = (u32)pc;
-        script->offset -= (u32)script->base;
+        script->offset = (u32p)pc;
+        script->offset -= (u32p)script->base;
     }
     script->pc = pc;
     return script->event != 0;

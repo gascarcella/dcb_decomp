@@ -114,7 +114,7 @@ s32p decompressToHeap(s32p src, s32 heapTag) {
     BITSTREAM_SRC = (u8 *)src;
     sizeHigh = readBitstreamBits(0x10);
     size = (sizeHigh << 0x10) | readBitstreamBits(0x10);
-    dst = allocHeapBlock(size, heapTag);
+    dst = (s32p)allocHeapBlock(size, heapTag);
     DECOMPRESS_DST = (u8 *)dst;
     decompressLzHuffman(size);
     return dst;

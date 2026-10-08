@@ -250,15 +250,15 @@ blink:
 }
 
 void drawHackErrorText(UiWindow *win) {
-    drawText(win->originX, win->originY, (s32)STR_HACK_SYSTEM_ERROR, 0, win->z);
+    drawText(win->originX, win->originY, (s32p)STR_HACK_SYSTEM_ERROR, 0, win->z);
 }
 
 void drawHackPartnerMovedText(UiWindow *win) {
-    drawText(win->originX, win->originY, (s32)STR_HACK_PARTNER_MOVED, 7, win->z);
+    drawText(win->originX, win->originY, (s32p)STR_HACK_PARTNER_MOVED, 7, win->z);
 }
 
 void drawHackTauntText(UiWindow *win) {
-    drawText(win->originX, win->originY, (s32)STR_HACK_TAUNT, 7, win->z);
+    drawText(win->originX, win->originY, (s32p)STR_HACK_TAUNT, 7, win->z);
 }
 
 void drawHackingWindows(void) {
@@ -284,7 +284,7 @@ void runHackingSequence(s32 scriptIndex, s32 parentTask) {
     for (i = 0; i < 0x401; i++) {
         textBuf[i] = 0;
     }
-    HACK_TEXT_BUFFER = (s32)textBuf;
+    HACK_TEXT_BUFFER = (s32p)textBuf;
     HACK_TEXT_CURSOR = textBuf;
     HACK_SCRIPT_CURSOR = HACKING_SCRIPTS[HACK_SCRIPT_INDEX];
     r.x = 0x94;
@@ -292,7 +292,7 @@ void runHackingSequence(s32 scriptIndex, s32 parentTask) {
     r.w = 0xA0;
     r.h = 0x54;
     openWindow(&HACK_TERMINAL_WINDOW, &r, -1, (s16 *)-1, 8, 0x58, 0x80, 0xC);
-    HACK_TERMINAL_WINDOW.label = (s32)"SHELL COMMAND";
+    HACK_TERMINAL_WINDOW.label = (s32p)"SHELL COMMAND";
     HACK_TERMINAL_WINDOW.palette = 2;
     HACK_TERMINAL_WINDOW.labelPalette = 8;
     playMenuSound(3);
@@ -315,10 +315,10 @@ void runHackingSequence(s32 scriptIndex, s32 parentTask) {
     r.x = (0x140 - r.w) >> 1;
     r.y = 0xB4 - r.h / 2;
     openWindow(&HACK_TAUNT_WINDOW, &r, -1, (s16 *)-1, 8, 0x15, 0x80, 8);
-    HACK_TAUNT_WINDOW.label = (s32)"MESSAGE";
+    HACK_TAUNT_WINDOW.label = (s32p)"MESSAGE";
     HACK_TAUNT_WINDOW.palette = 4;
     animateWindowTo(&HACK_TAUNT_WINDOW, (Rect16 *)-1);
-    addFrameCallback((s32)drawHackingWindows);
+    addFrameCallback((s32p)drawHackingWindows);
     do {
         waitFrames(FRAME_INTERVAL);
         if (HACK_SCRIPT_DONE != 0) {
@@ -331,6 +331,6 @@ void runHackingSequence(s32 scriptIndex, s32 parentTask) {
     animateWindowTo(&HACK_PARTNER_MOVED_WINDOW, (Rect16 *)-1);
     animateWindowTo(&HACK_TAUNT_WINDOW, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)drawHackingWindows);
+    removeFrameCallback((s32p)drawHackingWindows);
     resumeTask(parentTask);
 }

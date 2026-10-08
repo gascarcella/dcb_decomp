@@ -164,7 +164,7 @@ void drawDialogBody(Dialog *dialog) {
     x = dialog->win.originX + (dialog->width - dialog->halfTextWidth * 2) / 2;
     y = dialog->win.originY + 2;
     if (dialog->text != 0) {
-        drawText(x, y, (s32)dialog->text, 7, dialog->win.z);
+        drawText(x, y, (s32p)dialog->text, 7, dialog->win.z);
     }
     y = dialog->win.originY + dialog->height - 0xE;
     if (dialog->type != 0) {
@@ -188,8 +188,8 @@ void drawDialogBody(Dialog *dialog) {
                 playMenuSound(2);
             }
         }
-        drawText(dialog->yesX, y, (s32)dialog->yesLabel, 7, dialog->win.z);
-        drawText(dialog->noX, y, (s32)dialog->noLabel, 7, dialog->win.z);
+        drawText(dialog->yesX, y, (s32p)dialog->yesLabel, 7, dialog->win.z);
+        drawText(dialog->noX, y, (s32p)dialog->noLabel, 7, dialog->win.z);
         drawCursorHighlight(&dialog->cursor, dialog->win.z);
     }
 }

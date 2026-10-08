@@ -826,7 +826,7 @@ void projectCardSprite(CardSprite *sprite, s32 spriteIndex) {
     PushMatrix();
     buildRotTransMatrix(&sprite->pos, &sprite->rot, &matrix);
     CompMatrix((MATRIX *)SCENE_3D->viewMatrix, &matrix, &matrix);
-    SetRotMatrix((s32)&matrix);
+    SetRotMatrix(&matrix);
     SetTransMatrix(&matrix);
     vertices[0].vx = -(sprite->scale * 40) / 8192;
     vertices[0].vy = -(sprite->scale * 48) / 8192;
@@ -840,8 +840,7 @@ void projectCardSprite(CardSprite *sprite, s32 spriteIndex) {
     vertices[3].vx = (sprite->scale * 40) / 8192;
     vertices[3].vy = (sprite->scale * 48) / 8192;
     vertices[3].vz = 0;
-    RotAverageNclip4((s32)&vertices[0], (s32)&vertices[1], (s32)&vertices[2], (s32)&vertices[3], (s32)&sxy[0], (s32)&sxy[1], (s32)&sxy[2],
-                     (s32)&sxy[3], &depthCue, &otz, &flag);
+    RotAverageNclip4(&vertices[0], &vertices[1], &vertices[2], &vertices[3], &sxy[0], &sxy[1], &sxy[2], &sxy[3], &depthCue, &otz, &flag);
     sprite->z = 0x57 - CARD_ANIM(spriteIndex)->count;
     /* the card under the cursor is drawn in front */
     if (DUEL->cursorSlot >= 0 && spriteIndex == CUR_CARD) {
@@ -877,7 +876,7 @@ void renderCardSprite(CardSprite *sprite, s32 spriteIndex) {
     PushMatrix();
     buildRotTransMatrix(&sprite->pos, &sprite->rot, &matrix);
     CompMatrix((MATRIX *)SCENE_3D->viewMatrix, &matrix, &matrix);
-    SetRotMatrix((s32)&matrix);
+    SetRotMatrix(&matrix);
     SetTransMatrix(&matrix);
     vertices[0].vx = -(sprite->scale * 40) / 8192;
     vertices[0].vy = -(sprite->scale * 48) / 8192;
@@ -894,8 +893,8 @@ void renderCardSprite(CardSprite *sprite, s32 spriteIndex) {
     col = (u32 *)sprite->rgbc;
     fade = (u32 *)sprite->fade;
     buf = (RawPolyFT4 *)CURRENT_FRAME_BUFFER->primSlots[10];
-    nclip = RotAverageNclip4((s32)&vertices[0], (s32)&vertices[1], (s32)&vertices[2], (s32)&vertices[3], (s32)&sxy[0], (s32)&sxy[1],
-                             (s32)&sxy[2], (s32)&sxy[3], &depthCue, &otz, &flag);
+    nclip = RotAverageNclip4(&vertices[0], &vertices[1], &vertices[2], &vertices[3], &sxy[0], &sxy[1], &sxy[2], &sxy[3], &depthCue, &otz,
+                             &flag);
     if (nclip <= 0) {
         otz = RotAverage4(&vertices[1], &vertices[0], &vertices[3], &vertices[2], &sxy[0], &sxy[1], &sxy[2], &sxy[3], &depthCue, &flag);
     }

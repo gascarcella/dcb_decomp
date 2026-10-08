@@ -35,7 +35,7 @@ void drawPrimDesc3D(PrimDesc3D *prim, PrimDesc3DWork *work) {
     desc = &work->desc;
     *desc = *(PrimDesc *)prim;
     buildPrimDescMatrix(&prim->pos, &prim->rot, matrix);
-    SetRotMatrix((s32)matrix);
+    SetRotMatrix(matrix);
     SetTransMatrix(matrix);
     corner0->vx = -(prim->w >> 1);
     corner0->vy = -(prim->h >> 1);
@@ -49,8 +49,8 @@ void drawPrimDesc3D(PrimDesc3D *prim, PrimDesc3DWork *work) {
     corner3->vx = prim->w >> 1;
     corner3->vy = prim->h >> 1;
     corner3->vz = 0;
-    otz = RotTransPers4((s32)corner0, (s32)corner1, (s32)corner2, (s32)corner3, (s32)&desc->x0,
-                        (s32)&desc->x1, (s32)&desc->x2, (s32)&desc->x3, &p, &flag);
+    otz = RotTransPers4(corner0, corner1, corner2, corner3, (s32 *)&desc->x0, (s32 *)&desc->x1, (s32 *)&desc->x2,
+                        (s32 *)&desc->x3, &p, &flag);
     ot = PRIM_DESC_OT;
     code = desc->code;
     desc->code = code & 0xFE;
@@ -141,7 +141,7 @@ u32 *addPrimDescSprite(PrimDesc *desc, u32 *ot, u32 *packet, s32 z) {
     packet[3] = XY(desc->x0, desc->y0);
     packet[4] = UV(desc->u0, desc->v0, desc->clut);
     packet[5] = (desc->y1 << 16) | desc->x1;
-    AddPrim((s32 *)&ot[z], (s32)packet);
+    AddPrim((s32 *)&ot[z], packet);
     return packet + 6;
 }
 
@@ -152,7 +152,7 @@ u32 *addPrimDescF4(PrimDesc *desc, u32 *ot, u32 *packet, s32 z) {
     packet[3] = XY(desc->x1, desc->y1);
     packet[4] = XY(desc->x2, desc->y2);
     packet[5] = XY(desc->x3, desc->y3);
-    AddPrim((s32 *)&ot[z], (s32)packet);
+    AddPrim((s32 *)&ot[z], packet);
     return packet + 6;
 }
 
@@ -167,7 +167,7 @@ u32 *addPrimDescFT4(PrimDesc *desc, u32 *ot, u32 *packet, s32 z) {
     packet[7] = (desc->v2 << 8) | desc->u2;
     packet[8] = XY(desc->x3, desc->y3);
     packet[9] = (desc->v3 << 8) | desc->u3;
-    AddPrim((s32 *)&ot[z], (s32)packet);
+    AddPrim((s32 *)&ot[z], packet);
     return packet + 10;
 }
 
@@ -181,7 +181,7 @@ u32 *addPrimDescG4(PrimDesc *desc, u32 *ot, u32 *packet, s32 z) {
     packet[6] = XY(desc->x2, desc->y2);
     packet[7] = desc->rgb3;
     packet[8] = XY(desc->x3, desc->y3);
-    AddPrim((s32 *)&ot[z], (s32)packet);
+    AddPrim((s32 *)&ot[z], packet);
     return packet + 9;
 }
 
