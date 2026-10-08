@@ -35,7 +35,7 @@ void drawPrimDesc3D(PrimDesc3D *prim, PrimDesc3DWork *work) {
     desc = &work->desc;
     *desc = *(PrimDesc *)prim;
     buildPrimDescMatrix(&prim->pos, &prim->rot, matrix);
-    SetRotMatrix((s32)matrix);
+    SetRotMatrix(matrix);
     SetTransMatrix(matrix);
     corner0->vx = -(prim->w >> 1);
     corner0->vy = -(prim->h >> 1);
@@ -49,8 +49,8 @@ void drawPrimDesc3D(PrimDesc3D *prim, PrimDesc3DWork *work) {
     corner3->vx = prim->w >> 1;
     corner3->vy = prim->h >> 1;
     corner3->vz = 0;
-    otz = RotTransPers4((s32)corner0, (s32)corner1, (s32)corner2, (s32)corner3, (s32)&desc->x0,
-                        (s32)&desc->x1, (s32)&desc->x2, (s32)&desc->x3, &p, &flag);
+    otz = RotTransPers4(corner0, corner1, corner2, corner3, (s32 *)&desc->x0, (s32 *)&desc->x1, (s32 *)&desc->x2,
+                        (s32 *)&desc->x3, &p, &flag);
     ot = PRIM_DESC_OT;
     code = desc->code;
     desc->code = code & 0xFE;

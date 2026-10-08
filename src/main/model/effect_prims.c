@@ -163,7 +163,7 @@ void renderRingEffect(RingEffect *ring) {
         return;
     }
     PushMatrix();
-    tickEffectMotion((s32)ring, ring->axisMode);
+    tickEffectMotion((s32p)ring, ring->axisMode);
     ring->brightness = updateEffectBrightness(ring, ring->brightness);
     if (ring->brightness == 0) {
         PopMatrix();
@@ -201,7 +201,7 @@ void renderRingEffect(RingEffect *ring) {
                 setPrimRgb2(otherPrim, midRgb[0], midRgb[1], midRgb[2]);
                 setPrimRgb3(otherPrim, midRgb[0], midRgb[1], midRgb[2]);
             }
-            transformAndAddPolyG4((s32)prim, (s32)tpagePrim, (s32)&vertex[0], (s32)&vertex[1], (s32)&vertex[2], (s32)&vertex[3], ring->abr, ring->cullBackface, ring->fixedOtz);
+            transformAndAddPolyG4((s32p)prim, (s32p)tpagePrim, (s32p)&vertex[0], (s32p)&vertex[1], (s32p)&vertex[2], (s32p)&vertex[3], ring->abr, ring->cullBackface, ring->fixedOtz);
             prim += sizeof(POLY_G4);
             otherPrim += sizeof(POLY_G4);
             tpagePrim += 8;
@@ -215,7 +215,7 @@ void renderRingEffect(RingEffect *ring) {
                 setPrimRgb2(otherPrim, outerRgb[0], outerRgb[1], outerRgb[2]);
                 setPrimRgb3(otherPrim, outerRgb[0], outerRgb[1], outerRgb[2]);
             }
-            transformAndAddPolyG4((s32)prim, (s32)tpagePrim, (s32)&vertex[2], (s32)&vertex[3], (s32)&vertex[4], (s32)&vertex[5], ring->abr, ring->cullBackface, ring->fixedOtz);
+            transformAndAddPolyG4((s32p)prim, (s32p)tpagePrim, (s32p)&vertex[2], (s32p)&vertex[3], (s32p)&vertex[4], (s32p)&vertex[5], ring->abr, ring->cullBackface, ring->fixedOtz);
             prim += sizeof(POLY_G4);
             otherPrim += sizeof(POLY_G4);
             tpagePrim += 8;
@@ -246,7 +246,7 @@ void renderRingEffect(RingEffect *ring) {
                 setPrimRgb2(otherPrim, midRgb[0], midRgb[1], midRgb[2]);
                 setPrimRgb3(otherPrim, midRgb[0], midRgb[1], midRgb[2]);
             }
-            transformAndAddPolyGT4((s32)prim, (s32)&vertex[0], (s32)&vertex[1], (s32)&vertex[2], (s32)&vertex[3], ring->cullBackface, ring->fixedOtz);
+            transformAndAddPolyGT4((s32p)prim, (s32p)&vertex[0], (s32p)&vertex[1], (s32p)&vertex[2], (s32p)&vertex[3], ring->cullBackface, ring->fixedOtz);
             prim += sizeof(POLY_GT4);
             otherPrim += sizeof(POLY_GT4);
             setPrimQuadUvRect(prim, ring->texCoords.b[0], ring->texCoords.b[2], ring->texCoords.b[4], ring->texCoords.b[6]);
@@ -262,7 +262,7 @@ void renderRingEffect(RingEffect *ring) {
                 setPrimRgb2(otherPrim, outerRgb[0], outerRgb[1], outerRgb[2]);
                 setPrimRgb3(otherPrim, outerRgb[0], outerRgb[1], outerRgb[2]);
             }
-            transformAndAddPolyGT4((s32)prim, (s32)&vertex[2], (s32)&vertex[3], (s32)&vertex[4], (s32)&vertex[5], ring->cullBackface, ring->fixedOtz);
+            transformAndAddPolyGT4((s32p)prim, (s32p)&vertex[2], (s32p)&vertex[3], (s32p)&vertex[4], (s32p)&vertex[5], ring->cullBackface, ring->fixedOtz);
             prim += sizeof(POLY_GT4);
             otherPrim += sizeof(POLY_GT4);
             vertex += 6;
@@ -356,7 +356,7 @@ StreakParticles *createStreakParticles(u8 *startColor, u8 *endColor, EffectTempl
             line->g1 = endColor[1];
             line->b1 = endColor[2];
         }
-        initTransform(particle, (s32)fx->parent, 0, 0, 0, 0, 0, 0);
+        initTransform(particle, (s32p)fx->parent, 0, 0, 0, 0, 0, 0);
         particle->length = length;
         particle->speed = rand() % speedRange + 1;
         if (pattern < 3) {
@@ -459,7 +459,7 @@ StreakParticles *createStreakParticles(u8 *startColor, u8 *endColor, EffectTempl
             line->g1 = endColor[1];
             line->b1 = endColor[2];
         }
-        initTransform(particle, (s32)fx->parent, 0, 0, 0, 0, 0, 0);
+        initTransform(particle, (s32p)fx->parent, 0, 0, 0, 0, 0, 0);
         particle->length = length * 8;
         particle->speed = rand() % speedRange + 1;
         if (spreadY == 0) {
@@ -543,7 +543,7 @@ void renderStreakParticles(StreakParticles *fx) {
             return;
         }
         PushMatrix();
-        tickEffectMotion((s32)fx, fx->axisMode);
+        tickEffectMotion((s32p)fx, fx->axisMode);
         PopMatrix();
         /* the effect's period rounded up to whole particle cycles */
         limit = (((EffectObject *)fx)->period + fx->frames - 1) / fx->frames * fx->frames;
@@ -563,9 +563,9 @@ void renderStreakParticles(StreakParticles *fx) {
                     vertex->vz = particle->speed * frame;
                 }
                 vertex->vz += fx->zOffset;
-                if (RotTransPers((s32)vertex, (s32)&line->x0, &interp, &flag) < 0x1000U) {
+                if (RotTransPers(vertex, (s32 *)&line->x0, &interp, &flag) < 0x1000U) {
                     vertex->vz += length;
-                    otz = RotTransPers((s32)vertex, (s32)&line->r1, &interp, &flag);
+                    otz = RotTransPers(vertex, (s32 *)&line->r1, &interp, &flag);
                     if (otz < 0x1000U) {
                         if (fx->fixedOtz != 0) {
                             otz = fx->fixedOtz;
@@ -596,9 +596,9 @@ void renderStreakParticles(StreakParticles *fx) {
                     vertex->vz = particle->speed * frame;
                 }
                 vertex->vz += fx->zOffset;
-                if (RotTransPers((s32)vertex, (s32)&line->x0, &interp, &flag) < 0x1000U) {
+                if (RotTransPers(vertex, (s32 *)&line->x0, &interp, &flag) < 0x1000U) {
                     vertex->vz += length;
-                    otz = RotTransPers((s32)vertex, (s32)&line->x1, &interp, &flag);
+                    otz = RotTransPers(vertex, (s32 *)&line->x1, &interp, &flag);
                     if (otz < 0x1000U) {
                         if (fx->fixedOtz != 0) {
                             otz = fx->fixedOtz;
@@ -639,7 +639,7 @@ void renderStreakParticles(StreakParticles *fx) {
             return;
         }
         PushMatrix();
-        tickEffectMotion((s32)fx, fx->axisMode);
+        tickEffectMotion((s32p)fx, fx->axisMode);
         PopMatrix();
         /* the effect's period rounded up to whole particle cycles */
         limit = (((EffectObject *)fx)->period + fx->frames - 1) / fx->frames * fx->frames;
@@ -670,9 +670,9 @@ void renderStreakParticles(StreakParticles *fx) {
                     length = scaled / 8;
                 }
 #endif
-                if (RotTransPers((s32)vertex, (s32)&line->x0, &interp, &flag) < 0x1000U) {
+                if (RotTransPers(vertex, (s32 *)&line->x0, &interp, &flag) < 0x1000U) {
                     vertex->vz += length;
-                    otz = RotTransPers((s32)vertex, (s32)&line->r1, &interp, &flag);
+                    otz = RotTransPers(vertex, (s32 *)&line->r1, &interp, &flag);
                     if (otz < 0x1000U) {
                         if (fx->fixedOtz != 0) {
                             otz = fx->fixedOtz;
@@ -714,10 +714,10 @@ void renderStreakParticles(StreakParticles *fx) {
 #endif
                 vertex->vx += dx = length * rsin(particle->angle) / 4096;
                 vertex->vz += dz = length * rcos(particle->angle) / 4096;
-                if (RotTransPers((s32)vertex, (s32)&line->x0, &interp, &flag) < 0x1000U) {
+                if (RotTransPers(vertex, (s32 *)&line->x0, &interp, &flag) < 0x1000U) {
                     vertex->vx -= dx;
                     vertex->vz -= dz;
-                    otz = RotTransPers((s32)vertex, (s32)&line->r1, &interp, &flag);
+                    otz = RotTransPers(vertex, (s32 *)&line->r1, &interp, &flag);
                     if (otz < 0x1000U) {
                         if (fx->fixedOtz != 0) {
                             otz = fx->fixedOtz;
@@ -760,9 +760,9 @@ void renderStreakParticles(StreakParticles *fx) {
                     length = scaled / 8;
                 }
 #endif
-                if (RotTransPers((s32)vertex, (s32)&line->x0, &interp, &flag) < 0x1000U) {
+                if (RotTransPers(vertex, (s32 *)&line->x0, &interp, &flag) < 0x1000U) {
                     vertex->vz += length;
-                    otz = RotTransPers((s32)vertex, (s32)&line->x1, &interp, &flag);
+                    otz = RotTransPers(vertex, (s32 *)&line->x1, &interp, &flag);
                     if (otz < 0x1000U) {
                         if (fx->fixedOtz != 0) {
                             otz = fx->fixedOtz;
@@ -798,10 +798,10 @@ void renderStreakParticles(StreakParticles *fx) {
 #endif
                 vertex->vx += dx = length * rsin(particle->angle) / 4096;
                 vertex->vz += dz = length * rcos(particle->angle) / 4096;
-                if (RotTransPers((s32)vertex, (s32)&line->x0, &interp, &flag) < 0x1000U) {
+                if (RotTransPers(vertex, (s32 *)&line->x0, &interp, &flag) < 0x1000U) {
                     vertex->vx -= dx;
                     vertex->vz -= dz;
-                    otz = RotTransPers((s32)vertex, (s32)&line->x1, &interp, &flag);
+                    otz = RotTransPers(vertex, (s32 *)&line->x1, &interp, &flag);
                     if (otz < 0x1000U) {
                         if (fx->fixedOtz != 0) {
                             otz = fx->fixedOtz;

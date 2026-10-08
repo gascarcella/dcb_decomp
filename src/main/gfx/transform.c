@@ -59,7 +59,7 @@ void composeTransformMatrix(rot, trans, scale, m, axis)
     if (scale != 0 && (scale->vx != 0x1000 || scale->vy != scale->vx || scale->vz != scale->vy)) {
         ScaleMatrix(m, scale);
     }
-    loadGteMatrix((s32)m);
+    loadGteMatrix(m);
 }
 
 void updateTransformMatrix(void *xform, s32 axisMode) {
@@ -78,7 +78,7 @@ void updateTransformMatrix(void *xform, s32 axisMode) {
     }
     rot = &t->rot;
     /* the parent's matrix goes into the GTE: the child is built inside it */
-    loadGteMatrix((s32)t->parent);
+    loadGteMatrix((MATRIX *)t->parent);
     RotMatrix(rot, &t->matrix);
     MulMatrix2(&t->parent->matrix, &t->matrix);
     constrainRotationAxis(mode, rot, &t->matrix);
@@ -90,10 +90,10 @@ void updateTransformMatrix(void *xform, s32 axisMode) {
     if ((sx != 0x1000 || (sy = t->scale.vy) != sx || t->scale.vz != sy) && mode != 4) {
         ScaleMatrix(&t->matrix, &t->scale);
     }
-    loadGteMatrix((s32)t);
+    loadGteMatrix((MATRIX *)t);
 }
 
-void loadGteMatrix(s32p matrix) {
+void loadGteMatrix(MATRIX *matrix) {
     SetTransMatrix();
     SetRotMatrix(matrix);
 }
