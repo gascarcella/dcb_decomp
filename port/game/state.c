@@ -15,7 +15,6 @@
 
 #include "common.h"
 #include "game.h"
-#include "dcb/heap.h"
 #include "dcb/openseg.h"
 #include "overlay_ids.h"
 
@@ -23,7 +22,7 @@
  * pointer-free: each of the three partners keeps two pointers into the card database (baseCard, armorCard) and each
  * of the three saved decks thirty (CardSlot.card), all in the game's heap. On the host they are 8 bytes and the
  * struct is larger, so the image is written field by field in the PS1 layout, the pointers as PS1 addresses (the
- * heap's: HEAP_ARENA's address plus the offset). Every span copied whole is checked here to have no pointer (its host
+ * heap's: GAME_PTR_TO_S32). Every span copied whole is checked here to have no pointer (its host
  * size is its PS1 size). */
 #define GAME_PROFILE_SIZE 0x2774
 #define GAME_PARTNER_SIZE 0x298
@@ -52,9 +51,6 @@ _Static_assert(GAME_SPAN(PlayerDeck, unk104, unk10E) == GAME_DECK_SIZE - 0x104, 
 _Static_assert(sizeof(PlayerProfile) == GAME_PROFILE_SIZE, "PlayerProfile: the PS1 size at -m32");
 #endif
 
-/* the heap PLAYER_PROFILES and the card pointers point into: HEAP_ARENA, src/main/system/heap.c's HEAP_SIZE (us) */
-#define GAME_HEAP_SIZE 0x148000u
-
 /* OPENSEG's objects the scripts wait on: pointer-free, or one field after a pointer */
 _Static_assert(sizeof(TextScroll) == 0x20, "TextScroll (OPEN_INTRO_TEXT) is 8 s32");
 _Static_assert(PS1_OPEN_MEMCARD_STATE - PS1_OPEN_MEMCARD == 0x535, "OPEN_MEMCARD_STATE is OPEN_MEMCARD.state");
@@ -77,17 +73,11 @@ static void game_put32(u8 *out, uint32_t v) {
     out[3] = (u8)(v >> 24);
 }
 
-/* A pointer into the game's heap as its PS1 address (HEAP_ARENA's, at the same offset); NULL is 0, anything else is
- * fatal. The PS1 address equals the emulator's only while the host heap lays its blocks out as the PS1's. */
-static uint32_t game_heap_ps1(const void *p, const char *what) {
-    const u8 *base = (const u8 *)&HEAP_ARENA;
-    if (p == NULL) {
-        return 0;
-    }
-    if ((const u8 *)p < base || (const u8 *)p >= base + GAME_HEAP_SIZE) {
-        port_fatal("state: %s (%p) is not in the game's heap", what, p);
-    }
-    return PS1_HEAP_ARENA + (uint32_t)((const u8 *)p - base);
+/* A pointer as the PS1 address the game would keep (include/port.h GAME_PTR_TO_S32, src/main/system/heap.c: the
+ * heap's byte at HEAP_ARENA's PS1 address plus the offset; NULL is 0; anything else goes to psxstack's PTR_TO_S32,
+ * fatal outside the arena). It equals the emulator's only while the host heap lays its blocks out as the PS1's. */
+static uint32_t game_heap_ps1(const void *p) {
+    return (uint32_t)GAME_PTR_TO_S32(p);
 }
 
 /* ---- OPENSEG's OPEN_MEMCARD.cancelled, which the executable reads by its own name (game_flow.c) */
@@ -153,8 +143,8 @@ uint32_t game_state_image_size(void) {
 
 static void game_image_partner(u8 *out, const Partner *p) {
     game_copy(out, p->card, sizeof(p->card));
-    game_put32(out + 0x278, game_heap_ps1(p->baseCard, "Partner.baseCard"));
-    game_put32(out + 0x27C, game_heap_ps1(p->armorCard, "Partner.armorCard"));
+    game_put32(out + 0x278, game_heap_ps1(p->baseCard));
+    game_put32(out + 0x27C, game_heap_ps1(p->armorCard));
     game_copy(out + 0x280, &p->hpBonus, GAME_SPAN(Partner, hpBonus, unk295));
 }
 
@@ -164,7 +154,7 @@ static void game_image_deck(u8 *out, const PlayerDeck *d) {
     for (i = 0; i < (int)(sizeof(d->cards) / sizeof(d->cards[0])); i++) {
         u8 *o = out + 0x14 + GAME_CARD_SLOT_SIZE * i;
         game_copy(o, &d->cards[i], GAME_SPAN(CardSlot, type, id));
-        game_put32(o + 4, game_heap_ps1(d->cards[i].card, "CardSlot.card"));
+        game_put32(o + 4, game_heap_ps1(d->cards[i].card));
     }
     game_copy(out + 0x104, &d->unk104, GAME_SPAN(PlayerDeck, unk104, unk10E));
 }
@@ -253,7 +243,7 @@ int game_state_read(uint32_t addr, int size, int is_signed, int32_t *out) {
         return 0;
     }
     if (addr == PS1_PLAYER_PROFILES && size == 4) {
-        *out = (int32_t)game_heap_ps1((const void *)PLAYER_PROFILES, "PLAYER_PROFILES");
+        *out = (int32_t)game_heap_ps1((const void *)PLAYER_PROFILES);
         return 1;
     }
     p = game_state_map_addr(addr, (uint32_t)size);

@@ -32,9 +32,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 TIER = 1   # the one slot of port/game/game.json's memory.slots
 REPLAY_PY = ROOT / "tests" / "replay" / "replay.py"
-# The PS1 symbols whose addresses the adapter needs (port/game/game.c: the scripts' wait_mem targets, the heap that
-# PLAYER_PROFILES points into, the overlay area), looked up in config/<version>/symbols*.txt and undefined_syms*.txt.
-ADAPTER_SYMBOLS = ["OVERLAY_AREA", "PLAYER_PROFILES", "HEAP_ARENA", "OPEN_TITLE_STATE", "OPEN_INTRO_TEXT",
+# The PS1 symbols whose addresses the adapter needs (port/game/game.c and state.c: the overlay area, the scripts'
+# wait_mem targets), looked up in config/<version>/symbols*.txt and undefined_syms*.txt.
+ADAPTER_SYMBOLS = ["OVERLAY_AREA", "PLAYER_PROFILES", "OPEN_TITLE_STATE", "OPEN_INTRO_TEXT",
                    "OPEN_MEMCARD", "OPEN_MEMCARD_STATE"]
 
 
