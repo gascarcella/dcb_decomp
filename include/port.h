@@ -63,6 +63,15 @@ void *game_s32_to_ptr(s32 v);
 #define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
 #define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
 
+/* The arguments of a call to one of startup.s's stubs that the game declares without a prototype and calls with as
+ * many arguments as it uses (spawnTask, resumeTask; include/game.h): each one an s32p, the missing ones 0. On the
+ * PS1 a missing argument is whatever its register or stack slot held; on the host it is 0, so a run repeats. */
+#define PORT_S32P_ARGS2_(a, b, ...) (s32p)(a), (s32p)(b)
+#define PORT_S32P_ARGS2(...) PORT_S32P_ARGS2_(__VA_ARGS__, 0, 0)
+#define PORT_S32P_ARGS9_(a, b, c, d, e, f, g, h, i, ...) \
+    (s32p)(a), (s32p)(b), (s32p)(c), (s32p)(d), (s32p)(e), (s32p)(f), (s32p)(g), (s32p)(h), (s32p)(i)
+#define PORT_S32P_ARGS9(...) PORT_S32P_ARGS9_(__VA_ARGS__, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
 #endif
 
 #endif /* PORT_H */

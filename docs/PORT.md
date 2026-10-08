@@ -60,6 +60,10 @@ script VMs' `regs[]`/`vars[]`, `EffectTemplate`, `ScriptRunner.unk0`, the heap, 
 it). `decls`: 0 mismatching against v0.3.0 and against psxstack main (91 same, 12 compatible of 184). `link`: the
 same 5 duplicate overlay globals, 323 undefined (357 before: the aliased labels are fields now).
 
+**After M1 step 3a** (the task scheduler on the host, "The task scheduler"): **156 of 156 units compile, 0
+diagnostics**, at `-m64` and at `-m32`. `link`: the 5 duplicate overlay globals, 328 undefined (the 5 more are
+`task.c`'s references to `port/game/tasks.c` and psxstack's fibers, which the link check does not scan).
+
 **After M1 step 1** (`include/port.h`, the declarations, the prototypes; 2026-10-08): **67 of 155 units compile; 88
 fail with 1,016 diagnostics:** 945 pointer-to-int-cast (the explicit casts: `drawText` and its siblings 445,
 `add`/`removeFrameCallback` 96, the GTE calls 138, `transformAndAdd*` 102, 111 assignments, 53 other calls), 29
@@ -153,30 +157,69 @@ override and derived symbol file with the pin bump.
 ## What the game needs
 
 ### The task scheduler (the largest new piece)
-- **The tasks:** `TASKS[32]` (`include/dcb/main.h:20-30`, 0xC0 bytes each, a kernel-TCB-shaped `regs[40]`). TASKS[0] is
+- **The tasks:** `TASKS[32]` (`include/dcb/main.h:20-38`, 0xC0 bytes each, a kernel-TCB-shaped `regs[40]`). TASKS[0] is
   the main task.
-- **The C side:** `src/main/system/task.c` has `createTask` :167, `selectNextTask` :139, `handleVsyncPreemption` :106,
-  `killTask` :263 and `wakeTask` :355.
+- **The C side:** `src/main/system/task.c` has `createTask` :210, `selectNextTask` :182, `handleVsyncPreemption` :141,
+  `killTask` :318 and `wakeTask` :415.
 - **The asm side (`src/main/startup.s`):** `spawnTask`, `endTask` and `resumeTask` are stubs that disable interrupts,
   call the C routine and return with `rfe`. `exitTask`, `yieldTask`, `waitFrames` and `waitFramesResume` share one
   body: it saves s0-s7/gp/sp/fp/ra into `CURRENT_TASK`, picks the next task and restores it.
 - **Switching is cooperative and preemptive:**
   - Cooperative: `yieldTask` and `waitFrames` (607 calls; 120 are `waitFrames(0x7FFFFFFF)`, sleep until
     `resumeTask`).
-  - Preemptive: a vblank root-counter event (`OpenEvent(RCnt3)` + `SetRCnt`/`StartRCnt`, task.c:95-98) runs
+  - Preemptive: a vblank root-counter event (`OpenEvent(RCnt3)` + `SetRCnt`/`StartRCnt`, task.c:130-133) runs
     `handleVsyncPreemption` in interrupt context. It ticks the vblank counters and, when the current task's priority
     isn't 0, switches to TASKS[0].
 - **Stacks:** 0x100 to 0x2000 bytes, from the game heap (tag -3). They are far too small for x86-64 frames, so on the
   host each task needs a host stack of its own.
-- **On the host:** one fiber per task. psxstack has no fibers yet; it runs the game on one stack of its own, and save
-  states and AddressSanitizer already know about that stack. Preemption can only happen where the host gets control:
-  at the pump's vblank points (`PLATFORM_WAIT` in the spins below, `VSync`, the waits). Save states must hold every
-  live task's stack. This is generic stack work: any game that uses Psy-Q's own threads (`OpenTh`/`ChangeTh`) needs
-  the same. It is a psxstack issue.
-- **Pointers in ints:** `spawnTask` is declared without a prototype (`s32 spawnTask();`, `include/game.h:1522`; 244
-  calls in 50 files). It receives function pointers and string literals, and `createTask` takes the entry and its
-  four arguments as `s32`. `Task.stack` and `Task.regs` are `s32`. On the host the entry and the arguments are
-  pointer-sized.
+- **Pointers in ints:** `spawnTask` is declared without a prototype (`s32 spawnTask();`, `include/game.h`; 244
+  calls in 50 files, with 5 to 9 arguments). It receives function pointers and string literals, and `createTask` takes
+  the entry and its four arguments as `s32`. `Task.stack` and `Task.regs` are `s32`. On the host the entry and the
+  arguments are pointer-sized.
+
+**On the host** (M1 step 3a; `port/game/tasks.c`, `scripts/tasks_test.sh`): each task is a psxstack fiber
+(`hooks.h` "Fibers"), and the scheduler's C is unchanged but for its `PC_PORT` blocks.
+- **The glue:** `port/game/tasks.c` is `startup.s` on the host (an adapter unit; psxstack compiles no `.s`). Each stub
+  has the asm's effect on the task records, and a switch is `port_fiber_switch` to the fiber of the task
+  `selectNextTask` picked:
+  - `spawnTask`, `endTask` and `resumeTask` call `createTask`, `killTask` and `wakeTask`. Nothing interrupts a task on
+    the host except a vsync tick, and a tick runs only where the game waits, so the interrupt masking has no
+    counterpart; neither has `disableInterrupts`/`restoreInterrupts` (defined empty, never called).
+  - `yieldTask` and `waitFrames` mark the task yielded (the flags' high half `0x8000`) and switch. `waitFrames(n)`
+    counts the task's turns, as the asm's loop through `waitFramesResume` does: it returns at the n-th turn after the
+    call, or one turn after a `resumeTask`, with `resumeTask`'s result, which is a return value and not `v0`.
+  - `exitTask` runs `exitCurrentTask` and then `port_fiber_exit` to the task it selected. A fiber starts in
+    `game_task_fiber_entry`: the entry (an overlay tag resolves, as the PS1 would jump there at the first switch)
+    with its four arguments, then `exitTask`, which is `regs[R_RA]` on the PS1.
+  - `launchTaskScheduler` calls `startTaskScheduler`. There is no `gp` to record.
+- **The main fiber is the list's end, not TASKS[0].** On the PS1 `main()`'s `for (;;) rand();` is the context that
+  `TASK_LIST_END` (at `TASKS - 1`) saves: the idle loop, which runs when every task has yielded. The first vsync
+  preempts it to TASKS[0] (`runMainTask`). On the host `TASK_LIST_END.fiber` is `port_fiber_main()`, TASKS[0] gets a
+  fiber of its own, and the loop has a `PLATFORM_WAIT()`: one vsync tick per idle turn, so `rand()` is called once per
+  idle vsync instead of as often as the PS1 has time for.
+- **`task.c` under `PC_PORT`:** no `<kernel.h>`. The `KERNEL_TCB` copies go, and `asm.h`'s register indices stay for
+  the `regs[]` writes, which are kept for the record. `CURRENT_TASK = &TASK_LIST_END` and `TASK_LIST_END.prev = TASKS`
+  stand for `TASKS - 1` and `CURRENT_TASK + 1`. `createTask` and `startTaskScheduler` store the entry and the
+  arguments in the host fields and create the fiber. `killTask` destroys the killed task's fiber.
+  `handleVsyncPreemption` keeps its counters and choices; where the PS1 loads TASKS[0]'s registers into the TCB, it
+  calls `port_fiber_preempt`, and the pump switches at the end of the tick, on whichever fiber ticked.
+- **`Task`:** `wakeResult` and `stack` are `s32p`. Under `PC_PORT` the struct ends with `fiber`, `entry` and
+  `args[4]` (pointer-width), after `regs[]`. `createTask`, `startTaskScheduler` and `wakeTask` take `s32p` where a
+  pointer may pass. The PS1's bytes are unchanged in us, jp and eu.
+- **The unprototyped stubs:** on the PS1 `spawnTask` and `resumeTask` stay `s32 f();`. Under `PC_PORT`, `game.h`
+  declares them with every parameter `s32p`, and a variadic macro of the same name (`port.h`'s
+  `PORT_S32P_ARGS9`/`ARGS2`) casts each argument to `s32p` and fills the missing ones with 0. A variadic or
+  unprototyped definition would not do. An `int` passed where the definition reads 64 bits has undefined high bits:
+  in a stack slot that is garbage, and an entry that takes a pointer would get it. The missing arguments (a 7-argument
+  `spawnTask`'s `a2`/`a3`, a one-argument `resumeTask`'s result) would be whatever the register or slot held, as on
+  the PS1, and not repeatable.
+- **Tested** by `scripts/tasks_test.sh` (CI's `probe` job): `task.c`, `tasks.c` and psxstack's `runtime/fiber.c` with
+  stubs for the heap, the kernel's events and the overlay resolver, under ASan and UBSan. Seven tasks spawn (5, 6 and
+  9 arguments), yield, wait, wake (a pointer result, a missing one), kill, exit (explicitly and by returning) and
+  reuse slots and fibers. A task busy-waits across a tick and is preempted to the main task, then resumed by
+  `selectNextTask`'s PREEMPTED/DEFERRED rules, and the main task ticks itself in the non-vsync mode. The trace must
+  equal the order derived by hand from `task.c` and `startup.s`. Not covered: the real RCnt3 event (the shim's), the
+  game's own tasks, save states with tasks.
 
 ### Overlays
 - **Loading:**
@@ -361,8 +404,8 @@ first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then co
 1. ~~Fibers in psxstack~~ Done in psxstack 0.3.0 ([psxstack#25](https://github.com/gascarcella/psxstack/issues/25);
    its `docs/PORT.md` "Fibers", `examples/tasks`): `port_fiber_create/switch/exit/destroy/preempt`, a vblank handler
    preempts at the end of the tick. M1's glue: `spawnTask` creates, `yieldTask`/`waitFrames` switch, `exitTask`
-   exits, `handleVsyncPreemption` preempts to TASKS[0]; `main()`'s spin gets a `PLATFORM_WAIT()`. Whether the pump's
-   points suffice for `memcard.c`'s spin is checked then.
+   exits, `handleVsyncPreemption` preempts to TASKS[0]; `main()`'s spin gets a `PLATFORM_WAIT()` (done: "The task
+   scheduler", "On the host"). Whether the pump's points suffice for `memcard.c`'s spin is checked then.
 2. ~~The hooking strategy~~ Decided (2026-10-08): **a pointer-width integer typedef**, `s32p`/`u32p` (`s32`/`u32` on
    the PS1, `intptr_t`/`uintptr_t` under `PC_PORT`, defined in `include/port.h`), at the declarations of the
    pointer-holding globals, parameters, return values and fields and at the `(s32)&x` casts ("The host-compile

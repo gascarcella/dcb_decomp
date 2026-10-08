@@ -97,6 +97,7 @@ scripts/build.sh [--clean]  # make generate + make + make compare for VERSION (d
 scripts/probe.sh            # the port: cmake configure (build/port), then the host-compile probe and link check over every us unit (no disc)
 .venv/bin/python port/tools/port_inventory.py probe|link|counts [--sites KIND]   # the probe alone; build/port_inventory/
 scripts/gte_test.sh         # the host GTE macros (port/include/gte.h) against psxstack's software GTE; no disc
+scripts/tasks_test.sh       # the task scheduler (task.c + port/game/tasks.c) on psxstack's fibers; no disc
 cmake -S port -B build/port -G Ninja [-DPSXSTACK_DIR=$PWD/../psxstack]           # the port's configure (M0: configures; the build links from M1)
 . .venv/bin/activate        # then upstream's commands work as their README says (the toolchain is in .venv/bin):
 make generate               #   splat: asm/us, build/us/generated (after config changes)

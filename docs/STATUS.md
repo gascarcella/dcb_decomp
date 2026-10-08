@@ -46,6 +46,13 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
   them. `tests/port/run.py` is written for M1 and cannot run before the port links.
 - M1: `port/include/gte.h` has the 40 GTE macros on the shim's software GTE (the six units that use them compile
   with it); `scripts/gte_test.sh` checks them (CI's `probe` job runs it).
+- M1 step 3a, the task scheduler on the host: `port/game/tasks.c` is `startup.s`'s glue over psxstack's fibers
+  (`spawnTask`, `endTask`, `resumeTask`, `exitTask`, `yieldTask`, `waitFrames`, `launchTaskScheduler`), `task.c`'s
+  `PC_PORT` blocks create, destroy and preempt the fibers, `main()`'s idle loop ticks (`PLATFORM_WAIT()`), and
+  `spawnTask`/`resumeTask` calls pass every argument at pointer width (docs/PORT.md "The task scheduler", "On the
+  host"). `scripts/tasks_test.sh` (CI's `probe` job) runs seven tasks through the game's scheduler against the order
+  derived from the PS1's rules. The probe: **156 of 156 units compile, 0 diagnostics** (`-m64` and `-m32`); `link`:
+  the 5 duplicate overlay globals, 328 undefined.
 - Next: #4 (M1).
 
 ## Upstream

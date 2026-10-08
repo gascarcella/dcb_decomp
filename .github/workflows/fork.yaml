@@ -89,6 +89,9 @@ jobs:
     # The host GTE macros (port/include/gte.h) against psxstack's software GTE: gcc only, no disc.
     - run: scripts/gte_test.sh
 
+    # The task scheduler on the host (src/main/system/task.c, port/game/tasks.c) over psxstack's fibers: gcc only.
+    - run: scripts/tasks_test.sh
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:

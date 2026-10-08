@@ -8,10 +8,25 @@
 #include "dcb/screen_copy.h"
 #include "dcb/render_loop.h"
 #include "dcb/boot.h"
+#ifndef PC_PORT
 #include <kernel.h>
+#else
+/* kernel.h's asm.h: the registers' places in regs[], which the host fills for
+ * the record only (a task's context is its fiber; port/game/tasks.c) */
+#define R_A0 4
+#define R_A1 5
+#define R_A2 6
+#define R_A3 7
+#define R_GP 28
+#define R_SP 29
+#define R_RA 31
+#define R_EPC 32
+#define R_SR 35
+#endif
 
 /* The scheduler runs with the kernel's TCB: switching tasks means copying a
- * task's saved registers in or out of KERNEL_TCB->reg. */
+ * task's saved registers in or out of KERNEL_TCB->reg. On the host each task
+ * is a fiber instead, and the switches are port/game/tasks.c's. */
 
 void setTaskVsyncMode(s32 vsyncMode) {
     Task *task;
@@ -37,7 +52,7 @@ void setTaskVsyncMode(s32 vsyncMode) {
     ExitCriticalSection();
 }
 
-s32 startTaskScheduler(s32 mode, s32 stackSize, s32 entry, s32 a0, s32 a1, s32 a2, s32 a3) {
+s32 startTaskScheduler(s32 mode, s32 stackSize, s32p entry, s32p a0, s32p a1, s32p a2, s32p a3) {
     Task *task;
     Task *mainTask;
     struct TCBH *pcb;
@@ -45,7 +60,7 @@ s32 startTaskScheduler(s32 mode, s32 stackSize, s32 entry, s32 a0, s32 a1, s32 a
     s32 *dst;
     s32 i;
     s32 j;
-    s32 stack;
+    s32p stack;
     s32 vsyncEvent;
 
     EnterCriticalSection();
@@ -54,15 +69,26 @@ s32 startTaskScheduler(s32 mode, s32 stackSize, s32 entry, s32 a0, s32 a1, s32 a
         task->status.flags = 0;
     }
     CURRENT_TASK_PRIORITY = PREEMPTED_TASK_PRIORITY = *(u16 *)&DEFERRED_TASK_PRIORITY = 0xFFFF;
+#ifndef PC_PORT
     CURRENT_TASK = TASKS - 1;
     TASK_LIST_END.status.flags = TASK_IN_USE | 0xFFFF;
     TASK_LIST_END.prev = CURRENT_TASK + 1;
+#else
+    /* TASKS - 1 is TASK_LIST_END on the PS1, which lies right before TASKS;
+     * the host's are two objects. The list's end is main()'s idle loop: the
+     * main fiber */
+    CURRENT_TASK = &TASK_LIST_END;
+    TASK_LIST_END.status.flags = TASK_IN_USE | 0xFFFF;
+    TASK_LIST_END.prev = TASKS;
+    TASK_LIST_END.fiber = port_fiber_main();
+#endif
     if (TASK_VSYNC_MODE != 0) {
         TASK_LIST_END.next = &TASK_LIST_END;
     } else {
         TASK_LIST_END.next = TASKS;
     }
     TASK_LIST_END.id = -1;
+#ifndef PC_PORT
     /* 0x108 holds the kernel's process control block, whose first word is
      * the running TCB */
     pcb = *(struct TCBH **)0x108;
@@ -72,6 +98,7 @@ s32 startTaskScheduler(s32 mode, s32 stackSize, s32 entry, s32 a0, s32 a1, s32 a
     for (j = 39; j >= 0; j--) {
         *dst++ = *src++;
     }
+#endif
     /* the main task is TASKS[0], priority 0 */
     mainTask = TASKS;
     mainTask->status.flags = TASK_IN_USE | TASK_CONTEXT_SAVED;
@@ -85,7 +112,15 @@ s32 startTaskScheduler(s32 mode, s32 stackSize, s32 entry, s32 a0, s32 a1, s32 a
     mainTask->next = &TASK_LIST_END;
     mainTask->id = 0;
     mainTask->wakeResult = 0;
-    stack = (s32)allocHeapBlock(stackSize, -3);
+#ifdef PC_PORT
+    mainTask->entry = entry;
+    mainTask->args[0] = a0;
+    mainTask->args[1] = a1;
+    mainTask->args[2] = a2;
+    mainTask->args[3] = a3;
+    mainTask->fiber = port_fiber_create(game_task_fiber_entry, mainTask);
+#endif
+    stack = (s32p)allocHeapBlock(stackSize, -3);
     if (stack == 0) {
         return -6;
     }
@@ -111,11 +146,13 @@ long handleVsyncPreemption(void) {
 
     task = CURRENT_TASK;
     tickVblankCounters();
+#ifndef PC_PORT
     tcbRegs = KERNEL_TCB->reg;
     regs = task->regs;
     for (i = 39; i >= 0; i--) {
         *regs++ = *tcbRegs++;
     }
+#endif
     task->status.flags |= TASK_CONTEXT_SAVED;
     if ((PREEMPTED_TASK_PRIORITY = CURRENT_TASK_PRIORITY) == 0) {
         if (TASK_VSYNC_MODE == 0) {
@@ -128,11 +165,17 @@ long handleVsyncPreemption(void) {
         task = TASKS;
         CURRENT_TASK = task;
         CURRENT_TASK_PRIORITY = TASKS[0].status.priority;
+#ifndef PC_PORT
         tcbRegs = KERNEL_TCB->reg;
         regs = task->regs;
         for (i = 39; i >= 0; i--) {
             *tcbRegs++ = *regs++;
         }
+#else
+        /* the switch happens at the end of the vsync tick this handler runs
+         * in, on whichever fiber ticked (psxstack's docs/PORT.md "Fibers") */
+        port_fiber_preempt(task->fiber);
+#endif
     }
 }
 
@@ -164,7 +207,7 @@ Task *selectNextTask(Task *current) {
 /* Starts a task in slot taskId (0: the first free one). insertPos < 0 places
  * it by priority; 0-31 right after that task and 32-63 right before task
  * insertPos - 32, clamping the priority so the list stays sorted. */
-s32 createTask(s32 taskId, s32 insertPos, s32 priority, s32 stackSize, s32 unused, s32 entry, s32 a0, s32 a1, s32 a2, s32 a3) {
+s32 createTask(s32 taskId, s32 insertPos, s32 priority, s32 stackSize, s32 unused, s32p entry, s32p a0, s32p a1, s32p a2, s32p a3) {
     Task *task;
     Task *after;
     Task *before;
@@ -174,7 +217,7 @@ s32 createTask(s32 taskId, s32 insertPos, s32 priority, s32 stackSize, s32 unuse
     unsigned long *src;
     s32 *dst;
     s32 i;
-    s32 stack;
+    s32p stack;
 
     task = TASKS + taskId;
     if (taskId != 0) {
@@ -234,11 +277,13 @@ s32 createTask(s32 taskId, s32 insertPos, s32 priority, s32 stackSize, s32 unuse
     if (TASK_VSYNC_MODE != 0 && priority > 0 && before->status.priority == 0) {
         TASK_LIST_END.next = task;
     }
+#ifndef PC_PORT
     src = KERNEL_TCB->reg;
     dst = task->regs;
     for (i = 39; i >= 0; i--) {
         *dst++ = *src++;
     }
+#endif
     task->status.flags = priority | TASK_IN_USE | TASK_CONTEXT_SAVED;
     task->regs[R_EPC] = entry;
     task->regs[R_SR] = TASK_START_SR;
@@ -247,11 +292,21 @@ s32 createTask(s32 taskId, s32 insertPos, s32 priority, s32 stackSize, s32 unuse
     task->regs[R_A2] = a2;
     task->regs[R_A3] = a3;
     /* returning from the entry point ends the task */
+#ifndef PC_PORT
     task->regs[R_RA] = (s32)exitTask;
+#endif
     task->regs[R_GP] = TASK_GP;
     task->id = taskId;
     task->wakeResult = 0;
-    stack = (s32)allocHeapBlock(stackSize, -3);
+#ifdef PC_PORT
+    task->entry = entry;
+    task->args[0] = a0;
+    task->args[1] = a1;
+    task->args[2] = a2;
+    task->args[3] = a3;
+    task->fiber = port_fiber_create(game_task_fiber_entry, task);
+#endif
+    stack = (s32p)allocHeapBlock(stackSize, -3);
     if (stack == 0) {
         return -6;
     }
@@ -297,6 +352,11 @@ s32 killTask(s32 taskId) {
     freeHeapBlocksByTag(task->id);
     freeHeapBlock((void *)task->stack);
     task->status.flags = 0;
+#ifdef PC_PORT
+    /* a task other than the running one: its fiber is suspended */
+    port_fiber_destroy(task->fiber);
+    task->fiber = NULL;
+#endif
     return 0;
 }
 
@@ -352,7 +412,7 @@ s32 getCurrentTaskId(void) {
     return CURRENT_TASK->id;
 }
 
-s32 wakeTask(s32 taskId, s32 result) {
+s32 wakeTask(s32 taskId, s32p result) {
     Task *task;
 
     task = TASKS + taskId;
