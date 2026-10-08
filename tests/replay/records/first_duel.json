@@ -11,7 +11,7 @@
   "name": "openbios",
   "sha1": "8f1269a22179433c8b22b4c804f11c0a076450c5"
  },
- "tree_commit": "0425d78655a3b6a993d183b2132ff7d6359ebbd5",
+ "tree_commit": "b0e0553f6eb6297c2f9b33c5e89e4b2e4d7c0881",
  "frames": 14211,
  "checkpoints": [
   {
@@ -61,7 +61,7 @@
    "map": 0,
    "random_index": -986842144,
    "gamestate_sha1": "9ab25be7f4875f1686c47ccaa4789e90e97b1136",
-   "gamestate_sha1_stable": "ef2d6fb78eff25a33ca7ca371979dc121d936da0"
+   "gamestate_sha1_stable": "2e64dfcdb55aaa813034fd62d9923096d6a8ed9b"
   },
   {
    "name": "first_duel",
@@ -70,7 +70,7 @@
    "map": 0,
    "random_index": -1481151653,
    "gamestate_sha1": "c3fc28ade38a31a1c7e6f7b91b417146425b3ec6",
-   "gamestate_sha1_stable": "ce41c0be8e0e7fdb8b0be56ad2dce6f53a346b0e"
+   "gamestate_sha1_stable": "36c6b9f0aa08836964e13d0673ef8b3c741cf65d"
   }
  ],
  "overlay_sequence": [

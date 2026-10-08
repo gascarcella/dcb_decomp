@@ -60,8 +60,25 @@ CORE_ARGS = ("-interpreter",)
 VOLATILE_RANGES = ((0x10, 0x12),   # profileId: drawn from rand() when the profile is created, and the seed's state
                                    # then depends on how many frames the boot took
                    (0x24, 0x28),   # playTime: frames
-                   (0x15E0, 0x23FC))  # cardCopySerials[301][6]: assignCardCopySerial draws them from rand() at
+                   (0x15E0, 0x23FC),  # cardCopySerials[301][6]: assignCardCopySerial draws them from rand() at
                                       # resetPlayerData, so they depend on the seed's state the same way
+                   # The heap the game never writes before the checkpoints: the emulator's is whatever the
+                   # allocator left there, the port's is zero (nothing to compare)
+                   (0x315, 0x318),    # partners[0]: its last 3 padding bytes (0x295-0x297 of the 0x298)
+                   (0x318, 0x848),    # partners[1] and [2]
+                   (0x243D, 0x244C),  # savedDecks[0].name after its terminator (deck bytes 0x5-0x13)
+                   (0x253C, 0x2540),  # savedDecks[0].unk104
+                   (0x2546, 0x2548),  # savedDecks[0].unk10E
+                   (0x2548, 0x2768),  # savedDecks[1] and [2]
+                   (0x15DF, 0x15E0),  # unk15DF
+                   (0x2435, 0x2438),  # unk2435[3]
+                   (0x2768, 0x276E),  # rewardCards[3]
+                   (0x276E, 0x2771),  # rewardResults[3]
+                   (0x2772, 0x2774),  # unk2771 bytes 1-2
+                   # The starter card: open_starter.c draws it with rand() % 2, and the rand() sequence's position
+                   # depends on how many times the idle loop ran per frame, so which of the two is owned differs
+                   (0x14CE, 0x14CF),    # cardCollection[28] (0x14B2 + 28; plain literals: port_inputs reads this with ast)
+                   (0x153B, 0x153C))  # cardCollection[137] (0x14B2 + 137)
 
 CFG = emulator.configure(
     root=ROOT, game_json=ROOT / "port/game/game.json", redux_dir=ROOT / "bin/redux", iso=ROOT / "disks/us/dcb_us.cue",
