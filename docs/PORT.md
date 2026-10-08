@@ -245,7 +245,7 @@ override and derived symbol file with the pin bump.
     maps `"P:\\kawseg.bin"` to the file ID through `overlay_ids.h`, which `port/tools/port_inputs.py` writes from
     the same `OVERLAYS` list as `overlays.txt`; another drive is 0 (no overlay), an overlay this version lacks is
     fatal. psxstack's copy time (`size * 12 / 677376` vsyncs after the load, dw2003's `memcpy`) also runs here,
-    where the PS1 has no copy: 1 or 2 frames per load, a stack issue.
+    where the PS1 has no copy: 1 or 2 frames per load ([psxstack#39](https://github.com/gascarcella/psxstack/issues/39)).
   - *Calls by name.* Every overlay function the EXE calls (`include/dcb/overlay_calls.h`, the 84 names of
     `symbols_overlay_calls.txt`) is its own overlay's global, under the overlay's prefix, and all 84 are defined in
     the overlays' C. The host links every overlay in, so the linker binds each call, each `spawnTask` entry and
@@ -257,7 +257,7 @@ override and derived symbol file with the pin bump.
   - *Data by name.* `KAW_RESULT_SCREEN_STATE` is KAWSEG's global; `OPEN_MEMCARD_CANCELLED` (inside
     `OPEN_MEMCARD`) is, in the EXE, `*game_open_memcard_cancelled()`, the adapter's pointer to the field
     (`overlay_calls.h`). OPENSEG's own use of the name (`open_memcard.c`) is among the 81 `undefined_syms` aliases,
-    still to map.
+    still to map (#20).
   - *The stale addresses are never reached* (US disc): only effect kind 0, the fade rect, uses them, and the 31
     scripts of `CBTL_EFF.ARC`, KAWSEG's only source of effect scripts, create 240 effects, all of constant kinds 1
     (201), 2 (6) and 3 (33). On the PS1 they would enter `KAW_chooseSupportCard` mid-body (0x801E6424 is a load
@@ -429,7 +429,7 @@ is loaded). The profile is not pointer-free: each partner keeps two pointers int
 deck thirty (`Partner.baseCard`/`armorCard`, `CardSlot.card`, heap addresses on the PS1), so the host's struct is
 0x2A78 bytes and the adapter writes the image field by field in the PS1 layout, the pointers as PS1 heap addresses.
 `random_index` stays 0 on the host: psxstack's shim has no LIBC2 `rand`, and without one the host libc's links in
-its place (another sequence and `RAND_MAX`).
+its place (another sequence and `RAND_MAX`; [psxstack#40](https://github.com/gascarcella/psxstack/issues/40)).
 
 **The core.** PCSX-Redux's dynarec cannot run this game: the overlay loader's first CD read never completes
 (`FILE_LOADER_BUSY` stays 1, the vblank event stops after about 165 frames; with OpenBIOS and the retail BIOS alike,
