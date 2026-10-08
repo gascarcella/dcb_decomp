@@ -1,5 +1,13 @@
 # Digimon Digital Card Battle decomp
 
+> **This is a fork for a PC port.** The matching decompilation below is the work of
+> [juandav](https://github.com/ReGame-Labs) at
+> [ReGame-Labs/dcb_decomp](https://github.com/ReGame-Labs/dcb_decomp), and this fork exists with its author's agreement. It adds a
+> native PC port built from the same C on [psxstack](https://github.com/gascarcella/psxstack), the stack behind the
+> [Digimon World 2003 port](https://github.com/gascarcella/dw2003recomp). The port's state is in
+> [docs/STATUS.md](docs/STATUS.md) and its design in [docs/PORT.md](docs/PORT.md). Everything after this note is
+> upstream's README; decompilation work belongs upstream.
+
 | Version | Code | Data | Functions |
 |---|---|---|---|
 | 🇺🇸 USA (`SLUS_013.28`) | [![Code](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=code&version=SLUS_013.28&label=Code)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLUS_013.28) | [![Data](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=data&version=SLUS_013.28&label=Data)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLUS_013.28) | [![Functions](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=functions&version=SLUS_013.28&label=Functions)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLUS_013.28) |
