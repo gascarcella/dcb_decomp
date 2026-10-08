@@ -18,6 +18,7 @@
 #   redux       (not by default) the pinned PCSX-Redux, the test oracle, into bin/redux through psxstack's installer
 #               (tools/replay/redux.sh): the zip from the data checkout's tools/prebuilt/, SHA-256 checked; test with
 #               scripts/check_emulator.sh. $PSXSTACK_DIR names another checkout of the stack than the submodule
+#               (stack work in progress)
 #   link        in a git worktree: bin/, .venv and disks/ of the main checkout, symlinked (worktrees share them)
 #
 # Worktrees: everything built goes into the MAIN checkout (bin/, .venv) and is symlinked into the worktree; run

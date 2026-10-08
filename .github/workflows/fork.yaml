@@ -96,9 +96,7 @@ jobs:
   # The emulator replays (docs/PORT.md "Testing"; issue #3): the pad scripts of tests/replay/scripts/ run in the
   # pinned PCSX-Redux from the data checkout and must give the records of tests/replay/records/. Needs the disc
   # image (rebuilt from the data checkout's xz parts) and the emulator zip, both through the deploy key, so only the
-  # fork's own runs have it, as the build job. The stack's runners are psxstack's tools/replay/ (the submodule must
-  # be at a tag that has them; until the pin bump the job checks the stack out at the commit that merged them,
-  # psxstack 67abb63, and points PSXSTACK_DIR at it).
+  # fork's own runs have it, as the build job. The stack's runners are the submodule's tools/replay/.
   replay:
     if: >-
       github.repository == 'gascarcella/dcb_decomp' &&
@@ -126,17 +124,10 @@ jobs:
       with:
         python-version: '3.12'
 
-    - uses: actions/checkout@v5
-      with:
-        repository: gascarcella/psxstack
-        ref: 67abb63d26bbaaf39cdb2f28b298185ff4488a91   # the merge of psxstack #30 (tools/replay/); a full SHA: the action takes nothing shorter
-        path: psxstack-main
-        persist-credentials: false
-
     - run: python3 -m venv .venv
 
     - run: |
-        export DCB_GAMEDATA="$PWD/gamedata-checkout" PSXSTACK_DIR="$PWD/psxstack-main"
+        export DCB_GAMEDATA="$PWD/gamedata-checkout"
         export DCB_UBUNTU_MIRROR=http://azure.archive.ubuntu.com/ubuntu   # the runners' own archive: archive.ubuntu.com stalls from them
         scripts/setup.sh disc redux
         scripts/check_emulator.sh

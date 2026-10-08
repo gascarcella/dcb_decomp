@@ -53,8 +53,8 @@ psxstack checkout vX.Y.Z`, commit the submodule). dw2003recomp bumps its own pin
 - **Hooks keep the PS1 build identical** (psxstack `GAME_CONTRACT.md` "Layering", rule 5). Each macro's PS1 side
   expands to the original code exactly. Host-only code sits under `#ifdef PC_PORT`, and `<psxstack/hooks.h>` is
   included only there. Rebuild (`scripts/build.sh`) after every change to `src/`, `include/`, `config/`, `mk/` or the
-  `Makefile`. Until the psxstack pin carries `tools/replay/`, the replay tools read the stack from `$PSXSTACK_DIR`
-  (the sibling `../psxstack` at main). A file that `jp` or `eu` also compiles must not change their code either: until those discs are in the
+  `Makefile`. The port's tools and the replay tools read the stack from the submodule, or from `$PSXSTACK_DIR` when it
+  names another checkout (stack work in progress). A file that `jp` or `eu` also compiles must not change their code either: until those discs are in the
   data checkout, keep such edits to `#ifdef PC_PORT` blocks and macros whose PS1 side is the original text.
 - **Upstream's conventions for anything in the decompilation** (`CONTRIBUTING.md`: names, fake-match markers, file
   layout, versions). They are not dw2003recomp's: here functions are camelCase (`spawnTask`), globals SCREAMING_CASE

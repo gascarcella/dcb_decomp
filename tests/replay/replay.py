@@ -3,8 +3,7 @@
 profile at named checkpoints. The runner is psxstack's (tools/replay/emulator.py and run.lua; GAME_CONTRACT.md
 "6. Tests"): this file is this game's configuration of it (the emulator in bin/redux, the disc, the scripts and
 their records (tests/replay/records/: upstream's .gitignore has `expected/`, hence the name), the probes tests/replay/probes.lua, the stable hash's volatile ranges) and the names the other tests
-import from here. The stack is the psxstack submodule, or $PSXSTACK_DIR (a checkout with tools/replay/ until the
-pin bump).
+import from here. The stack is the psxstack submodule, or $PSXSTACK_DIR when it names another checkout of it.
 
 Usage:
   tests/replay/replay.py run <script.json> [--record] [--repeat N] [--bios openbios|retail] [--out DIR] [-v]

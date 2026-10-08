@@ -257,8 +257,8 @@ Psy-Q-specific behaviour (`rand`'s sequence, `sprintf`'s formats) needs a check 
 
 ## Testing
 The oracle is the game in PCSX-Redux (dw2003recomp's DECISIONS "The port is checked against the emulator"); the
-runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configured here. The stack is the submodule,
-or `$PSXSTACK_DIR` until the pin that carries the runners.
+runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configured here. The stack is the submodule
+(`$PSXSTACK_DIR` names another checkout of it, for stack work).
 
 | Check | What it proves | Where |
 |---|---|---|
