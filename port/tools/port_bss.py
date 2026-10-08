@@ -295,6 +295,17 @@ def model(version):
                 r["own_type"] = unknown[0]
                 pointer = "*" in r["decl"][2].split(n)[0]
                 r["decl"] = (r["decl"][0], r["decl"][1], f"extern void *{n}", False) if pointer else None
+    # A label a header #defines is a field of the label before it (issue #11): its bytes are that label's.
+    prev = None
+    for r in rows:
+        if r["inside"]:
+            continue
+        if r["skip"] and r["skip"].startswith("#defined") and prev and prev["addr"] + prev["size"] == r["addr"] \
+                and r["tail"] == prev["tail"]:
+            prev["size"] += r["size"]
+            r["size"] = 0
+            continue
+        prev = r
     return rows, (start, game_end, end), include
 
 

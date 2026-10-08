@@ -101,7 +101,7 @@ void EVO_advanceText(void) {
     if (EVO_FUSION.textTyping == 0 && (PAD_STATES[0]->pressed & 0x40)) {
         EVO_clearTextLines(EVO_TEXT_LINES);
         if (EVO_FUSION.scriptState == 1) {
-            EVO_addTextLine((u8 *)EVO_SCRIPT->vars[4]);
+            EVO_addTextLine(GAME_S32_TO_PTR(u8 *, EVO_SCRIPT->vars[4]));
         }
         EVO_FUSION.scriptState = 0;
         playSoundEffect(0);

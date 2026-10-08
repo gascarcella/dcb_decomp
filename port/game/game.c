@@ -6,5 +6,12 @@
  * buffer, and later the mods. */
 #include "port_runtime.h"
 
+#include <stdint.h>
+
+/* The scratchpad: what the game's SCRATCHPAD(type, ofs) points into (include/port.h, which declares it and sets
+ * PORT_SCRATCHPAD_SIZE, 0x800). The PS1's is 1 KB at 0x1F800000; the host's is larger because the structs the game
+ * keeps there are wider (SortWork, include/dcb/tmd_sort.h). Scratch data: nothing saves it or reads it from the disc. */
+_Alignas(16) uint8_t port_scratchpad[0x800];
+
 /* ISO C wants a declaration in every translation unit; this one goes away with the first real function. */
 typedef int dcb_adapter_placeholder;

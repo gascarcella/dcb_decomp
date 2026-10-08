@@ -9,7 +9,7 @@
    callbacks, and a number's decimal digits */
 
 /* drawPrimDesc expands the description in the scratchpad */
-#define SCRATCH_PRIM_DESC ((PrimDesc *)0x1F800000)
+#define SCRATCH_PRIM_DESC SCRATCHPAD(PrimDesc *, 0)
 
 static MATRIX *buildPrimDescMatrix(VECTOR *pos, SVECTOR *rot, MATRIX *m);
 

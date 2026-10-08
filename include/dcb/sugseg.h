@@ -79,6 +79,8 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     /* 0x000 */ u8 unk0[0x13D]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    /* 0x000 */ u8 unk0[0x139 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     /* 0x000 */ u8 unk0[0x139];
 #endif
@@ -362,6 +364,8 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     u8 unk0[0x13D]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    u8 unk0[0x139 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     u8 unk0[0x139];
 #endif
@@ -432,6 +436,8 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     u8 unk0[0x13D]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    u8 unk0[0x139 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     u8 unk0[0x139];
 #endif
@@ -449,6 +455,8 @@ typedef struct {
     s32 sx;
 #if VERSION_JP
     u8 unk3C[0xF6]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    u8 unk3C[0xF2 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     u8 unk3C[0xF2];
 #endif
@@ -534,7 +542,9 @@ typedef struct {
 extern BattleState *SUG_BATTLE;
 extern s16 SUG_TARGET_HP[2];
 extern MATRIX GsIDMATRIX;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s16 CAMERA_TARGET_MODEL;
+#endif
 
 s32 StoreImage(Rect16 *rect, void *p);
 void initPolyF4Pair();

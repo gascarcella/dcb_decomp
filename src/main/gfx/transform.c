@@ -94,7 +94,11 @@ void updateTransformMatrix(void *xform, s32 axisMode) {
 }
 
 void loadGteMatrix(MATRIX *matrix) {
+#ifdef PC_PORT
+    SetTransMatrix(matrix); /* the PS1 passes it unnamed: it is still in a0 */
+#else
     SetTransMatrix();
+#endif
     SetRotMatrix(matrix);
 }
 

@@ -104,7 +104,7 @@ void SAI_runAreaScript(ScriptRunner *runner) {
                     SAI_AREA.mode = AREA_MODE_SELECT_OPPONENT;
                     return;
                 case 4:
-                    if (SAI_addTextLine((u8 *)runner->regs[4]) == -1) {
+                    if (SAI_addTextLine(GAME_S32_TO_PTR(u8 *, runner->regs[4])) == -1) {
                         SAI_AREA.mode = AREA_MODE_TEXT_FULL;
                         return;
                     }
@@ -186,7 +186,7 @@ void SAI_runAreaScript(ScriptRunner *runner) {
                     SAI_closeHackOverlay();
                     break;
                 case 22:
-                    initDialog(SAI_DIALOG, (u8 *)SAI_SCRIPT[0]->regs[9], 0);
+                    initDialog(SAI_DIALOG, GAME_S32_TO_PTR(u8 *, SAI_SCRIPT[0]->regs[9]), 0);
                     runDialog(SAI_DIALOG);
                     break;
                 default:
@@ -375,7 +375,11 @@ ScriptRunner *SAI_createAreaScript(void) {
     u8 unused[0x18]; /* unused, but it is in the original stack frame */
     ScriptRunner *obj = allocHeapBlock(sizeof(ScriptRunner), 0x31);
 
+#ifdef PC_PORT
+    obj->unk0 = (s32p)SESSION->script; /* the session's script field, wider on the host */
+#else
     obj->unk0 = *(s32 *)&((SessionData *)SESSION_DATA)->areaSession->unk0[0x190];
+#endif
     obj->script = SAI_createScriptContext((u8 *)obj->unk0);
     return obj;
 }

@@ -14,7 +14,9 @@ extern s32 SUG_SCREEN_FX_Y;
 extern s32 SUG_SCREEN_FX_MOTION;
 extern s32 SUG_SCREEN_FX_HOLD;
 extern s32 SUG_SCREEN_FX_FADE_TIME;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s32 VBLANKS_PER_FRAME;
+#endif
 
 s16 SUG_SCREEN_FX_ANGLE = 0;
 

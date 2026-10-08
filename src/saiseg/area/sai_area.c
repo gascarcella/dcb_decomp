@@ -75,7 +75,7 @@ void SAI_tickArea(void) {
             playSoundEffect(0);
             SAI_clearTextLines(SAI_TEXT_LINES);
             if (SAI_AREA.mode == AREA_MODE_TEXT_FULL) {
-                SAI_addTextLine((u8 *)SAI_SCRIPT[0]->regs[4]);
+                SAI_addTextLine(GAME_S32_TO_PTR(u8 *, SAI_SCRIPT[0]->regs[4]));
             }
             SAI_AREA.mode = AREA_MODE_SCRIPT;
             SAI_AREA.waitingForCross = 0;

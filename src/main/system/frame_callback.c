@@ -12,8 +12,8 @@
 /* FRAME_CALLBACKS is a 0-terminated list of functions called every frame;
    addFrameCallback appends one unless it's already in the list */
 void addFrameCallback(s32p callback) {
-    s32 *slot;
-    s32 entry;
+    s32p *slot;
+    s32p entry;
 
     slot = &FRAME_CALLBACKS;
 #if VERSION_US || VERSION_EU
@@ -38,8 +38,8 @@ loop_1:
    each version's compiler needs its own to lay them out as the original does */
 #if VERSION_US
 void removeFrameCallback(s32p callback) {
-    s32 *slot;
-    s32 entry;
+    s32p *slot;
+    s32p entry;
 
     slot = &FRAME_CALLBACKS;
     if (callback == 0) {
@@ -65,7 +65,7 @@ found:
 }
 #elif VERSION_JP || VERSION_EU
 void removeFrameCallback(s32p callback) {
-    s32 *slot;
+    s32p *slot;
 
     slot = &FRAME_CALLBACKS;
 #if VERSION_EU

@@ -13,6 +13,17 @@ typedef struct {
     /* 0x08 */ s32 nobj;
     /* 0x0C */ Obj18 obj[1];
 } Tmd18;
+
+/* The primitive data of the OMD object a GsDOBJ4's tmd points at (its
+   Tmd18's obj[0]). The file's unk14 is an offset from the Tmd18, which
+   relocateOmdObjects turns into the address in place on the PS1; the word is
+   the file's 32 bits, so the host keeps the offset and adds the Tmd18's
+   address here. */
+#ifdef PC_PORT
+#define OMD_OBJ_DATA(tmd) ((u32 *)((u8 *)(tmd) - __builtin_offsetof(Tmd18, obj) + ((Obj18 *)(tmd))->unk14))
+#else
+#define OMD_OBJ_DATA(tmd) ((u32 *)(tmd)[5])
+#endif
 typedef struct {
     s32 key;
     s32p value;

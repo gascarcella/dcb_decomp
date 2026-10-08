@@ -34,7 +34,9 @@ extern s16 GRID_ROWS;
 extern s16 GRID_LINE_COUNT;
 extern s32 GRID_VISIBLE;
 extern u8 GRID_PULSE_PHASE;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s32 CAMERA_SNAP;
+#endif
 
 void setupSceneProjection(s32 projection);
 void setupSceneLighting(void);

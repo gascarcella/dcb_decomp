@@ -52,7 +52,7 @@ s32 runScriptToNextEvent(Script *script, s32 *regs) {
     s32 skip;
     s32 cond;
     s32 i;
-    u32 unalignedPc;
+    u32p unalignedPc;
     u16 *operand;
 
     if (script->busy != 0) {
@@ -92,7 +92,10 @@ s32 runScriptToNextEvent(Script *script, s32 *regs) {
             u8 *cur = pc;
 
             if (!skip) {
-                regs[OP_A(pc)] = (s32)(pc + 6);
+                /* the registers stay s32 on the host (the effect scripts' callers
+                   read them as structs of words): the address goes through
+                   GAME_PTR_TO_S32, and its readers take it back with GAME_S32_TO_PTR */
+                regs[OP_A(pc)] = GAME_PTR_TO_S32(pc + 6);
             }
             pc += OP_B(cur) + 6;
             break;
@@ -330,7 +333,7 @@ s32 runScriptToNextEvent(Script *script, s32 *regs) {
             cond = 0;
             skip = 1;
         }
-        unalignedPc = (u32)pc + 3;
+        unalignedPc = (u32p)pc + 3;
         pc = (u8 *)(unalignedPc & ~3);
         script->offset = (u32p)pc;
         script->offset -= (u32p)script->base;

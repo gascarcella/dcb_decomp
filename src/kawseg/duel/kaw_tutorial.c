@@ -140,7 +140,7 @@ s32 KAW_tickTutorial(void) {
             case 10:
                 switch (KAW_DUEL->tutorialScript->script->eventArg) {
                 case 0:
-                    KAW_showTutorialMessage(KAW_DUEL->tutorialScript->regs[8], (u8 *)KAW_DUEL->tutorialScript->regs[0]);
+                    KAW_showTutorialMessage(KAW_DUEL->tutorialScript->regs[8], GAME_S32_TO_PTR(u8 *, KAW_DUEL->tutorialScript->regs[0]));
                     break;
                 case 1:
                     KAW_DUEL->tutorialBusy = 0;
@@ -149,7 +149,7 @@ s32 KAW_tickTutorial(void) {
                     break;
                 case 3:
                     player = vars[1];
-                    strcpy((char *)DUEL_PLAYERS[player] + 1, (char *)vars[0]);
+                    strcpy((char *)DUEL_PLAYERS[player] + 1, GAME_S32_TO_PTR(char *, vars[0]));
                     linkDeckCardData(player, (PlayerDeck *)DUEL_PLAYERS[player]);
                     break;
                 case 4:

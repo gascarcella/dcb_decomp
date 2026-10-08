@@ -8,8 +8,10 @@
 #define ME DUEL->turnPlayer
 #define OPP ((s8)(DUEL->turnPlayer ^ 1))
 
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s8 MSG_BAR_NEXT;
 extern s8 MSG_BAR_NEXT2;
+#endif
 
 void runDuelTurnLoop(void);
 #if VERSION_JP

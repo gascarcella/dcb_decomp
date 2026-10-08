@@ -621,9 +621,17 @@ typedef struct {
 typedef struct {
     u8 b[8];
 } Bytes8;
+#ifdef PC_PORT
+/* What an EffectObject (scroll_bg.h) gains on the host: its parent is pointer-wide
+   (4 bytes at -m64, none at -m32), so every field after it is that much further,
+   and so are the effects that start with an EffectObject's bytes */
+#define EFFECT_OBJECT_HOST_EXTRA (sizeof(s32p) - 4)
+#endif
 typedef struct {
 #if VERSION_JP
     /* 0x000 */ u8 unk0[0x140]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    /* 0x000 */ u8 unk0[0x13C + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     /* 0x000 */ u8 unk0[0x13C];
 #endif
@@ -1462,15 +1470,37 @@ extern s32p PLAYER_PROFILES;
 extern FrameBuffer *CURRENT_FRAME_BUFFER;
 extern u8 FRAME_BUFFER_INDEX;
 extern s32 FRAME_INTERVAL;
+#ifdef PC_PORT
+/* The PS1 has labels inside GRAPHICS and DUEL_MSG_BAR, two names for the same
+   bytes; on the host each name would be an object of its own, so the labels are
+   the fields (issue #11; the offsets checked against config/us/symbols.txt).
+   GRAPHICS is declared as the Graphics it is. */
+extern Graphics GRAPHICS;
+#define FRAME_CALLBACKS (*(s32p *)GRAPHICS.frameCallbacks)      /* GRAPHICS + 0x08 */
+#define SCENE_3D_ENABLED (GRAPHICS.scene3dEnabled)              /* + 0x4C */
+#define VBLANKS_PER_FRAME (GRAPHICS.vblanksPerFrame)            /* + 0x50 */
+#define CAMERA_SNAP (GRAPHICS.snapCamera)                       /* + 0x74 */
+#define CAMERA_TARGET_MODEL (GRAPHICS.targetModel)              /* + 0x8C */
+#define CAMERA_TARGET_PITCH (*(u16 *)&GRAPHICS.targetPitch)     /* + 0x8E */
+#define CLEAR_BG_ON_DRAW (GRAPHICS.buffers[0].draw.isbg)        /* + 0xB0 */
+#define MSG_BAR_PLAYER_LABEL (DUEL_MSG_BAR.playerLabel)         /* DUEL_MSG_BAR + 1 */
+#define MSG_BAR_NEXT (DUEL_MSG_BAR.next)                        /* + 4 */
+#define MSG_BAR_NEXT2 (DUEL_MSG_BAR.next2)                      /* + 7 */
+#else
 extern s32 GRAPHICS;
+#endif
 extern s32 PAD_INPUT_ENABLED;
+#ifndef PC_PORT /* PC_PORT: GRAPHICS's field (above) */
 extern s32 FRAME_CALLBACKS;
+#endif
 extern PadState *PAD_STATES[];
 extern s32 TEXT_WIDTH;
 extern s32 TEXT_HEIGHT;
 extern s32 LOADED_FILE_SIZE;
 extern TIM_IMAGE LOADED_TIM;
+#ifndef PC_PORT /* PC_PORT: GRAPHICS's field (above) */
 extern s32 SCENE_3D_ENABLED;
+#endif
 extern Scene3D *SCENE_3D;
 extern s32p OVERLAY_LOAD_ADDR;
 extern s32 MUSIC_CHANGE_BUSY;
@@ -1485,7 +1515,9 @@ extern s32 DUEL_DIALOG;
 extern u8 *HUD_PANELS;
 extern u8 *CARD_ANIMS;
 extern MsgBar DUEL_MSG_BAR;
+#ifndef PC_PORT /* PC_PORT: DUEL_MSG_BAR's field (above) */
 extern u8 MSG_BAR_PLAYER_LABEL;
+#endif
 void runSceneCameraTask(s32 preset);
 
 s32 VSync(s32);
@@ -1543,7 +1575,11 @@ s32 CdPosToInt(void *);
 s32 CdSync(s32, s32);
 extern int CdSync(int, int);
 void SetDrawTPage(void *, s32, s32, s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SetTexWindow(void *, s16 *);
+#else
 s32 SetTexWindow(void *, s16 *);
+#endif
 void GetDispEnv(DISPENV *);
 void SetDrawArea(DR_AREA *, Rect16 *);
 extern int printf(const char *, ...);
@@ -1554,14 +1590,22 @@ s32 PadGetState(s32);
 s32 PadInfoMode(s32, s32, s32);
 void disableInterrupts(void);
 void restoreInterrupts(void);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+s32 catan(s32);
+#else
 long catan(long);
+#endif
 s32 resumeTask();
 s32 OpenTIM(u32 *);
 TIM_IMAGE *ReadTIM(TIM_IMAGE *);
 void SetDefDrawEnv(DRAWENV *, s32, s32, s32, s32);
 void SetDefDispEnv(DISPENV *, s32, s32, s32, s32);
 s32 MargePrim(void *, void *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SetDrawMode(void *, s32, s32, s32, s32 *);
+#else
 s32 SetDrawMode(void *, s32, s32, s32, s32 *);
+#endif
 void SetPolyFT3(POLY_FT3 *);
 void SetPolyGT3(POLY_GT3 *);
 void SetPolyGT4(POLY_GT4 *);
@@ -1582,28 +1626,49 @@ void SetTile1(void *);
 void SetTile8(void *);
 void SetTile16(void *);
 void SetTile(TILE *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void AddPrim(void *, void *);
+#else
 s32 AddPrim(void *, void *);
+#endif
 s32 RotAverageNclip3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotTransPers3(SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotAverageNclip4(SVECTOR *, SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotTransPers4(SVECTOR *, SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 s32 RotTransPers(SVECTOR *, s32 *, s32 *, s32 *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+MATRIX *RotMatrix(void *, void *);
+MATRIX *TransMatrix(MATRIX *, VECTOR *);
+#else
 s32 RotMatrix(void *, void *);
 s32 TransMatrix(MATRIX *, VECTOR *);
+#endif
 MATRIX *ScaleMatrix(void *, void *);
 void composeTransformMatrix(SVECTOR *, VECTOR *, VECTOR *, MATRIX *, s32);
 MATRIX *MulMatrix2(MATRIX *, MATRIX *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void RotTrans(u16 *, void *, s32 *);
+void SetRotMatrix(MATRIX *);
+void SetTransMatrix(MATRIX *);
+MATRIX *RotMatrixYXZ(void *, void *);
+#else
 s32 RotTrans(u16 *, void *, s32 *);
 s32 SetRotMatrix(MATRIX *);
 s32 SetTransMatrix();
 s32 RotMatrixYXZ(void *, void *);
+#endif
 void GsInitCoordinate2(GsCOORDINATE2 *, GsCOORDINATE2 *);
 void *bzero(void *, s32);
 void StoreImage2(Rect16 *, u32 *);
 void GsMapModelingData(u32 *);
 void GsLinkObject4(u32p, void *, s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void PushMatrix(void);
+void PopMatrix(void);
+#else
 s32 PushMatrix();
 s32 PopMatrix();
+#endif
 void GsGetLws(GsCOORDINATE2 *, MATRIX *, MATRIX *);
 void *memset(void *, s32, s32);
 void SetGeomOffset(s32, s32);
@@ -1659,14 +1724,22 @@ DirEntry *nextfile(DirEntry *);
 char *strcpy(char *, const char *);
 s32 rsin(s32);
 s32 rcos(s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+s32 SquareRoot0(s32);
+#else
 long SquareRoot0(long);
+#endif
 void VectorNormal(VECTOR *, VECTOR *);
 int abs(int);
 s32 endTask(s32);
 MATRIX *CompMatrix(MATRIX *, MATRIX *, MATRIX *);
 s32 RotAverage4(SVECTOR *, SVECTOR *, SVECTOR *, SVECTOR *, s32 *, s32 *, s32 *, s32 *, s32 *, s32 *);
 MATRIX *MulMatrix(MATRIX *, MATRIX *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void MatrixNormal(MATRIX *, MATRIX *);
+#else
 MATRIX *MatrixNormal(MATRIX *, MATRIX *);
+#endif
 MATRIX *TransposeMatrix(MATRIX *, MATRIX *);
 
 #endif /* GAME_H */

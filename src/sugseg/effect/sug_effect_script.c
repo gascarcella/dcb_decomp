@@ -139,7 +139,9 @@ typedef s32p (*SlotCreate)(s32p arg, EffectSlots *slots);
 typedef void (*SlotFree)(s32p value);
 
 extern RootEffect SUG_EFFECT_ROOT;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern u8 CLEAR_BG_ON_DRAW;
+#endif
 
 u16 GetClut(s32 x, s32 y);
 void GsGetLw(GsCOORDINATE2 *coord, MATRIX *out);
@@ -1042,7 +1044,7 @@ void SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
 
     template = &buf;
     SUG_initEffectFromParams(template, params, ctx);
-    entry = (Entry16 *)params->vramEntries;
+    entry = GAME_S32_TO_PTR(Entry16 *, params->vramEntries); /* a script register (op 8) */
     if (entry != NULL) {
         entry += ctx->modelSlots[0];
     }

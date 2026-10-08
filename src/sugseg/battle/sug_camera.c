@@ -6,7 +6,9 @@
 extern s32 SUG_CAMERA_SPIN;
 extern s32 SUG_CAMERA_ORBIT_RANGE;
 extern s32 SUG_CAMERA_YAW_SPIN;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern u16 CAMERA_TARGET_PITCH;
+#endif
 
 void SUG_resetCameraPos(void) {
     CAMERA->posZ = 0;

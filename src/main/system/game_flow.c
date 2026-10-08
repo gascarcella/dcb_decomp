@@ -78,7 +78,7 @@ void openPartnerFusion(s8 mode) {
     spawnTask(0, -1, 0, 0x1000, loadFileToAddress, "P:\\evoseg.bin", OVERLAY_LOAD_ADDR, getCurrentTaskId());
     waitFrames(0x7FFFFFFF);
     waitFrames(2);
-    spawnTask(0, -1, 0, 0x1600, EVO_runFusion, (s32 *) mode, 0, 0, 0);
+    spawnTask(0, -1, 0, 0x1600, EVO_runFusion, (s32p) mode, 0, 0, 0);
 }
 
 void returnToWorldMap(void) {

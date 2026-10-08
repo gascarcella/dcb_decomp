@@ -129,7 +129,11 @@ void SAI_loadMapTextures(s32 useMap) {
     char path[0x48];
     u32 *pack;
 
+#ifdef PC_PORT
+    SESSION->loading = 1; /* the session's fields are further in on the host */
+#else
     *(s32 *)&((SessionData *)SESSION_DATA)->areaSession->unk0[0x194] = 1;
+#endif
     if (useMap == 0) {
         sprintf(path, worldPath);
     } else {
@@ -139,7 +143,11 @@ void SAI_loadMapTextures(s32 useMap) {
     pack = (u32 *)waitFrames(0x7FFFFFFF);
     uploadTexturePack(pack);
     freeHeapBlock(pack);
+#ifdef PC_PORT
+    SESSION->loading = 0; /* the session's fields are further in on the host */
+#else
     *(s32 *)&((SessionData *)SESSION_DATA)->areaSession->unk0[0x194] = 0;
+#endif
 }
 
 void SAI_initCamera(void) {
