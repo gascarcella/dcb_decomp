@@ -67,7 +67,9 @@ extern UiWindow OPEN_PLAYER_NAME_WINDOW;
 extern UiWindow OPEN_IMAGE_WINDOW;
 extern POLY_FT4 OPEN_TITLE_PART_PRIMS[2][40];
 extern u16 OPEN_WHITE_CLUT[256];
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s16 CAMERA_TARGET_MODEL;
+#endif
 
 s32 loadDigimonModelPak(s32 slot, s32 id, s8 format, s32 loadAllAnims);
 

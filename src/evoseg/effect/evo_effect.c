@@ -86,7 +86,9 @@ extern s8 EVO_EFFECT_SPRITE_1;
 extern s8 EVO_EFFECT_SPRITE_2;
 extern EvoFx EVO_EFFECT_ROOT;
 extern void (*EVO_EFFECT_FREE_FUNCS[])(EvoFx *);
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern u8 CLEAR_BG_ON_DRAW;
+#endif
 
 /* KAWSEG's functions, at their KAWSEG addresses: this effect script was
    copied from KAWSEG's (the opcodes that call them are KAWSEG's) */

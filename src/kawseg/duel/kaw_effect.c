@@ -77,7 +77,9 @@ extern s8 KAW_EFFECT_CARD;
 extern s8 KAW_EFFECT_TARGET_CARD;
 extern void (*KAW_EFFECT_FREE_FUNCS[])(u8 *);
 extern EffectObject KAW_EFFECT_ROOT;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern u8 CLEAR_BG_ON_DRAW;
+#endif
 
 /* SUGSEG's colour quad drawer: in KAWSEG this address is inside KAW_chooseSupportCard */
 void SUG_createFadeRect(Rect16 *rect, u8 *rgb, u8 *rgb2, u8 blend, s32 step, u8 mode);

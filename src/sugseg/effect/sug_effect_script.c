@@ -139,7 +139,9 @@ typedef s32p (*SlotCreate)(s32p arg, EffectSlots *slots);
 typedef void (*SlotFree)(s32p value);
 
 extern RootEffect SUG_EFFECT_ROOT;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern u8 CLEAR_BG_ON_DRAW;
+#endif
 
 u16 GetClut(s32 x, s32 y);
 void GsGetLw(GsCOORDINATE2 *coord, MATRIX *out);

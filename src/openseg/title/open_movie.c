@@ -298,7 +298,7 @@ void OPEN_initDecEnv(DecEnv *env, s32 x0, s32 y0, s32 x1, s32 y1) {
 }
 
 void OPEN_initMovieStream(CdLocation *loc, void (*callback)()) {
-    s32 *callbacks;
+    s32p *callbacks;
 
     callbacks = &FRAME_CALLBACKS;
     OPEN_MOVIE_FRAMES_SHOWN = 0;

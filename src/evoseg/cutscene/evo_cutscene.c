@@ -207,7 +207,9 @@ typedef union {
     LINE_F4 line;
 } EvoPacket;
 
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s16 CAMERA_TARGET_MODEL;
+#endif
 extern _GsFCALL GsFCALL4;
 extern u16 EVO_BANNER_CLUT[16];
 extern s8 EVO_BANNER_FADE;

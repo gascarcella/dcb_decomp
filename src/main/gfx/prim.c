@@ -38,7 +38,7 @@ void initVramSprite(VramSprite *packet, s16 x, s16 y, s16 clut, s32 colorMode, s
         blend = 0;
     }
     /* the texture page, as getTPage(colorMode, blend, vramX, vramY) */
-    SetDrawMode(packet, 0, 0, ((colorMode & 3) << 7) | ((blend & 3) << 5) | ((vramY & 0x100) >> 4) | ((vramX & 0x3C0) >> 6) | ((vramY & 0x200) * 4), &GRAPHICS);
+    SetDrawMode(packet, 0, 0, ((colorMode & 3) << 7) | ((blend & 3) << 5) | ((vramY & 0x100) >> 4) | ((vramX & 0x3C0) >> 6) | ((vramY & 0x200) * 4), (s32 *)&GRAPHICS);
     MargePrim(packet, &packet->sp);
 }
 

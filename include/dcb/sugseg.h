@@ -542,7 +542,9 @@ typedef struct {
 extern BattleState *SUG_BATTLE;
 extern s16 SUG_TARGET_HP[2];
 extern MATRIX GsIDMATRIX;
+#ifndef PC_PORT /* PC_PORT: a #define of game.h's (issue #11) */
 extern s16 CAMERA_TARGET_MODEL;
+#endif
 
 s32 StoreImage(Rect16 *rect, void *p);
 void initPolyF4Pair();
