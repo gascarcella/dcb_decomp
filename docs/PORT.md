@@ -35,7 +35,7 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 | `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below). Decided game-side (2026-10-08): the ID is the overlay's 1-based index in `us.mk`'s `OVERLAYS` list (`port_inputs.py`), and at M1 the adapter maps `"P:\\kawseg.bin"` to it in `loadFileToAddress`'s hook |
 | `EXE_SYMBOLS` | `config/us/`'s symbol files (the EXE's names, and `symbols_overlay_calls.txt` for the 84 overlay functions the EXE calls) |
 | `GTEMAC` | **Not passed.** `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). psxstack's translator cannot take them: it rejects output operands (`gte_mfc2`'s `"=r"`), knows only `.word` commands (ours are the `.inc` mnemonics), keeps temporaries per macro (`gte_prefetchv3c` hands `$8`-`$13` to `gte_ldv3_prefetched`), and writes its override as `psyq/gtemac.h`, which never shadows `"gte.h"`. Decided (2026-10-08) and **done**: `port/include/gte.h`, a host-only header first on the include path with the real one's guard (`GTE_H`), has all 40 macros by hand over `psyq_gte_mtc2`/`mfc2`/`ctc2`/`cfc2`/`cmd`/`swc2_` (the mnemonics as `gte_macros.inc`'s command words; the prefetch pair's `$8`-`$13` a static six-word buffer). The six units that use them compile with it with no GTE diagnostic; `scripts/gte_test.sh` (`tests/port/gte_host_test.c`) checks every macro against the shim's software GTE (LIBGTE functions, rtpt = 3 x rtps, ncct = 3 x nccs, the formulas). The probe still stubs the macros with its own override (it does not need their bodies); a macro added upstream and missing from the host header shows as an implicit declaration in the port build |
-| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching at M0 (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours); fixed game-side at M1, byte-identical: 45 same, 9 compatible, 0 mismatching |
+| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching at M0 (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours); fixed game-side at M1, byte-identical: 45 same, 9 compatible, 0 mismatching (against psxstack main's 184 at step 3: 91 same, 12 compatible, 0 mismatching; `game.h` declares the stack's return types under `PC_PORT`, as for `LoadImage`) |
 
 ## The host-compile probe
 ### The baseline (M0, 2026-10-08, at 3802dee)
@@ -53,6 +53,11 @@ errors, 1 fatal. `link` over the 35 objects: 4 duplicate globals, 160 undefined 
 **Now (M1 step 2, casts final pass):** 140 of 155 units compile; 15 fail with 49 diagnostics: 23 pointer-to-int-cast,
 22 int-to-pointer-cast, 2 incompatible-pointer-types, 1 int-conversion, 1 fatal (`kernel.h`). What is left is step 3: the
 script VMs' `regs[]`/`vars[]`, `EffectTemplate`, `ScriptRunner.unk0`, the heap, `tmd_sort.c`, `scene3d.c`, the loader.
+
+**After M1 step 3** (the heap, the scratchpad, the TMD words, the script registers, the effects' parent, the
+`decls`, the aliased labels of issue #11; "Memory and pointers"): **154 of 155 units compile**; the one left is
+`task.c`'s fatal `<kernel.h>` (the scheduler glue replaces it). `decls`: 0 mismatching against v0.3.0 and against
+psxstack main (91 same, 12 compatible of 184). `link`: the same 5 duplicate overlay globals.
 
 **After M1 step 1** (`include/port.h`, the declarations, the prototypes; 2026-10-08): **67 of 155 units compile; 88
 fail with 1,016 diagnostics:** 945 pointer-to-int-cast (the explicit casts: `drawText` and its siblings 445,
@@ -178,12 +183,13 @@ override and derived symbol file with the pin bump.
 
 ### Memory and pointers
 - **The game heap:** `src/main/system/heap.c` manages `HEAP_ARENA` (0x8008C848, `HEAP_SIZE` 0x148000, inside the
-  EXE's `.bss`).
-  - `HeapBlock.addr` is an `s32` with the in-use flag in bit 31 and KSEG masking (`heap.c:24, 82, 151, 190`).
-  - On the host the arena has to sit where `PTR_TO_S32` works (psxstack's arena), or the block table has to hold
-    offsets.
-  - psxstack's `memory.heap` must be contiguous with the slots, and this heap is not: the rest of `.bss` and Psy-Q's
-    `.bss` lie between them. Open: a contract change, or a heap region stretched to the slot.
+  EXE's `.bss`; on the host a game `.bss` array, not psxstack's arena: `game.json` has no heap).
+  - `HeapBlock.addr` keeps the in-use flag in bit 31 and strips the KSEG bits of free blocks. Done (M1 step 3): it is
+    `s32p` (the table is in memory only), and the `HEAP_ADDR_*` macros of `heap.c` are the original expressions on
+    the PS1; on the host the flag is the top bit of the pointer-wide word.
+  - A heap pointer kept in an `s32` (a script register, below) goes through `GAME_PTR_TO_S32`/`GAME_S32_TO_PTR`
+    (`include/port.h`, defined in `heap.c`): on the host it becomes the PS1 address of the same byte, so the word
+    holds what it holds on the PS1; a pointer elsewhere goes to psxstack's `PTR_TO_S32` (the slot, else fatal).
 - **Psy-Q's libc heap:** `InitHeap` puts it over the overlay area, but game code never calls malloc or free.
 - **Pointers held in integers:**
   - `addFrameCallback(s32)`: 56 sites, 55 with `(s32)fn`.
@@ -192,17 +198,45 @@ override and derived symbol file with the pin bump.
   - `OVERLAY_LOAD_ADDR` is declared `s32` (`duel_util.c:149`).
   - psxstack's `PTR_TO_S32`/`S32_TO_PTR` cover the arena; the probe's `-Werror` on pointer/int casts will list each
     site.
+  - **Script registers** (M1 step 3): one interpreter (`script.c`'s `runScriptToNextEvent`) runs every VM: KAWSEG's
+    tutorial and effects, EVOSEG's fusion and effects, SAISEG's area and labels, SUGSEG's effects. The registers stay
+    `s32`: the effect VMs read the register file as structs of words (`EffectParams`, `EvoFxParams`, KAWSEG's
+    `EFFECT_PARAMS` at byte 0x248), and SAISEG's registers 12.. become the saved `areaScriptFlags`. Only op 8 puts an
+    address in a register (of an inline block of the script, which is loaded into the heap): it goes through
+    `GAME_PTR_TO_S32`, and the readers (the text lines, the tutorial's names, SUGSEG's `vramEntries`) through
+    `GAME_S32_TO_PTR`. SAISEG's `ScriptRunner.unk0` (the script file) is `s32p`.
+  - **Effect objects** (M1 step 3): `EffectObject.parent` is `s32p`, as the `EvoFx` and `EffectInit` views of the
+    same object already had a pointer there; the fields after it are 4 bytes further on the host, so
+    `EffectTemplate` and the effects that start with an EffectObject's bytes (`RingEffect`, SUGSEG's) take the host's
+    size under `PC_PORT` (`scroll_bg.h` asserts it). The templates are built on the stack and copied: nothing reads
+    them from the disc.
+  - **The OMD words** (M1 step 3): `relocateOmdObjects` turns each object's offset into an address in place; the word
+    is the file's 32 bits, so the host keeps the offset and `OMD_OBJ_DATA` (`anim_control.h`) adds the `Tmd18`'s
+    address where `scene3d.c` reads it. TMD-format models go through the shim's `GsMapModelingData` (not in
+    psxstack yet).
+  - **Labels inside structs** (issue #11, M1 step 3): `FRAME_CALLBACKS`, `SCENE_3D_ENABLED`, `VBLANKS_PER_FRAME`,
+    `CAMERA_SNAP`, `CAMERA_TARGET_MODEL`, `CAMERA_TARGET_PITCH`, `CLEAR_BG_ON_DRAW` (fields of `GRAPHICS`),
+    `MSG_BAR_PLAYER_LABEL`/`NEXT`/`NEXT2` (`DUEL_MSG_BAR`) and `SCREEN_COPY_MODE` (`SCREEN_COPY_EFFECT`) are
+    `#define`d onto their fields under `PC_PORT` (`game.h`, `vblank.h`), and `GRAPHICS` is declared a `Graphics`;
+    `TASK_GP` goes with the scheduler glue.
 - **Ordering tables:** `P_TAG.addr:24` with `addPrim`/`setaddr` (293 uses in 44 files), and `packet & 0xFFFFFF` in
   `tmd_sort.c:621, 640`. psxstack's tag window already handles 24-bit tags over the units' data and the arena
-  (psxstack `docs/PORT.md` "Ordering tables on 64-bit").
+  (psxstack `docs/PORT.md` "Ordering tables on 64-bit"). `tmd_sort.c`'s tags go through `PTR_TO_U32`, and
+  `SortWork.packet` is `u32p`: the host keeps the pointer where the PS1 strips the KSEG bits.
 - **Scratchpad:**
   - `0x1F800000` is used in 8 files. Most uses are the `SORT_WORK` macro (`include/dcb/tmd_sort.h:6`, about 119 uses
     in `tmd_sort.c`); others are in `camera.c`, `scene3d.c`, `render_loop.c` (clears 1 KB) and the cutscene and
     sprite code.
   - psxstack has no scratchpad region: its only scratchpad hook is `PORT_SCRATCHPAD_STACK_*`, for dw2003's stack
     switch, which does nothing on the host. Here the game stores data there. Decided game-side (2026-10-08): a
-    `SCRATCHPAD(type, ofs)` macro in `port.h` over a 1 KB buffer in the adapter; a stack region only if a third game
+    `SCRATCHPAD(type, ofs)` macro in `port.h` over a buffer in the adapter; a stack region only if a third game
     needs one.
+  - Done (M1 step 3): every `0x1F800000` site is `SCRATCHPAD(type, ofs)` (`0x1F800000 + ofs` on the PS1), over
+    `port_scratchpad` in `port/game/game.c`: 0x800 bytes, not 1 KB, because `SortWork` is wider on the host
+    (pointers), so the vertex buffer that follows it (`SORT_WORK_BUFFER`, 0x7C on the PS1) starts at 0x90 and still
+    has the PS1's 0x384 bytes. `scene3d.c` and `evo_cutscene.c` write `SortWork`'s `tpage` and `clut` by name on the
+    host (the PS1 writes scratchpad words 12 and 13). `camera.c`'s and `sug_sprite.c`'s temporaries keep their
+    offsets.
   - Other fixed addresses: `task.c:68` reads the kernel's PCB pointer at `0x108`. There are no I/O register
     accesses in game code.
 
@@ -317,7 +351,8 @@ first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then co
    pointer-holding globals, parameters, return values and fields and at the `(s32)&x` casts ("The host-compile
    probe": ~40 declarations silence ~1,900 sites, ~950 casts are rewritten with it); psxstack's `PTR_TO_U32` for
    `setaddr`, `PTR_TO_S32` only where an integer lives in a PS1-sized layout (`HeapBlock.addr`, the task context).
-   Both sides are byte-identical; the diff stays readable for upstream.
+   Both sides are byte-identical; the diff stays readable for upstream. (At step 3 `HeapBlock.addr` became `s32p`,
+   and the PS1-sized words that hold heap pointers, the script registers, use the game's `GAME_PTR_TO_S32`.)
 3. The stale KAWSEG addresses (0x801E6424, 0x801E651C): what happens on the PS1 when they run? With the emulator
    (issue #3), before the adapter resolves them at M1.
 4. ~~Psy-Q declarations~~ Done in psxstack 0.3.0 ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)):
