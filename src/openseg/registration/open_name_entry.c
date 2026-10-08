@@ -177,13 +177,13 @@ void OPEN_drawNameEntryKeyboard(UiWindow *window) {
             pad = 11;
         }
         col = i % 10 * 17 + 4;
-        drawText(x + col + pad, y + i / 10 * 14, (s32)text, 7, z);
+        drawText(x + col + pad, y + i / 10 * 14, (s32p)text, 7, z);
     }
     for (i = 0; i < 7; i++) {
         rows[i] = 4;
     }
     rows[window->view.y / window->rect.h] = 5;
-    drawText(window->rect.x + 0xD4, window->rect.y + 0x63, (s32)"OK", 6, z);
+    drawText(window->rect.x + 0xD4, window->rect.y + 0x63, (s32p)"OK", 6, z);
     OPEN_moveNameEntryCursor();
     if (OPEN_NAME_ENTRY.onSideMenu == 0) {
         if (PAD_STATES[0]->pressed & 0x40) {
@@ -273,7 +273,7 @@ void OPEN_drawNameEntryName(UiWindow *window) {
     y = window->originY;
     z = window->z;
     sprintf(text, "*s0%s", OPEN_NAME_ENTRY.name);
-    drawText(x, y, (s32)text, 7, z);
+    drawText(x, y, (s32p)text, 7, z);
     if (PAD_STATES[0]->repeat & 4) {
         if (OPEN_NAME_ENTRY.cursor != 0) {
             playMenuSound(2);
@@ -302,9 +302,9 @@ void OPEN_drawNameEntryHelp(UiWindow *window) {
     x = window->originX + 1;
     y = window->originY + 1;
     z = window->z;
-    drawText(x, y, (s32)"*b1 Delete", 7, z);
-    drawText(x + 8, y + 13, (s32)"*b2 OK", 7, z);
-    drawText(x, y + 26, (s32)"*b0 Insert", 7, z);
+    drawText(x, y, (s32p)"*b1 Delete", 7, z);
+    drawText(x + 8, y + 13, (s32p)"*b2 OK", 7, z);
+    drawText(x, y + 26, (s32p)"*b0 Insert", 7, z);
 }
 
 void OPEN_drawNameEntry(void) {
@@ -340,7 +340,7 @@ void OPEN_runNameEntry(char *name, s32 parentTask) {
     view.w = 0x10E;
     view.h = 0x7E;
     openWindow(&OPEN_NAME_ENTRY_WINDOW, &rect, -1, (s16 *)&view, 10, 0x81, 0x80, 0xC);
-    OPEN_NAME_ENTRY_WINDOW.label = (s32)"NAME ENTRY";
+    OPEN_NAME_ENTRY_WINDOW.label = (s32p)"NAME ENTRY";
     OPEN_NAME_ENTRY_WINDOW.labelPalette = 7;
     cursor.x = OPEN_NAME_ENTRY_WINDOW.originX + 4;
     cursor.y = OPEN_NAME_ENTRY_WINDOW.originY + 1;
@@ -352,13 +352,13 @@ void OPEN_runNameEntry(char *name, s32 parentTask) {
     rect.w = 0x36;
     rect.h = 0x28;
     openWindow(&OPEN_NAME_HELP_WINDOW, &rect, -1, (s16 *)-1, 8, 0x26, 0x80, 0xC);
-    OPEN_NAME_HELP_WINDOW.label = (s32)"HELP";
+    OPEN_NAME_HELP_WINDOW.label = (s32p)"HELP";
     rect.x = 0xDE;
     rect.y = 0x1C;
     rect.w = 0x4A;
     rect.h = 0xE;
     openWindow(&OPEN_NAME_WINDOW, &rect, -1, (s16 *)-1, 8, 0x26, 0x80, 0xC);
-    OPEN_NAME_WINDOW.label = (s32)"PLAYER NAME";
+    OPEN_NAME_WINDOW.label = (s32p)"PLAYER NAME";
     cursor.x = OPEN_NAME_WINDOW.originX;
     cursor.y = OPEN_NAME_WINDOW.originY + 13;
     cursor.w = 12;
@@ -366,7 +366,7 @@ void OPEN_runNameEntry(char *name, s32 parentTask) {
     /* passes rect, not the cursor rect it just filled in */
     initCursorHighlight(&OPEN_NAME_CARET, &rect, (Bytes4 *)-1);
     playMenuSound(3);
-    addFrameCallback((s32)OPEN_drawNameEntry);
+    addFrameCallback((s32p)OPEN_drawNameEntry);
     /* the same loop in both; the match depends on its form: each version's
        compiler only lays it out as the original from its own */
 #if VERSION_US
@@ -412,7 +412,7 @@ void OPEN_runNameEntry(char *name, s32 parentTask) {
     animateWindowTo(&OPEN_NAME_ENTRY_WINDOW, (Rect16 *)-1);
     animateWindowTo(&OPEN_NAME_WINDOW, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawNameEntry);
+    removeFrameCallback((s32p)OPEN_drawNameEntry);
     resumeTask(parentTask);
 }
 

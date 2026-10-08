@@ -398,7 +398,7 @@ void OPEN_drawSortMenu(PlayerWindow *window) {
         if ((window->window.view.y + window->window.rect.h) / OPEN_SORT_MENUS[player].rowH < i) {
             break;
         }
-        drawText(x, window->window.originY + i * OPEN_SORT_MENUS[player].rowH + 1, (s32)OPEN_SORT_OPTIONS[i], 7, z);
+        drawText(x, window->window.originY + i * OPEN_SORT_MENUS[player].rowH + 1, (s32p)OPEN_SORT_OPTIONS[i], 7, z);
     }
     menu = &OPEN_SORT_MENUS[player];
     updateMenuCursor(menu);
@@ -742,12 +742,12 @@ void OPEN_drawTradeOk(UiWindow *window) {
     if (count == 0) {
         strcpy(text, "You can't Trade between 0 Cards!");
         offset = (0x100 - measureText(text)) / 2;
-        drawText(x + offset, y + 14, (s32)text, 7, z);
+        drawText(x + offset, y + 14, (s32p)text, 7, z);
         return;
     }
     strcpy(text, "If these Cards are OK,\npress and hold *b2 Button.");
     offset = (0x100 - measureText(text)) / 2;
-    drawText(x + offset, y + 8, (s32)text, 7, z);
+    drawText(x + offset, y + 8, (s32p)text, 7, z);
     for (i = 0; i < 2; i++) {
         if ((PAD_STATES[i]->held & 0x40) || OPEN_TRADE_STATE != 0) {
             held[i] = 1;
@@ -814,7 +814,7 @@ void OPEN_drawTradeWarning(MessageWindow *window) {
         strcpy(text, "This Card is\nunidentified!");
         break;
     }
-    drawText(x + (0x5E - measureText(text)) / 2, y, (s32)text, 7, z);
+    drawText(x + (0x5E - measureText(text)) / 2, y, (s32p)text, 7, z);
     if (PAD_STATES[port]->pressed & 0x50) {
         animateWindowTo(&OPEN_TRADE_WARNING_WINDOWS[port].window, (Rect16 *)-1);
         (&OPEN_CARD_LIST_MENUS[port])->active = 1;
@@ -1021,12 +1021,12 @@ void OPEN_drawCardInfo(PlayerWindow *window) {
             break;
         }
         sprintf(text, "in Stock. \f\a%d\f\x06 Cards", getOwnedCardCount(player, OPEN_TRADE_CARD_LISTS[player][row]->id));
-        drawSmallText(x + 0x22, y, (s32)text, 6, z);
+        drawSmallText(x + 0x22, y, (s32p)text, 6, z);
         sprintf(text, "in a Deck. \f\a%d\f\x06 Cards", OPEN_DECK_CARD_COUNTS[player][OPEN_TRADE_CARD_LISTS[player][row]->id]);
-        drawSmallText(x + 0x31, y + 6, (s32)text, 6, z);
+        drawSmallText(x + 0x31, y + 6, (s32p)text, 6, z);
     } else {
         strcpy(text, "Unidentified Card");
-        drawText(x + (0x90 - measureText(text)) / 2, y, (s32)text, 7, z);
+        drawText(x + (0x90 - measureText(text)) / 2, y, (s32p)text, 7, z);
     }
 }
 
@@ -1050,10 +1050,10 @@ void OPEN_drawTradeScreen(void) {
         }
     }
     if (count == 0) {
-        OPEN_TRADE_OK_WINDOW.label = (s32)OPEN_STR_WARNING;
+        OPEN_TRADE_OK_WINDOW.label = (s32p)OPEN_STR_WARNING;
         OPEN_TRADE_OK_WINDOW.palette = 2;
     } else {
-        OPEN_TRADE_OK_WINDOW.label = (s32)OPEN_STR_TRADE_OK;
+        OPEN_TRADE_OK_WINDOW.label = (s32p)OPEN_STR_TRADE_OK;
         OPEN_TRADE_OK_WINDOW.palette = 1;
     }
     drawWindow(&OPEN_TRADE_OK_WINDOW, OPEN_drawTradeOk, 1);
@@ -1100,17 +1100,17 @@ void OPEN_runCardTrade(s32 parentTask) {
     rect.h = 0x28;
     openWindow(&OPEN_TRADE_OK_WINDOW, &rect, -1, (s16 *)-1, 8, 0x25, 0x80, 0xC);
     animateWindowTo(&OPEN_TRADE_OK_WINDOW, (Rect16 *)-1);
-    OPEN_TRADE_OK_WINDOW.label = (s32)OPEN_STR_TRADE_OK;
+    OPEN_TRADE_OK_WINDOW.label = (s32p)OPEN_STR_TRADE_OK;
     rect.x = 0xC;
     rect.y = 0xB6;
     rect.w = 0x128;
     rect.h = 0x2E;
     openWindow(&OPEN_TRADE_LIST_WINDOW, &rect, -1, (s16 *)-1, 8, 0x25, 0x80, 0xC);
-    OPEN_TRADE_LIST_WINDOW.label = (s32)"TRADE LIST";
+    OPEN_TRADE_LIST_WINDOW.label = (s32p)"TRADE LIST";
     for (i = 0; i < 2; i++) {
         openMenu(&OPEN_SORT_MENUS[i], &OPEN_SORT_MENU_WINDOWS[i].window, &OPEN_SORT_MENU_CURSORS[i], (Bytes4 *)-1);
         animateWindowTo(&OPEN_SORT_MENU_WINDOWS[i].window, (Rect16 *)-1);
-        OPEN_SORT_MENU_WINDOWS[i].window.label = (s32)"SORT MENU";
+        OPEN_SORT_MENU_WINDOWS[i].window.label = (s32p)"SORT MENU";
         OPEN_SORT_MENU_WINDOWS[i].player = i;
         rect.x = i * 0x9C + 0x21;
         rect.y = 0x5A;
@@ -1118,7 +1118,7 @@ void OPEN_runCardTrade(s32 parentTask) {
         rect.h = 0x18;
         openWindow(&OPEN_TRADE_WARNING_WINDOWS[i].window, &rect, -1, (s16 *)-1, 8, 0x11, 0x80, 0xC);
         animateWindowTo(&OPEN_TRADE_WARNING_WINDOWS[i].window, (Rect16 *)-1);
-        OPEN_TRADE_WARNING_WINDOWS[i].window.label = (s32)OPEN_STR_WARNING;
+        OPEN_TRADE_WARNING_WINDOWS[i].window.label = (s32p)OPEN_STR_WARNING;
         OPEN_TRADE_WARNING_WINDOWS[i].window.palette = 2;
         OPEN_TRADE_WARNING_WINDOWS[i].port = i;
         rect.x = i * 0x9C + 0xA;
@@ -1129,9 +1129,9 @@ void OPEN_runCardTrade(s32 parentTask) {
         OPEN_CARD_INFO_WINDOWS[i].player = i;
         openMenu(&OPEN_CARD_LIST_MENUS[i], &OPEN_CARD_LIST_WINDOWS[i].window, &OPEN_CARD_LIST_CURSORS[i], (Bytes4 *)-1);
         if (i == 0) {
-            OPEN_CARD_LIST_WINDOWS[i].window.label = (s32)"1P CARD LIST";
+            OPEN_CARD_LIST_WINDOWS[i].window.label = (s32p)"1P CARD LIST";
         } else {
-            OPEN_CARD_LIST_WINDOWS[i].window.label = (s32)"2P CARD LIST";
+            OPEN_CARD_LIST_WINDOWS[i].window.label = (s32p)"2P CARD LIST";
         }
         OPEN_CARD_LIST_WINDOWS[i].player = i;
         OPEN_TRADE_PLAYER_READY[i] = 0;
@@ -1150,7 +1150,7 @@ void OPEN_runCardTrade(s32 parentTask) {
     OPEN_TRADE_STATE = 0;
     OPEN_TRADE_QUIT = 0;
     playMenuSound(3);
-    addFrameCallback((s32)OPEN_drawTradeScreen);
+    addFrameCallback((s32p)OPEN_drawTradeScreen);
     do {
         /* fake match: arc exists only for loop.c. This dead store is moved
            out of the loop (flow deletes it later), and the extra move lowers
@@ -1228,7 +1228,7 @@ void OPEN_runCardTrade(s32 parentTask) {
     playMenuSound(4);
     OPEN_TRADE_BANNER_SHOWN = 0;
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawTradeScreen);
+    removeFrameCallback((s32p)OPEN_drawTradeScreen);
     waitFrames(2);
     arc = OPEN_CARD_IMAGE_ARC; /* fake match: see arc = 0 above */
     freeHeapBlock(arc);

@@ -291,13 +291,13 @@ void SUB_runCardList(void) {
     SUB_CARD_LIST_MENU.rect.h = 0x60;
     SUB_CARD_LIST_MENU.ox = 0x85;
     openMenu(&SUB_CARD_LIST_MENU, SUB_LIST_WINDOWS, &SUB_CARD_LIST_CURSOR, (Bytes4 *)-1);
-    SUB_LIST_WINDOW_LABEL = (s32)SUB_STR_CARD_LIST;
+    SUB_LIST_WINDOW_LABEL = (s32p)SUB_STR_CARD_LIST;
     SUB_CARD_LIST_MENU.active = running;
     SUB_CARD_LIST_MENU.row = 0;
     centerMenuOnCursor(&SUB_CARD_LIST_MENU);
     openMenu(&SUB_CARD_SORT_MENU, &SUB_CARD_SORT_WINDOW, &SUB_CARD_SORT_CURSOR, (Bytes4 *)-1);
     animateWindowTo(&SUB_CARD_SORT_WINDOW, (Rect16 *)-1);
-    SUB_CARD_SORT_WINDOW.label = (s32)"SORT MENU";
+    SUB_CARD_SORT_WINDOW.label = (s32p)"SORT MENU";
     for (i = 0; i < 7; i++) {
         if (i == 1 || i == 5) {
             continue;
@@ -329,7 +329,7 @@ void SUB_runCardList(void) {
             style = 0x21;
             break;
         }
-        SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32)labels[i], flags, style);
+        SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32p)labels[i], flags, style);
     }
     animateWindowTo(&SUB_CARD_DATA_WINDOW, (Rect16 *)-1);
     SUB_COLLECTION_STATS.lists[8] = allocTaskHeapBlock(0x2A);
@@ -341,7 +341,7 @@ void SUB_runCardList(void) {
     SUB_EDITOR.slide = 0;
     SUB_EDITOR.hidden = 0;
     playMenuSound(3);
-    addFrameCallback((s32)SUB_drawCardListScreen);
+    addFrameCallback((s32p)SUB_drawCardListScreen);
     do {
         waitFrames(1);
         if (PAD_STATES[SUB_EDITOR.player]->pressed & 0x100) {
@@ -421,7 +421,7 @@ void SUB_runCardList(void) {
     } while (running);
     SUB_EDITOR.hidden = -1;
     waitFrames(20);
-    removeFrameCallback((s32)SUB_drawCardListScreen);
+    removeFrameCallback((s32p)SUB_drawCardListScreen);
     if (action == 3) {
         spawnTask(0, -1, 0, 0x1000, SUB_runDeckMenu, 0, 0, 0, 0);
     } else if (action == 4) {
@@ -482,13 +482,13 @@ void SUB_drawCardCountPage(UiWindow *window) {
         sprintf(SUB_LABEL_BUFFER, "L1_BACK DARKNESS  NEXT_R1");
         break;
     }
-    window->label = (s32)SUB_LABEL_BUFFER;
+    window->label = (s32p)SUB_LABEL_BUFFER;
     for (i = 0; i < 40; i++) {
         if (entry->id < 0) {
             SUB_drawSprite(x + (i % 8) * 16, y + 1 + (i / 8) * 12, 0x7E35, 0x344, 0x1F0, 15, 11, 0, 0x80, -1, z);
         } else {
             sprintf(buf, "%3.3d", entry->id);
-            drawTinyText(x + 2 + (i % 8) * 16, y + 3 + (i / 8) * 12, (s32)buf, 8, z);
+            drawTinyText(x + 2 + (i % 8) * 16, y + 3 + (i / 8) * 12, (s32p)buf, 8, z);
             SUB_drawSprite(x + (i % 8) * 16, y + (i / 8) * 12, getClut(0x350, entry->count + 0x1F8), 0x340, 0x1F0, 15, 11, 0, 0x80, -1, z);
             entry++;
         }
@@ -501,11 +501,11 @@ void SUB_drawCardListHelp(UiWindow *window) {
     s32 y = window->originY;
     s32 z = window->z;
 
-    drawText(x, y, (s32)"*b0:Edit Decks", 7, z);
+    drawText(x, y, (s32p)"*b0:Edit Decks", 7, z);
     if (SUB_COLLECTION_STATS.showInfo == 0) {
-        drawText(x + 0x66, y, (s32)"*b5:Sort", 7, z);
+        drawText(x + 0x66, y, (s32p)"*b5:Sort", 7, z);
     } else {
-        drawText(x + 0x66, y, (s32)"*b5:Sort", 8, z);
+        drawText(x + 0x66, y, (s32p)"*b5:Sort", 8, z);
     }
 }
 
@@ -520,18 +520,18 @@ void SUB_drawCollectionTotals(UiWindow *window) {
         drawIcon(x, y, 0, 20, z);
     }
     x += 12;
-    drawTinyText(x, y, (s32)"All", 6, z);
-    drawTinyText(x, y + 6, (s32)"Types", 6, z);
+    drawTinyText(x, y, (s32p)"All", 6, z);
+    drawTinyText(x, y + 6, (s32p)"Types", 6, z);
     sprintf(buf, "%3d", SUB_COLLECTION_STATS.uniqueCount);
-    drawText(x + 26, y, (s32)buf, 7, z);
+    drawText(x + 26, y, (s32p)buf, 7, z);
     x += 80;
     if (SUB_COLLECTION_STATS.totalCount >= 1608) {
         drawIcon(x - 24, y, 0, 20, z);
     }
-    drawTinyText(x - 12, y, (s32)"Total Number", 6, z);
-    drawTinyText(x - 12, y + 6, (s32)"of Cards", 6, z);
+    drawTinyText(x - 12, y, (s32p)"Total Number", 6, z);
+    drawTinyText(x - 12, y + 6, (s32p)"of Cards", 6, z);
     sprintf(buf, "%4d", SUB_COLLECTION_STATS.totalCount);
-    drawText(x + 38, y, (s32)buf, 7, z);
+    drawText(x + 38, y, (s32p)buf, 7, z);
 }
 
 const char SUB_STR_CARD_INFO[] = "CARD INFO.";
@@ -558,18 +558,18 @@ void SUB_drawSpecialtyCounts(UiWindow *window) {
     s32 z = window->z;
     s32 i;
 
-    window->label = (s32)SUB_STR_CARD_INFO;
+    window->label = (s32p)SUB_STR_CARD_INFO;
     for (i = 0; i < 8; i++) {
         if (i != 7) {
             drawIcon(x + (i / 4) * 80, y + (i % 4) * 13, 0, i, z);
             sprintf(buf, SUB_FMT_3_DIGITS, SUB_COLLECTION_STATS.counts[i]);
-            drawText(x + 0x10 + (i / 4) * 95, y + (i % 4) * 13, (s32)buf, 7, z);
-            drawText(x + 0x25 + (i / 4) * 95, y + (i % 4) * 13, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0x10 + (i / 4) * 95, y + (i % 4) * 13, (s32p)buf, 7, z);
+            drawText(x + 0x25 + (i / 4) * 95, y + (i % 4) * 13, (s32p)SUB_STR_CARDS, 7, z);
         } else {
-            drawText(x + (i / 4) * 80 - 6, y + 0x27, (s32)SUB_STR_TOTAL, 7, z);
+            drawText(x + (i / 4) * 80 - 6, y + 0x27, (s32p)SUB_STR_TOTAL, 7, z);
             sprintf(buf, SUB_FMT_4_DIGITS, SUB_COLLECTION_STATS.counts[i]);
-            drawText(x + 0x19 + (i / 4) * 80, y + 0x27, (s32)buf, 7, z);
-            drawText(x + 0x34 + (i / 4) * 80, y + (i % 4) * 13, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0x19 + (i / 4) * 80, y + 0x27, (s32p)buf, 7, z);
+            drawText(x + 0x34 + (i / 4) * 80, y + (i % 4) * 13, (s32p)SUB_STR_CARDS, 7, z);
         }
     }
 }
@@ -588,72 +588,72 @@ void SUB_drawCardData(UiWindow *window) {
         if (slot != -1) {
             SUB_drawSprite(x + 3, y + 14, getClut(0, slot + 0x1F4), (slot / 4) * 32 + 0x140, (slot % 4) * 64 + 0x100, 0x40, 0x40, 1, 0x80, -1, z);
             sprintf(buf, "%3.3d", *(s16 *)SUB_COLLECTION_STATS.selectedCard);
-            drawText(x + 3, y, (s32)buf, 7, z);
-            drawText(x + 0x7B, y, (s32)(SUB_COLLECTION_STATS.selectedCard + 3), 7, z);
+            drawText(x + 3, y, (s32p)buf, 7, z);
+            drawText(x + 0x7B, y, (s32p)(SUB_COLLECTION_STATS.selectedCard + 3), 7, z);
             switch (SUB_COLLECTION_STATS.selectedCard[2]) {
             case 0:
                 drawIcon(x + 0x5F, y, 0, ((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->attr >> 4, z);
                 drawIcon(x + 0x29, y, 0, (((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->attr & 0xF) + 0x10, z);
-                drawText(x + 0x1B, y, (s32)SUB_STR_LV, 7, z);
-                drawText(x + 0x41, y, (s32)SUB_STR_TYPE, 7, z);
+                drawText(x + 0x1B, y, (s32p)SUB_STR_LV, 7, z);
+                drawText(x + 0x41, y, (s32p)SUB_STR_TYPE, 7, z);
                 sprintf(buf, SUB_FMT_COUNT, getOwnedCardCount(SUB_EDITOR.player, *(s16 *)SUB_COLLECTION_STATS.selectedCard));
-                drawText(x + 0xFA, y, (s32)buf, 7, z);
-                drawText(x + 0x106, y, (s32)SUB_STR_CARDS, 7, z);
+                drawText(x + 0xFA, y, (s32p)buf, 7, z);
+                drawText(x + 0x106, y, (s32p)SUB_STR_CARDS, 7, z);
                 drawIcon(x + 0x4B, y + 12, 0, 0x1A, z);
                 sprintf(buf, SUB_FMT_4_DIGITS, ((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->hp);
-                drawText(x + 0x69, y + 12, (s32)buf, 7, z);
+                drawText(x + 0x69, y + 12, (s32p)buf, 7, z);
                 for (i = 0; i < 3; i++) {
                     sprintf(buf, "b%d", i);
-                    drawIconText(x + 0x4B, y + (i + 3) * 12, 7, 1, z, (s32)buf);
+                    drawIconText(x + 0x4B, y + (i + 3) * 12, 7, 1, z, (s32p)buf);
                     sprintf(buf, "*s0%4d/%4d", (u16)PLAYER_DATA(SUB_EDITOR.player).maxAttackPowers[*(s16 *)SUB_COLLECTION_STATS.selectedCard][i], ((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->attack[i].power);
-                    drawText(x + 0x6F, y + (i + 3) * 12, (s32)buf, 7, z);
+                    drawText(x + 0x6F, y + (i + 3) * 12, (s32p)buf, 7, z);
                 }
-                drawSmallText(x + 0x57, y + 0x48, (s32)CROSS_EFFECT_SHORT_NAMES[((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->crossEffect], 7, z);
+                drawSmallText(x + 0x57, y + 0x48, (s32p)CROSS_EFFECT_SHORT_NAMES[((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->crossEffect], 7, z);
                 if (CROSS_EFFECT_ICONS[((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->crossEffect] != 0) {
                     drawIcon(x + 0x91, y + 0x4E, 0, CROSS_EFFECT_ICONS[((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->crossEffect] + 0x14, z);
                 }
                 drawIcon(x + 0x4B, y + 0x18, 0, 0x18, z);
                 sprintf(buf, SUB_FMT_2_DIGITS, ((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->dpCost);
-                drawText(x + 0x69, y + 0x18, (s32)buf, 7, z);
+                drawText(x + 0x69, y + 0x18, (s32p)buf, 7, z);
                 drawIcon(x + 0x81, y + 0x18, 0, 0x19, z);
                 sprintf(buf, SUB_FMT_2_DIGITS, ((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->dpBonus);
-                drawText(x + 0x93, y + 0x18, (s32)buf, 7, z);
+                drawText(x + 0x93, y + 0x18, (s32p)buf, 7, z);
                 sprintf(buf, SUB_FMT_3_DIGITS, PLAYER_DATA(SUB_EDITOR.player).cardWins[*(s16 *)SUB_COLLECTION_STATS.selectedCard]);
-                drawText(x + 0xBD, y + 12, (s32)buf, 7, z);
-                drawText(x + 0xD5, y + 12, (s32)SUB_STR_WINS, 6, z);
+                drawText(x + 0xBD, y + 12, (s32p)buf, 7, z);
+                drawText(x + 0xD5, y + 12, (s32p)SUB_STR_WINS, 6, z);
                 sprintf(buf, SUB_FMT_3_DIGITS, PLAYER_DATA(SUB_EDITOR.player).cardLosses[*(s16 *)SUB_COLLECTION_STATS.selectedCard]);
-                drawText(x + 0xEE, y + 12, (s32)buf, 7, z);
-                drawText(x + 0x106, y + 12, (s32)SUB_STR_LOSSES, 6, z);
-                drawText(x + 0xB9, y + 0x18, (s32)SUB_STR_SUPPORT_EFFECT, 6, z);
+                drawText(x + 0xEE, y + 12, (s32p)buf, 7, z);
+                drawText(x + 0x106, y + 12, (s32p)SUB_STR_LOSSES, 6, z);
+                drawText(x + 0xB9, y + 0x18, (s32p)SUB_STR_SUPPORT_EFFECT, 6, z);
                 if (((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->supportIcon != 0) {
                     drawIcon(x + 0x10C, y + 0x18, 0, ((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->supportIcon + 0x14, z);
                 }
                 for (i = 0; i < 4; i++) {
-                    drawText(x + 0xB9, y + (i + 3) * 12, (s32)((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->supportText[i], 7, z);
+                    drawText(x + 0xB9, y + (i + 3) * 12, (s32p)((DigimonCardData *)SUB_COLLECTION_STATS.selectedCard)->supportText[i], 7, z);
                 }
                 break;
             case 1:
                 drawIcon(x + 0x18, y, 0, 5, z);
                 sprintf(buf, SUB_FMT_COUNT, getOwnedCardCount(SUB_EDITOR.player, *(s16 *)SUB_COLLECTION_STATS.selectedCard));
-                drawText(x + 0xFA, y, (s32)buf, 7, z);
-                drawText(x + 0x106, y, (s32)SUB_STR_CARDS, 7, z);
+                drawText(x + 0xFA, y, (s32p)buf, 7, z);
+                drawText(x + 0x106, y, (s32p)SUB_STR_CARDS, 7, z);
                 if (SUB_COLLECTION_STATS.selectedCard[0x8C] != 0) {
                     drawIcon(x + 0x8D, y + 13, 0, SUB_COLLECTION_STATS.selectedCard[0x8C] + 0x14, z);
                 }
                 y += 0x1A;
                 for (i = 0; i < 4; i++) {
-                    drawText(x + 0x8D, y, (s32)((u8 *)&((OptionCardData *)OPTION_CARDS)[*(s16 *)SUB_COLLECTION_STATS.selectedCard - 0xBF] + 0x8D + i * 21), 7, z);
+                    drawText(x + 0x8D, y, (s32p)((u8 *)&((OptionCardData *)OPTION_CARDS)[*(s16 *)SUB_COLLECTION_STATS.selectedCard - 0xBF] + 0x8D + i * 21), 7, z);
                     y += 12;
                 }
                 break;
             case 2:
                 drawIcon(x + 0x18, y, 0, 6, z);
                 sprintf(buf, SUB_FMT_COUNT, getOwnedCardCount(SUB_EDITOR.player, *(s16 *)SUB_COLLECTION_STATS.selectedCard));
-                drawText(x + 0xFA, y, (s32)buf, 7, z);
-                drawText(x + 0x106, y, (s32)SUB_STR_CARDS, 7, z);
+                drawText(x + 0xFA, y, (s32p)buf, 7, z);
+                drawText(x + 0x106, y, (s32p)SUB_STR_CARDS, 7, z);
                 y += 0x1A;
                 for (i = 0; i < 4; i++) {
-                    drawText(x + 0x8D, y, (s32)((u8 *)&((DigivolveCardData *)DIGIVOLVE_CARDS)[*(s16 *)SUB_COLLECTION_STATS.selectedCard - 0x125] + 0x1B + i * 21), 7, z);
+                    drawText(x + 0x8D, y, (s32p)((u8 *)&((DigivolveCardData *)DIGIVOLVE_CARDS)[*(s16 *)SUB_COLLECTION_STATS.selectedCard - 0x125] + 0x1B + i * 21), 7, z);
                     y += 12;
                 }
                 break;
@@ -723,20 +723,20 @@ void SUB_drawDeckSummary(UiWindow *window) {
     }
     deck = &PLAYER_DATA(SUB_EDITOR.player).savedDecks[SUB_DECK_MENU.current];
     sprintf(buf, "%s Deck", deck->name);
-    drawText(x, y, (s32)buf, palette, z);
+    drawText(x, y, (s32p)buf, palette, z);
     battles = deck->wins + deck->losses;
     if (battles >= 1000) {
         battles = 999;
     }
     sprintf(buf, SUB_FMT_3_DIGITS, battles);
-    drawText(x + 0x62, y, (s32)buf, palette, z);
-    drawTinyText(x + 0x76, y + 7, (s32)"Battles", palette, z);
+    drawText(x + 0x62, y, (s32p)buf, palette, z);
+    drawTinyText(x + 0x76, y + 7, (s32p)"Battles", palette, z);
     sprintf(buf, SUB_FMT_3_DIGITS, deck->wins);
-    drawText(x + 0x95, y, (s32)buf, palette, z);
-    drawTinyText(x + 0xA9, y + 7, (s32)SUB_STR_WINS, palette, z);
+    drawText(x + 0x95, y, (s32p)buf, palette, z);
+    drawTinyText(x + 0xA9, y + 7, (s32p)SUB_STR_WINS, palette, z);
     sprintf(buf, SUB_FMT_3_DIGITS, deck->losses);
-    drawText(x + 0xBD, y, (s32)buf, palette, z);
-    drawTinyText(x + 0xD1, y + 7, (s32)SUB_STR_LOSSES, palette, z);
+    drawText(x + 0xBD, y, (s32p)buf, palette, z);
+    drawTinyText(x + 0xD1, y + 7, (s32p)SUB_STR_LOSSES, palette, z);
     y += 13;
     for (i = 0; i < 6; i++) {
         dy = 0;
@@ -744,41 +744,41 @@ void SUB_drawDeckSummary(UiWindow *window) {
             dy = 13;
         }
         dx = (i % 4) * 59;
-        drawText(x + dx, y + dy, (s32)labels[i], labelPalette, z);
+        drawText(x + dx, y + dy, (s32p)labels[i], labelPalette, z);
         if (i == 5) {
             sprintf(buf, SUB_FMT_2_DIGITS, countDeckCardsByFilter(SUB_EDITOR.player, deck, 0xC0));
         } else {
             sprintf(buf, SUB_FMT_2_DIGITS, countDeckCardsByFilter(SUB_EDITOR.player, deck, 1 << i));
         }
         if (i == 5) {
-            drawText(x + 0x3A + dx, y + dy, (s32)buf, palette, z);
-            drawSmallText(x + 0x4A + dx, y + dy + 7, (s32)SUB_STR_CARDS, palette, z);
+            drawText(x + 0x3A + dx, y + dy, (s32p)buf, palette, z);
+            drawSmallText(x + 0x4A + dx, y + dy + 7, (s32p)SUB_STR_CARDS, palette, z);
         } else {
-            drawText(dx + x + 0x10, y + dy, (s32)buf, palette, z);
-            drawSmallText(x + 0x10 + dx + 0x10, y + dy + 7, (s32)SUB_STR_CARDS, palette, z);
+            drawText(dx + x + 0x10, y + dy, (s32p)buf, palette, z);
+            drawSmallText(x + 0x10 + dx + 0x10, y + dy + 7, (s32p)SUB_STR_CARDS, palette, z);
         }
     }
-    drawText(x + 0xA0, y + dy, (s32)labels[6], labelPalette, z);
+    drawText(x + 0xA0, y + dy, (s32p)labels[6], labelPalette, z);
     sprintf(buf, SUB_FMT_2_DIGITS, countDeckCardsByFilter(SUB_EDITOR.player, deck, 0x20));
-    drawText(x + 0xC1, y + dy, (s32)buf, palette, z);
-    drawSmallText(x + 0xD1, y + dy + 7, (s32)SUB_STR_CARDS, palette, z);
-    drawText(x, y + 26, (s32)SUB_STR_LV, labelPalette, z);
+    drawText(x + 0xC1, y + dy, (s32p)buf, palette, z);
+    drawSmallText(x + 0xD1, y + dy + 7, (s32p)SUB_STR_CARDS, palette, z);
+    drawText(x, y + 26, (s32p)SUB_STR_LV, labelPalette, z);
     sprintf(buf, SUB_FMT_2_DIGITS, countDeckCardsByFilter(SUB_EDITOR.player, deck, 0x200));
     drawIcon(x + 0xC, y + 26, 0, 0x10, z);
-    drawText(x + 0x1E, y + 26, (s32)buf, palette, z);
-    drawSmallText(x + 0x2E, y + 26 + 7, (s32)SUB_STR_CARDS, palette, z);
+    drawText(x + 0x1E, y + 26, (s32p)buf, palette, z);
+    drawSmallText(x + 0x2E, y + 26 + 7, (s32p)SUB_STR_CARDS, palette, z);
     x += 0x51;
-    drawText(x, y + 26, (s32)SUB_STR_LV, labelPalette, z);
+    drawText(x, y + 26, (s32p)SUB_STR_LV, labelPalette, z);
     sprintf(buf, SUB_FMT_2_DIGITS, countDeckCardsByFilter(SUB_EDITOR.player, deck, 0x800));
     drawIcon(x + 0xC, y + 26, 0, 0x12, z);
-    drawText(x + 0x1E, y + 26, (s32)buf, palette, z);
-    drawSmallText(x + 0x2E, y + 26 + 7, (s32)SUB_STR_CARDS, palette, z);
+    drawText(x + 0x1E, y + 26, (s32p)buf, palette, z);
+    drawSmallText(x + 0x2E, y + 26 + 7, (s32p)SUB_STR_CARDS, palette, z);
     x += 0x52;
-    drawText(x, y + 26, (s32)SUB_STR_LV, labelPalette, z);
+    drawText(x, y + 26, (s32p)SUB_STR_LV, labelPalette, z);
     sprintf(buf, SUB_FMT_2_DIGITS, countDeckCardsByFilter(SUB_EDITOR.player, deck, 0x1000));
     drawIcon(x + 0xC, y + 26, 0, 0x13, z);
-    drawText(x + 0x1E, y + 26, (s32)buf, palette, z);
-    drawSmallText(x + 0x2E, y + 26 + 7, (s32)SUB_STR_CARDS, palette, z);
+    drawText(x + 0x1E, y + 26, (s32p)buf, palette, z);
+    drawSmallText(x + 0x2E, y + 26 + 7, (s32p)SUB_STR_CARDS, palette, z);
 }
 
 void SUB_drawEmptyDeck(UiWindow *window) {
@@ -795,7 +795,7 @@ void SUB_drawEmptyDeck(UiWindow *window) {
         window->palette = 1;
         palette = 8;
     }
-    drawText(x + 0x50, y + 0x12, (s32)"NO DATA", palette, z);
+    drawText(x + 0x50, y + 0x12, (s32p)"NO DATA", palette, z);
 }
 
 void SUB_drawDeckMenuHelp(UiWindow *window) {
@@ -805,22 +805,22 @@ void SUB_drawDeckMenuHelp(UiWindow *window) {
     s32 z = window->z;
 
     drawIcon(x, y, 1, 11, z);
-    drawMediumText(x + 8, y, (s32)":Cursor", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Cursor", 7, z);
     y += 10;
     drawIcon(x, y, 1, 9, z);
-    drawMediumText(x + 8, y, (s32)":Edit", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Edit", 7, z);
     y += 10;
     drawIcon(x, y, 1, 7, z);
-    drawMediumText(x + 8, y, (s32)":Delete", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Delete", 7, z);
     y += 10;
     drawIcon(x, y, 1, 10, z);
-    drawMediumText(x + 8, y, (s32)":Copy", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Copy", 7, z);
     y += 10;
     drawIcon(x, y, 1, 13, z);
-    drawMediumText(x + 8, y, (s32)":Name", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Name", 7, z);
     y += 10;
     drawIcon(x, y, 1, 8, z);
-    drawMediumText(x + 8, y, (s32)":Back", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Back", 7, z);
 }
 
 void SUB_drawDeckMenu(void) {
@@ -894,12 +894,12 @@ void SUB_runDeckMenu(void) {
     for (i = 0; i < 4; i++) {
         flags = 8;
         style = 0x21;
-        SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32)labels[i], flags, style);
+        SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32p)labels[i], flags, style);
     }
     SUB_EDITOR.slide = 0;
     SUB_EDITOR.hidden = 0;
     playMenuSound(3);
-    addFrameCallback((s32)SUB_drawDeckMenu);
+    addFrameCallback((s32p)SUB_drawDeckMenu);
     do {
         waitFrames(1);
         if (PAD_STATES[SUB_EDITOR.player]->pressed & 0x10) {
@@ -1010,7 +1010,7 @@ void SUB_runDeckMenu(void) {
     } while (running);
     SUB_EDITOR.hidden = -1;
     waitFrames(20);
-    removeFrameCallback((s32)SUB_drawDeckMenu);
+    removeFrameCallback((s32p)SUB_drawDeckMenu);
     waitFrames(1);
     switch (action) {
     case 1:
@@ -1125,15 +1125,15 @@ void SUB_initDeckEdit(PlayerDeck *deck) {
     SUB_CARD_LIST_MENU.rect.h = 0x60;
     SUB_CARD_LIST_MENU.ox = 0x62;
     openMenu(&SUB_CARD_LIST_MENU, &SUB_PICKER_WINDOW, &SUB_CARD_LIST_CURSOR, (Bytes4 *)-1);
-    SUB_PICKER_WINDOW_LABEL = (s32)SUB_STR_CARD_LIST;
+    SUB_PICKER_WINDOW_LABEL = (s32p)SUB_STR_CARD_LIST;
     openMenu(&SUB_CARD_SORT_MENU, &SUB_CARD_SORT_WINDOW, &SUB_CARD_SORT_CURSOR, (Bytes4 *)-1);
     animateWindowTo(&SUB_CARD_SORT_WINDOW, (Rect16 *)-1);
-    SUB_CARD_SORT_WINDOW.label = (s32)"SORT MENU";
+    SUB_CARD_SORT_WINDOW.label = (s32p)"SORT MENU";
     SUB_CARD_LIST_MENU.row = 0;
     centerMenuOnCursor(&SUB_CARD_LIST_MENU);
     openMenu(&SUB_DECK_SORT_MENU, &SUB_DECK_SORT_WINDOW, &SUB_DECK_SORT_CURSOR, (Bytes4 *)-1);
     animateWindowTo(&SUB_DECK_SORT_WINDOW, (Rect16 *)-1);
-    SUB_DECK_SORT_WINDOW.label = (s32)"SORT MENU";
+    SUB_DECK_SORT_WINDOW.label = (s32p)"SORT MENU";
     rects[0].x = 0xA3;
     rects[0].y = 0xBB;
     rects[0].w = 0x128;
@@ -1188,7 +1188,7 @@ void SUB_initDeckEdit(PlayerDeck *deck) {
             flags = 0;
             break;
         }
-        SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32)labels[i], flags, style);
+        SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32p)labels[i], flags, style);
     }
     animateWindowTo(&SUB_WINDOWS[0], (Rect16 *)-1);
     animateWindowTo(&SUB_PICKER_WINDOW, (Rect16 *)-1);
@@ -1523,7 +1523,7 @@ void SUB_editDeck(PlayerDeck *deck) {
     SUB_EDITOR.useDeckCounts = 1;
     SUB_ORIGINAL_DECK = *deck;
     playMenuSound(3);
-    addFrameCallback((s32)SUB_drawDeckEdit);
+    addFrameCallback((s32p)SUB_drawDeckEdit);
     SUB_EDITOR.editing = 1;
     SUB_EDITOR.slide = 0;
     SUB_EDITOR.hidden = 0;
@@ -1542,7 +1542,7 @@ void SUB_editDeck(PlayerDeck *deck) {
     }
     animateWindowTo(&SUB_CARD_SORT_WINDOW, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)SUB_drawDeckEdit);
+    removeFrameCallback((s32p)SUB_drawDeckEdit);
     waitFrames(1);
     spawnTask(0, -1, 0, 0x1000, SUB_runDeckMenu, 0, 0, 0, 0);
 }
@@ -1554,7 +1554,7 @@ void SUB_drawSortHint(UiWindow *window) {
     s32 z = window->z;
 
     drawIcon(x, y, 1, 12, z);
-    drawMediumText(x + 8, y, (s32)":Sort", 7, z);
+    drawMediumText(x + 8, y, (s32p)":Sort", 7, z);
 }
 
 const char SUB_STR_DISABLE[] = "Disable";
@@ -1586,46 +1586,46 @@ void SUB_drawSlotCardInfo(UiWindow *window) {
             SUB_drawSprite(x + 3, y + 0x1A, getClut(0, slot + 0x1F4), (slot / 4) * 32 + 0x140, (slot % 4) * 64 + 0x100, 0x40, 0x40, 1, 0x80, -1, z);
         }
         sprintf(buf, SUB_FMT_CARD_NUMBER, *(s16 *)SUB_CARDS_BY_ID[cardId]);
-        drawText(x + 3, y, (s32)buf, 7, z);
-        drawText(x + 0x7B, y, (s32)(SUB_CARDS_BY_ID[cardId] + 3), 7, z);
+        drawText(x + 3, y, (s32p)buf, 7, z);
+        drawText(x + 0x7B, y, (s32p)(SUB_CARDS_BY_ID[cardId] + 3), 7, z);
         switch (SUB_CARDS_BY_ID[cardId][2]) {
         case 0:
             drawIcon(x + 0x57, y, 0, ((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->attr >> 4, z);
             drawIcon(x + 0x27, y, 0, (((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->attr & 0xF) + 0x10, z);
-            drawText(x + 0x1B, y, (s32)SUB_STR_LV, 7, z);
-            drawText(x + 0x39, y, (s32)SUB_STR_TYPE, 7, z);
+            drawText(x + 0x1B, y, (s32p)SUB_STR_LV, 7, z);
+            drawText(x + 0x39, y, (s32p)SUB_STR_TYPE, 7, z);
             sprintf(buf, SUB_FMT_3_DIGITS, PLAYER_DATA(SUB_EDITOR.player).cardWins[*(s16 *)SUB_CARDS_BY_ID[cardId]]);
-            drawText(x + 0x1B, y + 12, (s32)buf, 7, z);
-            drawText(x + 0x33, y + 12, (s32)SUB_STR_WINS, 6, z);
+            drawText(x + 0x1B, y + 12, (s32p)buf, 7, z);
+            drawText(x + 0x33, y + 12, (s32p)SUB_STR_WINS, 6, z);
             sprintf(buf, SUB_FMT_3_DIGITS, PLAYER_DATA(SUB_EDITOR.player).cardLosses[*(s16 *)SUB_CARDS_BY_ID[cardId]]);
-            drawText(x + 0x53, y + 12, (s32)buf, 7, z);
-            drawText(x + 0x6B, y + 12, (s32)SUB_STR_LOSSES, 6, z);
+            drawText(x + 0x53, y + 12, (s32p)buf, 7, z);
+            drawText(x + 0x6B, y + 12, (s32p)SUB_STR_LOSSES, 6, z);
             drawIcon(x + 0x4B, y + 0x18, 0, 0x1A, z);
             sprintf(buf, SUB_FMT_4_DIGITS, ((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->hp);
-            drawText(x + 0x5D, y + 0x18, (s32)buf, 7, z);
+            drawText(x + 0x5D, y + 0x18, (s32p)buf, 7, z);
             drawIcon(x + 0x85, y + 0x18, 0, 0x18, z);
             sprintf(buf, SUB_FMT_2_DIGITS, ((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->dpCost);
-            drawText(x + 0x97, y + 0x18, (s32)buf, 7, z);
+            drawText(x + 0x97, y + 0x18, (s32p)buf, 7, z);
             drawIcon(x + 0xAF, y + 0x18, 0, 0x19, z);
             sprintf(buf, SUB_FMT_2_DIGITS, ((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->dpBonus);
-            drawText(x + 0xC1, y + 0x18, (s32)buf, 7, z);
+            drawText(x + 0xC1, y + 0x18, (s32p)buf, 7, z);
             y += 12;
             for (i = 0; i < 3; i++) {
                 sprintf(buf, "b%d", i);
-                drawIconText(x + 0x4B, y + (i + 2) * 12, 7, 1, z, (s32)buf);
+                drawIconText(x + 0x4B, y + (i + 2) * 12, 7, 1, z, (s32p)buf);
                 sprintf(buf, SUB_FMT_4_DIGITS, ((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->attack[i].power);
-                drawText(x + 0x5D, y + (i + 2) * 12, (s32)buf, 7, z);
+                drawText(x + 0x5D, y + (i + 2) * 12, (s32p)buf, 7, z);
             }
-            drawSmallText(x + 0x45, y + 0x3F, (s32)CROSS_EFFECT_SHORT_NAMES[((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->crossEffect], 7, z);
+            drawSmallText(x + 0x45, y + 0x3F, (s32p)CROSS_EFFECT_SHORT_NAMES[((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->crossEffect], 7, z);
             if (CROSS_EFFECT_ICONS[((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->crossEffect] != 0) {
                 drawIcon(x + 0x51, y + 0x48, 0, CROSS_EFFECT_ICONS[((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->crossEffect] + 0x14, z);
             }
-            drawText(x + 0x85, y + 0x18, (s32)SUB_STR_SUPPORT_EFFECT, 6, z);
+            drawText(x + 0x85, y + 0x18, (s32p)SUB_STR_SUPPORT_EFFECT, 6, z);
             if (((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->supportIcon != 0) {
                 drawIcon(x + 0xD9, y + 0x18, 0, ((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->supportIcon + 0x14, z);
             }
             for (i = 0; i < 4; i++) {
-                drawText(x + 0x85, y + (i + 3) * 12, (s32)((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->supportText[i], 7, z);
+                drawText(x + 0x85, y + (i + 3) * 12, (s32p)((DigimonCardData *)SUB_CARDS_BY_ID[cardId])->supportText[i], 7, z);
             }
             break;
         case 1:
@@ -1635,7 +1635,7 @@ void SUB_drawSlotCardInfo(UiWindow *window) {
             }
             y += 0x1A;
             for (i = 0; i < 4; i++) {
-                drawText(x + 0x85, y, (s32)((u8 *)&((OptionCardData *)OPTION_CARDS)[*(s16 *)SUB_CARDS_BY_ID[cardId] - 0xBF] + 0x8D + i * 21), 7, z);
+                drawText(x + 0x85, y, (s32p)((u8 *)&((OptionCardData *)OPTION_CARDS)[*(s16 *)SUB_CARDS_BY_ID[cardId] - 0xBF] + 0x8D + i * 21), 7, z);
                 y += 12;
             }
             break;
@@ -1643,7 +1643,7 @@ void SUB_drawSlotCardInfo(UiWindow *window) {
             drawIcon(x + 0x18, y, 0, 6, z);
             y += 0x1A;
             for (i = 0; i < 4; i++) {
-                drawText(x + 0x85, y, (s32)((u8 *)&((DigivolveCardData *)DIGIVOLVE_CARDS)[*(s16 *)SUB_CARDS_BY_ID[cardId] - 0x125] + 0x1B + i * 21), 7, z);
+                drawText(x + 0x85, y, (s32p)((u8 *)&((DigivolveCardData *)DIGIVOLVE_CARDS)[*(s16 *)SUB_CARDS_BY_ID[cardId] - 0x125] + 0x1B + i * 21), 7, z);
                 y += 12;
             }
             break;
@@ -1751,8 +1751,8 @@ void SUB_drawPickerCardInfo(UiWindow *window) {
             SUB_drawSprite(x + 3, y + 14, getClut(0, slot + 0x1F4), (slot / 4) * 32 + 0x140, (slot % 4) * 64 + 0x100, 0x40, 0x40, 1, 0x80, -1, z);
         }
         sprintf(buf, SUB_FMT_CARD_NUMBER, *(s16 *)SUB_DECK_EDIT.card);
-        drawText(x + 3, y, (s32)buf, 7, z);
-        drawText(x + 0x7B, y, (s32)(SUB_DECK_EDIT.card + 3), 7, z);
+        drawText(x + 3, y, (s32p)buf, 7, z);
+        drawText(x + 0x7B, y, (s32p)(SUB_DECK_EDIT.card + 3), 7, z);
         switch (*(s16 *)SUB_DECK_EDIT.card) {
         case 0xAF:
         case 0xB6:
@@ -1760,67 +1760,67 @@ void SUB_drawPickerCardInfo(UiWindow *window) {
         case 0xB8:
         case 0xBB:
         case 0xBE:
-            drawText(x + 0xCC, y, (s32)SUB_STR_PARTNER, 6, z);
+            drawText(x + 0xCC, y, (s32p)SUB_STR_PARTNER, 6, z);
             break;
         }
         switch (SUB_DECK_EDIT.card[2]) {
         case 0:
             drawIcon(x + 0x63, y, 0, ((DigimonCardData *)SUB_DECK_EDIT.card)->attr >> 4, z);
             drawIcon(x + 0x27, y, 0, (((DigimonCardData *)SUB_DECK_EDIT.card)->attr & 0xF) + 0x10, z);
-            drawText(x + 0x1B, y, (s32)SUB_STR_LV, 7, z);
-            drawText(x + 0x45, y, (s32)SUB_STR_TYPE, 7, z);
+            drawText(x + 0x1B, y, (s32p)SUB_STR_LV, 7, z);
+            drawText(x + 0x45, y, (s32p)SUB_STR_TYPE, 7, z);
             sprintf(buf, SUB_FMT_COUNT, getOwnedCardCount(SUB_EDITOR.player, *(s16 *)SUB_DECK_EDIT.card));
-            drawText(x + 0xFD, y, (s32)buf, 7, z);
-            drawText(x + 0x109, y, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0xFD, y, (s32p)buf, 7, z);
+            drawText(x + 0x109, y, (s32p)SUB_STR_CARDS, 7, z);
             drawIcon(x + 0x4B, y + 12, 0, 0x1A, z);
             sprintf(buf, SUB_FMT_4_DIGITS, ((DigimonCardData *)SUB_DECK_EDIT.card)->hp);
-            drawText(x + 0x69, y + 12, (s32)buf, 7, z);
+            drawText(x + 0x69, y + 12, (s32p)buf, 7, z);
             for (i = 0; i < 3; i++) {
                 sprintf(buf, "*b%d", i);
-                drawText(x + 0x4B, y + (i + 2) * 12, (s32)buf, 7, z);
+                drawText(x + 0x4B, y + (i + 2) * 12, (s32p)buf, 7, z);
                 sprintf(buf, SUB_FMT_4_DIGITS, ((DigimonCardData *)SUB_DECK_EDIT.card)->attack[i].power);
-                drawText(x + 0x69, y + (i + 2) * 12, (s32)buf, 7, z);
+                drawText(x + 0x69, y + (i + 2) * 12, (s32p)buf, 7, z);
             }
-            drawSmallText(x + 0x57, y + 0x3E, (s32)CROSS_EFFECT_SHORT_NAMES[((DigimonCardData *)SUB_DECK_EDIT.card)->crossEffect], 7, z);
+            drawSmallText(x + 0x57, y + 0x3E, (s32p)CROSS_EFFECT_SHORT_NAMES[((DigimonCardData *)SUB_DECK_EDIT.card)->crossEffect], 7, z);
             if (CROSS_EFFECT_ICONS[((DigimonCardData *)SUB_DECK_EDIT.card)->crossEffect] != 0) {
                 drawIcon(x + 0x91, y + 0x45, 0, CROSS_EFFECT_ICONS[((DigimonCardData *)SUB_DECK_EDIT.card)->crossEffect] + 0x14, z);
             }
             drawIcon(x + 0x91, y + 12, 0, 0x18, z);
             sprintf(buf, SUB_FMT_2_DIGITS, ((DigimonCardData *)SUB_DECK_EDIT.card)->dpCost);
-            drawText(x + 0xA3, y + 12, (s32)buf, 7, z);
+            drawText(x + 0xA3, y + 12, (s32p)buf, 7, z);
             drawIcon(x + 0x91, y + 0x18, 0, 0x19, z);
             sprintf(buf, SUB_FMT_2_DIGITS, ((DigimonCardData *)SUB_DECK_EDIT.card)->dpBonus);
-            drawText(x + 0xA3, y + 0x18, (s32)buf, 7, z);
-            drawText(x + 0xB9, y + 12, (s32)SUB_STR_SUPPORT_EFFECT, 6, z);
+            drawText(x + 0xA3, y + 0x18, (s32p)buf, 7, z);
+            drawText(x + 0xB9, y + 12, (s32p)SUB_STR_SUPPORT_EFFECT, 6, z);
             if (((DigimonCardData *)SUB_DECK_EDIT.card)->supportIcon != 0) {
                 drawIcon(x + 0x10E, y + 12, 0, ((DigimonCardData *)SUB_DECK_EDIT.card)->supportIcon + 0x14, z);
             }
             for (i = 0; i < 4; i++) {
-                drawText(x + 0xB9, y + (i + 2) * 12, (s32)((DigimonCardData *)SUB_DECK_EDIT.card)->supportText[i], 7, z);
+                drawText(x + 0xB9, y + (i + 2) * 12, (s32p)((DigimonCardData *)SUB_DECK_EDIT.card)->supportText[i], 7, z);
             }
             break;
         case 1:
             drawIcon(x + 0x18, y, 0, 5, z);
             sprintf(buf, SUB_FMT_COUNT, getOwnedCardCount(SUB_EDITOR.player, *(s16 *)SUB_DECK_EDIT.card));
-            drawText(x + 0xFD, y, (s32)buf, 7, z);
-            drawText(x + 0x109, y, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0xFD, y, (s32p)buf, 7, z);
+            drawText(x + 0x109, y, (s32p)SUB_STR_CARDS, 7, z);
             if (SUB_DECK_EDIT.card[0x8C] != 0) {
                 drawIcon(x + 0x8D, y + 13, 0, SUB_DECK_EDIT.card[0x8C] + 0x14, z);
             }
             y += 0x1A;
             for (i = 0; i < 4; i++) {
-                drawText(x + 0x8D, y, (s32)((u8 *)&((OptionCardData *)OPTION_CARDS)[*(s16 *)SUB_DECK_EDIT.card - 0xBF] + 0x8D + i * 21), 7, z);
+                drawText(x + 0x8D, y, (s32p)((u8 *)&((OptionCardData *)OPTION_CARDS)[*(s16 *)SUB_DECK_EDIT.card - 0xBF] + 0x8D + i * 21), 7, z);
                 y += 12;
             }
             break;
         case 2:
             drawIcon(x + 0x18, y, 0, 6, z);
             sprintf(buf, SUB_FMT_COUNT, getOwnedCardCount(SUB_EDITOR.player, *(s16 *)SUB_DECK_EDIT.card));
-            drawText(x + 0xFD, y, (s32)buf, 7, z);
-            drawText(x + 0x109, y, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0xFD, y, (s32p)buf, 7, z);
+            drawText(x + 0x109, y, (s32p)SUB_STR_CARDS, 7, z);
             y += 0x1A;
             for (i = 0; i < 4; i++) {
-                drawText(x + 0x8D, y, (s32)((u8 *)&((DigivolveCardData *)DIGIVOLVE_CARDS)[*(s16 *)SUB_DECK_EDIT.card - 0x125] + 0x1B + i * 21), 7, z);
+                drawText(x + 0x8D, y, (s32p)((u8 *)&((DigivolveCardData *)DIGIVOLVE_CARDS)[*(s16 *)SUB_DECK_EDIT.card - 0x125] + 0x1B + i * 21), 7, z);
                 y += 12;
             }
             break;
@@ -1838,9 +1838,9 @@ void SUB_drawDeckEditTitle(UiWindow *window) {
     if (SUB_DECK_EDIT.mode == 1) {
         sprintf(buf, "%s Deck", SUB_EDITED_DECK->name);
         width = measureText(buf) - 0xA0;
-        drawText(x - width, y + 1, (s32)buf, 7, z);
+        drawText(x - width, y + 1, (s32p)buf, 7, z);
     } else {
-        drawText(x + 0x30, y + 1, (s32)"Card Selection", 7, z);
+        drawText(x + 0x30, y + 1, (s32p)"Card Selection", 7, z);
     }
 }
 
@@ -1859,21 +1859,21 @@ void SUB_drawDeckStats(UiWindow *window) {
         sprintf(SUB_LABEL_BUFFER, "L1      ");
         break;
     }
-    window->label = (s32)SUB_LABEL_BUFFER;
+    window->label = (s32p)SUB_LABEL_BUFFER;
     if (SUB_DECK_EDIT.statsPage == 0) {
         s32 masks[7] = { 0x1, 0x2, 0x4, 0x8, 0x10, 0x40, 0x80 };
 
         for (i = 0; i < 7; i++) {
             drawIcon(x, y, 0, i, z);
             sprintf(buf, "%2d", countDeckCardsByFilter(SUB_EDITOR.player, SUB_EDITED_DECK, masks[i]));
-            drawText(x + 0x15, y, (s32)buf, 7, z);
-            drawTinyText(x + 0x23, y + 6, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0x15, y, (s32p)buf, 7, z);
+            drawTinyText(x + 0x23, y + 6, (s32p)SUB_STR_CARDS, 7, z);
             y += 13;
         }
-        drawTinyText(x, y + 6, (s32)SUB_STR_TOTAL, 7, z);
+        drawTinyText(x, y + 6, (s32p)SUB_STR_TOTAL, 7, z);
         sprintf(buf, "%2d", countDeckCardsByFilter(SUB_EDITOR.player, SUB_EDITED_DECK, 0xDF));
-        drawText(x + 0x15, y, (s32)buf, 7, z);
-        drawTinyText(x + 0x23, y + 6, (s32)SUB_STR_CARDS, 7, z);
+        drawText(x + 0x15, y, (s32p)buf, 7, z);
+        drawTinyText(x + 0x23, y + 6, (s32p)SUB_STR_CARDS, 7, z);
     } else if (SUB_DECK_EDIT.statsPage == 1) {
         s32 masks[5] = { 0x200, 0x800, 0x1000, 0x40, 0x80 };
 
@@ -1886,20 +1886,20 @@ void SUB_drawDeckStats(UiWindow *window) {
                 drawIcon(x, y, 0, i + 0x11, z);
             }
             sprintf(buf, "%2d", countDeckCardsByFilter(SUB_EDITOR.player, SUB_EDITED_DECK, masks[i]));
-            drawText(x + 0x15, y, (s32)buf, 7, z);
-            drawTinyText(x + 0x23, y + 6, (s32)SUB_STR_CARDS, 7, z);
+            drawText(x + 0x15, y, (s32p)buf, 7, z);
+            drawTinyText(x + 0x23, y + 6, (s32p)SUB_STR_CARDS, 7, z);
             y += 13;
         }
         y += 13;
-        drawTinyText(x, y + 6, (s32)SUB_STR_TOTAL, 7, z);
+        drawTinyText(x, y + 6, (s32p)SUB_STR_TOTAL, 7, z);
         sprintf(buf, "%2d", countDeckCardsByFilter(SUB_EDITOR.player, SUB_EDITED_DECK, 0xDF));
-        drawText(x + 0x15, y, (s32)buf, 7, z);
-        drawTinyText(x + 0x23, y + 6, (s32)SUB_STR_CARDS, 7, z);
+        drawText(x + 0x15, y, (s32p)buf, 7, z);
+        drawTinyText(x + 0x23, y + 6, (s32p)SUB_STR_CARDS, 7, z);
         y += 13;
-        drawText(x, y, (s32)"Pa", 6, z);
+        drawText(x, y, (s32p)"Pa", 6, z);
         sprintf(buf, "%2d", countDeckCardsByFilter(SUB_EDITOR.player, SUB_EDITED_DECK, 0x20));
-        drawText(x + 0x15, y, (s32)buf, 6, z);
-        drawTinyText(x + 0x23, y + 6, (s32)SUB_STR_CARDS, 6, z);
+        drawText(x + 0x15, y, (s32p)buf, 6, z);
+        drawTinyText(x + 0x23, y + 6, (s32p)SUB_STR_CARDS, 6, z);
     }
 }
 

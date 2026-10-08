@@ -51,11 +51,11 @@ void SUB_drawBaseDeckList(UiWindow *window) {
         if (entry & 0x4000) {
             palette = 7;
         }
-        drawText(x + 2, y, (s32)buf, palette, z);
+        drawText(x + 2, y, (s32p)buf, palette, z);
         if (palette == 7) {
-            drawText(x + 0x9E, y, (s32)"Usable", 7, z);
+            drawText(x + 0x9E, y, (s32p)"Usable", 7, z);
         } else {
-            drawText(x + 0x9E, y, (s32)"Not Usable", palette, z);
+            drawText(x + 0x9E, y, (s32p)"Not Usable", palette, z);
         }
     }
     updateMenuCursor(&SUB_BASE_DECK_MENU);
@@ -91,7 +91,7 @@ s32 SUB_chooseBaseDeck(PlayerDeck *deck, s32 player) {
     SUB_BASE_DECK_MENU.nrows = count;
     SUB_BASE_DECK_WINDOW.view.h = count * SUB_BASE_DECK_MENU.rowH;
     openMenu(&SUB_BASE_DECK_MENU, &SUB_BASE_DECK_WINDOW, &SUB_BASE_DECK_CURSOR, (Bytes4 *)-1);
-    SUB_BASE_DECK_WINDOW.label = (s32)SUB_STR_BASE_DECK_LIST;
+    SUB_BASE_DECK_WINDOW.label = (s32p)SUB_STR_BASE_DECK_LIST;
     playMenuSound(3);
     done = 0;
     selected = -1;

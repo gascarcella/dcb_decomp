@@ -479,7 +479,7 @@ void SUB_drawArmorChange(UiWindow *window) {
     s32 i;
 
     if (PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].armorCardId != 0) {
-        drawText(x + 6, y + 1, (s32)"Armor Change with L1 & R1", 7, z);
+        drawText(x + 6, y + 1, (s32p)"Armor Change with L1 & R1", 7, z);
         prevArmor = SUB_ARMOR_INDEX;
         for (i = 0; i < 3; i++) {
             if ((u16)PAD_STATES[player]->pressed & 4) {
@@ -538,23 +538,23 @@ void SUB_drawPartnerDetails(UiWindow *window) {
     PLAYER_DATA(player).partners[SUB_PARTNER_SLOT] = SUB_SAVED_PARTNER;
     changed = updatePartnerStats(player, SUB_PARTNER_SLOT);
     SUB_drawPartnerPortrait(player, SUB_PARTNER_SLOT, x, y, 0x80, z);
-    drawMediumText(x + 0x2C, y, (s32)card->name, 7, z);
+    drawMediumText(x + 0x2C, y, (s32p)card->name, 7, z);
     sprintf(buf, SUB_STR_RANK, (s8)PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].level);
-    drawLargeText(x + 0x2C, y + 10, (s32)buf, 6, z);
+    drawLargeText(x + 0x2C, y + 10, (s32p)buf, 6, z);
     next = 0;
     if ((s8)PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].level < 99) {
         next = getExpForNextLevel((s8)PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].level) - (u16)PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].exp;
     }
     sprintf(buf, SUB_STR_NEXT, next);
-    drawLargeText(x + 0x2C, y + 0x14, (s32)buf, 6, z);
+    drawLargeText(x + 0x2C, y + 0x14, (s32p)buf, 6, z);
     palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[0].hp, card->hp);
     drawIcon(x + 0x2C, y + 0x1E, 0, 0x1A, z);
     sprintf(buf, SUB_STR_STAT, card->hp);
-    drawText(x + 0x3A, y + 0x1E, (s32)buf, palette, z);
+    drawText(x + 0x3A, y + 0x1E, (s32p)buf, palette, z);
     palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[0].dpBonus, card->dpBonus);
     drawIcon(x + 0x2C, y + 0x2A, 0, 0x19, z);
     sprintf(buf, SUB_STR_STAT, card->dpBonus);
-    drawText(x + 0x3A, y + 0x2A, (s32)buf, palette, z);
+    drawText(x + 0x3A, y + 0x2A, (s32p)buf, palette, z);
     for (i = 0; i < 3; i++) {
         if (PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].unlockedArmors[i] != 0) {
             partner = getSlotPartnerIndex(player, SUB_PARTNER_SLOT);
@@ -564,21 +564,21 @@ void SUB_drawPartnerDetails(UiWindow *window) {
     palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[0].attack[0].power, card->attack[0].power);
     drawIcon(x + 0x76, y + 12, 0, 7, z);
     sprintf(buf, SUB_STR_STAT, card->attack[0].power);
-    drawText(x + 0x84, y + 12, (s32)buf, palette, z);
+    drawText(x + 0x84, y + 12, (s32p)buf, palette, z);
     palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[0].attack[1].power, card->attack[1].power);
     drawIcon(x + 0x76, y + 0x18, 0, 8, z);
     sprintf(buf, SUB_STR_STAT, card->attack[1].power);
-    drawText(x + 0x84, y + 0x18, (s32)buf, palette, z);
+    drawText(x + 0x84, y + 0x18, (s32p)buf, palette, z);
     palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[0].attack[2].power, card->attack[2].power);
     drawIcon(x + 0x76, y + 0x24, 0, 9, z);
     sprintf(buf, SUB_STR_STAT, card->attack[2].power);
-    drawText(x + 0x84, y + 0x24, (s32)buf, palette, z);
+    drawText(x + 0x84, y + 0x24, (s32p)buf, palette, z);
     palette = 7;
     if (SUB_UNEQUIPPED_PARTNER.card[0].crossEffect != card->crossEffect) {
         palette = 5;
     }
     sprintf(buf, SUB_STR_CROSS_EFFECT, CROSS_EFFECT_SHORT_NAMES[card->crossEffect]);
-    drawSmallText(x + 0x74, y + 0x30, (s32)buf, palette, z);
+    drawSmallText(x + 0x74, y + 0x30, (s32p)buf, palette, z);
     if (CROSS_EFFECT_ICONS[card->crossEffect] != 0) {
         drawIcon(x + 0xB2, y + 0x2E, 0, CROSS_EFFECT_ICONS[card->crossEffect] + 0x14, z);
     }
@@ -591,7 +591,7 @@ void SUB_drawPartnerDetails(UiWindow *window) {
                 palette = 2;
             }
             sprintf(buf, "*s0%+d", diff);
-            drawText(x + 0x54, y + 0x1E, (s32)buf, palette, z);
+            drawText(x + 0x54, y + 0x1E, (s32p)buf, palette, z);
         }
         diff = SUB_PREVIEW_PARTNER.card[0].dpBonus - card->dpBonus;
         if (diff != 0) {
@@ -601,7 +601,7 @@ void SUB_drawPartnerDetails(UiWindow *window) {
                 palette = 2;
             }
             sprintf(buf, "*s0%+d", diff);
-            drawText(x + 0x54, y + 0x2A, (s32)buf, palette, z);
+            drawText(x + 0x54, y + 0x2A, (s32p)buf, palette, z);
         }
         diff = SUB_PREVIEW_PARTNER.card[0].attack[0].power - card->attack[0].power;
         if (diff != 0) {
@@ -611,7 +611,7 @@ void SUB_drawPartnerDetails(UiWindow *window) {
                 palette = 2;
             }
             sprintf(buf, "*s0%+d", diff);
-            drawText(x + 0x9E, y + 12, (s32)buf, palette, z);
+            drawText(x + 0x9E, y + 12, (s32p)buf, palette, z);
         }
         diff = SUB_PREVIEW_PARTNER.card[0].attack[1].power - card->attack[1].power;
         if (diff != 0) {
@@ -621,7 +621,7 @@ void SUB_drawPartnerDetails(UiWindow *window) {
                 palette = 2;
             }
             sprintf(buf, "*s0%+d", diff);
-            drawText(x + 0x9E, y + 0x18, (s32)buf, palette, z);
+            drawText(x + 0x9E, y + 0x18, (s32p)buf, palette, z);
         }
         diff = SUB_PREVIEW_PARTNER.card[0].attack[2].power - card->attack[2].power;
         if (diff != 0) {
@@ -631,10 +631,10 @@ void SUB_drawPartnerDetails(UiWindow *window) {
                 palette = 2;
             }
             sprintf(buf, "*s0%+d", diff);
-            drawText(x + 0x9E, y + 0x24, (s32)buf, palette, z);
+            drawText(x + 0x9E, y + 0x24, (s32p)buf, palette, z);
         }
     }
-    drawText(x, y + 0x36, (s32)SUB_STR_PARTNER_SUPPORT, 6, z);
+    drawText(x, y + 0x36, (s32p)SUB_STR_PARTNER_SUPPORT, 6, z);
     palette = 7;
     if (changed) {
         palette = 5;
@@ -643,7 +643,7 @@ void SUB_drawPartnerDetails(UiWindow *window) {
         drawIcon(x + 0x58, y + 0x36, 0, card->supportIcon + 0x14, z);
     }
     for (i = 0; i < 4; i++) {
-        drawText(x, y + 0x46 + i * 12, (s32)card->supportText[i], palette, z);
+        drawText(x, y + 0x46 + i * 12, (s32p)card->supportText[i], palette, z);
     }
     rect.x = x;
     rect.y = y + 0x46;
@@ -689,30 +689,30 @@ void SUB_drawArmorDetails(UiWindow *window) {
         }
         PLAYER_DATA(player).partners[SUB_PARTNER_SLOT] = SUB_SAVED_PARTNER;
         updatePartnerStats(player, SUB_PARTNER_SLOT);
-        drawMediumText(x, y, (s32)card->name, 7, z);
+        drawMediumText(x, y, (s32p)card->name, 7, z);
         drawIcon(x + 0x44, y + 12, 0, SUB_ARMOR_ICONS[getSlotPartnerIndex(player, SUB_PARTNER_SLOT)][getSelectedArmorIndex(player, getSlotPartnerIndex(player, SUB_PARTNER_SLOT))] + 0x1B, z);
         palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[1].hp, card->hp);
         drawIcon(x, y + 0x3E, 0, 0x1A, z);
         sprintf(buf, SUB_STR_STAT, card->hp);
-        drawText(x + 0xE, y + 0x3E, (s32)buf, palette, z);
+        drawText(x + 0xE, y + 0x3E, (s32p)buf, palette, z);
         palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[1].attack[0].power, card->attack[0].power);
         drawIcon(x, y + 0x4A, 0, 7, z);
         sprintf(buf, SUB_STR_STAT, card->attack[0].power);
-        drawText(x + 0xE, y + 0x4A, (s32)buf, palette, z);
+        drawText(x + 0xE, y + 0x4A, (s32p)buf, palette, z);
         palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[1].attack[1].power, card->attack[1].power);
         drawIcon(x, y + 0x56, 0, 8, z);
         sprintf(buf, SUB_STR_STAT, card->attack[1].power);
-        drawText(x + 0xE, y + 0x56, (s32)buf, palette, z);
+        drawText(x + 0xE, y + 0x56, (s32p)buf, palette, z);
         palette = SUB_getStatPalette(SUB_UNEQUIPPED_PARTNER.card[1].attack[2].power, card->attack[2].power);
         drawIcon(x, y + 0x62, 0, 9, z);
         sprintf(buf, SUB_STR_STAT, card->attack[2].power);
-        drawText(x + 0xE, y + 0x62, (s32)buf, palette, z);
+        drawText(x + 0xE, y + 0x62, (s32p)buf, palette, z);
         palette = 7;
         if (SUB_UNEQUIPPED_PARTNER.card[1].crossEffect != card->crossEffect) {
             palette = 5;
         }
         sprintf(buf, SUB_STR_CROSS_EFFECT, CROSS_EFFECT_SHORT_NAMES[card->crossEffect]);
-        drawSmallText(x - 2, y + 0x6E, (s32)buf, palette, z);
+        drawSmallText(x - 2, y + 0x6E, (s32p)buf, palette, z);
         if (CROSS_EFFECT_ICONS[card->crossEffect] != 0) {
             drawIcon(x + 0x3C, y + 0x6C, 0, CROSS_EFFECT_ICONS[card->crossEffect] + 0x14, z);
         }
@@ -725,7 +725,7 @@ void SUB_drawArmorDetails(UiWindow *window) {
                     palette = 2;
                 }
                 sprintf(buf, "*s0%+d", diff);
-                drawText(x + 0x28, y + 0x3E, (s32)buf, palette, z);
+                drawText(x + 0x28, y + 0x3E, (s32p)buf, palette, z);
             }
             diff = SUB_PREVIEW_PARTNER.card[1].attack[0].power - card->attack[0].power;
             if (diff != 0) {
@@ -735,7 +735,7 @@ void SUB_drawArmorDetails(UiWindow *window) {
                     palette = 2;
                 }
                 sprintf(buf, "*s0%+d", diff);
-                drawText(x + 0x28, y + 0x4A, (s32)buf, palette, z);
+                drawText(x + 0x28, y + 0x4A, (s32p)buf, palette, z);
             }
             diff = SUB_PREVIEW_PARTNER.card[1].attack[1].power - card->attack[1].power;
             if (diff != 0) {
@@ -745,7 +745,7 @@ void SUB_drawArmorDetails(UiWindow *window) {
                     palette = 2;
                 }
                 sprintf(buf, "*s0%+d", diff);
-                drawText(x + 0x28, y + 0x56, (s32)buf, palette, z);
+                drawText(x + 0x28, y + 0x56, (s32p)buf, palette, z);
             }
             diff = SUB_PREVIEW_PARTNER.card[1].attack[2].power - card->attack[2].power;
             if (diff != 0) {
@@ -755,11 +755,11 @@ void SUB_drawArmorDetails(UiWindow *window) {
                     palette = 2;
                 }
                 sprintf(buf, "*s0%+d", diff);
-                drawText(x + 0x28, y + 0x62, (s32)buf, palette, z);
+                drawText(x + 0x28, y + 0x62, (s32p)buf, palette, z);
             }
         }
     } else {
-        drawText(x + 0x14, y + 0x4A, (s32)SUB_STR_NO_DATA, 7, z);
+        drawText(x + 0x14, y + 0x4A, (s32p)SUB_STR_NO_DATA, 7, z);
     }
 }
 
@@ -777,8 +777,8 @@ void SUB_drawEquipment(UiWindow *window) {
     for (i = 0; i < 3; i++) {
         ability = PLAYER_DATA(player).partners[SUB_PARTNER_SLOT].equippedAbilities[i];
         if (ability == -1) {
-            drawText(x, y + i * 14, (s32)"---", 7, z);
-            drawText(x + 0x1C, y + i * 14, (s32)"None", 7, z);
+            drawText(x, y + i * 14, (s32p)"---", 7, z);
+            drawText(x + 0x1C, y + i * 14, (s32p)"None", 7, z);
         } else {
             palette = 7;
             if (PARTNER_ABILITIES[ability].type == 5) {
@@ -788,9 +788,9 @@ void SUB_drawEquipment(UiWindow *window) {
                 palette = 5;
             }
             sprintf(buf, "*s0%3.3d", ability);
-            drawText(x, y + i * 14, (s32)buf, 7, z);
+            drawText(x, y + i * 14, (s32p)buf, 7, z);
             drawIcon(x + 0x1A, y + i * 14, 2, PARTNER_ABILITIES[ability].type, z);
-            drawText(x + 0x36, y + i * 14, (s32)SUB_ABILITY_TEXTS[ability].name, palette, z);
+            drawText(x + 0x36, y + i * 14, (s32p)SUB_ABILITY_TEXTS[ability].name, palette, z);
         }
     }
     updateMenuCursor(&SUB_EQUIPMENT_MENU);
@@ -912,40 +912,40 @@ void SUB_runPartnerEquipment(s32 player, s32 parentTask, s32 viewOnly) {
         SUB_PARTNER_TABS[i].slot = i;
         switch (i) {
         case 0:
-            SUB_PARTNER_TABS[i].window.label = (s32)"PARTNER 1 ";
+            SUB_PARTNER_TABS[i].window.label = (s32p)"PARTNER 1 ";
             break;
         case 1:
-            SUB_PARTNER_TABS[i].window.label = (s32)"PARTNER 2 ";
+            SUB_PARTNER_TABS[i].window.label = (s32p)"PARTNER 2 ";
             break;
         case 2:
-            SUB_PARTNER_TABS[i].window.label = (s32)"PARTNER 3 ";
+            SUB_PARTNER_TABS[i].window.label = (s32p)"PARTNER 3 ";
             break;
         }
     }
     openMenu(&SUB_ABILITY_MENU, &SUB_ABILITY_WINDOW, &SUB_ABILITY_CURSOR, (Bytes4 *)-1);
-    SUB_ABILITY_WINDOW.label = (s32)"Digi-Parts List";
+    SUB_ABILITY_WINDOW.label = (s32p)"Digi-Parts List";
     SUB_ABILITY_WINDOW.palette = 4;
     animateWindowTo(&SUB_ABILITY_WINDOW, (Rect16 *)-1);
     SUB_ABILITY_MENU.active = 0;
     openMenu(&SUB_EQUIPMENT_MENU, &SUB_EQUIPMENT_WINDOW, &SUB_EQUIPMENT_CURSOR, (Bytes4 *)-1);
-    SUB_EQUIPMENT_WINDOW.label = (s32)"EQUIPMENT";
+    SUB_EQUIPMENT_WINDOW.label = (s32p)"EQUIPMENT";
     animateWindowTo(&SUB_EQUIPMENT_WINDOW, (Rect16 *)-1);
     openWindow(&SUB_ARMOR_CHANGE_WINDOW, &SUB_ARMOR_CHANGE_WINDOW_RECT, -1, (s16 *)-1, 8, 0x32, 0x80, 12);
     animateWindowTo(&SUB_ARMOR_CHANGE_WINDOW, (Rect16 *)-1);
     openWindow(&SUB_PARTNER_WINDOW, &SUB_PARTNER_WINDOW_RECT, -1, (s16 *)-1, 8, 0x26, 0x80, 12);
-    SUB_PARTNER_WINDOW.label = (s32)"PARTNER";
+    SUB_PARTNER_WINDOW.label = (s32p)"PARTNER";
     animateWindowTo(&SUB_PARTNER_WINDOW, (Rect16 *)-1);
     openWindow(&SUB_ARMOR_WINDOW, &SUB_ARMOR_WINDOW_RECT, -1, (s16 *)-1, 8, 0x26, 0x80, 12);
-    SUB_ARMOR_WINDOW.label = (s32)"ARMOR";
+    SUB_ARMOR_WINDOW.label = (s32p)"ARMOR";
     animateWindowTo(&SUB_ARMOR_WINDOW, (Rect16 *)-1);
-    addFrameCallback((s32)SUB_drawPartnerEquipment);
+    addFrameCallback((s32p)SUB_drawPartnerEquipment);
     for (;;) {
         waitFrames(FRAME_INTERVAL);
         switch (state) {
         case -1:
             SUB_PARTNER_TITLE_SHOWN = 0;
             waitFrames(20);
-            removeFrameCallback((s32)SUB_drawPartnerEquipment);
+            removeFrameCallback((s32p)SUB_drawPartnerEquipment);
             resumeTask(parentTask);
             return;
         case 0:

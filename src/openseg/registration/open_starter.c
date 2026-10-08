@@ -235,7 +235,7 @@ void OPEN_runStarterSelect(s32 parentTask) {
     view.w = 0x10E;
     view.h = 0xD8;
     openWindow(&OPEN_STARTER_WINDOW, &rect, -1, (s16 *)&view, 10, 0x81, 0x80, 0xC);
-    OPEN_STARTER_WINDOW.label = (s32)"STARTER SELECT";
+    OPEN_STARTER_WINDOW.label = (s32p)"STARTER SELECT";
     OPEN_STARTER_WINDOW.labelPalette = 7;
     cursor.x = OPEN_STARTER_WINDOW.originX + 4;
     cursor.y = OPEN_STARTER_WINDOW.originY + 1;
@@ -244,7 +244,7 @@ void OPEN_runStarterSelect(s32 parentTask) {
     initCursorHighlight(&OPEN_STARTER_CURSOR, &cursor, (Bytes4 *)-1);
     waitFrames(FRAME_INTERVAL);
     playMenuSound(3);
-    addFrameCallback((s32)OPEN_drawStarterSelectWindow);
+    addFrameCallback((s32p)OPEN_drawStarterSelectWindow);
     OPEN_INTRO_TEXT.waitInput = 1;
     do {
 #if VERSION_US
@@ -287,7 +287,7 @@ void OPEN_runStarterSelect(s32 parentTask) {
     playMenuSound(4);
     freeHeapBlock(arc);
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawStarterSelectWindow);
+    removeFrameCallback((s32p)OPEN_drawStarterSelectWindow);
     OPEN_giveStarterDeck(OPEN_STARTER_SELECT.deck);
     resumeTask(parentTask);
 }

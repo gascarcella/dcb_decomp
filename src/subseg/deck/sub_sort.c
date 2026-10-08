@@ -647,9 +647,9 @@ void SUB_drawCardSortMenu(UiWindow *window) {
         }
         y = window->originY + i * SUB_CARD_SORT_MENU.rowH + 1;
         if (SUB_EDITOR.useDeckCounts == 0) {
-            drawText(x, y, (s32)SUB_CARD_SORT_LABELS[i], 7, z);
+            drawText(x, y, (s32p)SUB_CARD_SORT_LABELS[i], 7, z);
         } else {
-            drawText(x, y, (s32)SUB_CARD_SORT_LABELS_EDITING[i], 7, z);
+            drawText(x, y, (s32p)SUB_CARD_SORT_LABELS_EDITING[i], 7, z);
         }
     }
     updateMenuCursor(&SUB_CARD_SORT_MENU);
@@ -1321,7 +1321,7 @@ void SUB_drawDeckSortMenu(UiWindow *window) {
         if ((window->view.y + window->rect.h) / SUB_DECK_SORT_MENU.rowH < i) {
             break;
         }
-        drawText(x, window->originY + i * SUB_DECK_SORT_MENU.rowH + 1, (s32)SUB_DECK_SORT_LABELS[i], 7, z);
+        drawText(x, window->originY + i * SUB_DECK_SORT_MENU.rowH + 1, (s32p)SUB_DECK_SORT_LABELS[i], 7, z);
     }
     updateMenuCursor(&SUB_DECK_SORT_MENU);
     if (SUB_DECK_SORT_MENU.active && (PAD_STATES[SUB_EDITOR.player]->pressed & 0x40)) {

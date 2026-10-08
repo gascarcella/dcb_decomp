@@ -180,14 +180,14 @@ void SUB_drawNameEntryGrid(UiWindow *window) {
         if (i % 10 >= 5) {
             dx = 11;
         }
-        drawText(x + 4 + (i % 10) * 17 + dx, y + (i / 10) * 14, (s32)buf, 7, z);
+        drawText(x + 4 + (i % 10) * 17 + dx, y + (i / 10) * 14, (s32p)buf, 7, z);
     }
     for (i = 0; i < 7; i++) {
         rowPalettes[i] = 4;
     }
     rowPalettes[window->view.y / window->rect.h] = 5;
-    drawText(window->rect.x + 0xCC, window->rect.y + 0x63, (s32)okLabel, 6, z);
-    drawText(window->rect.x + 0xCC, window->rect.y + 0x71, (s32)cancelLabel, 6, z);
+    drawText(window->rect.x + 0xCC, window->rect.y + 0x63, (s32p)okLabel, 6, z);
+    drawText(window->rect.x + 0xCC, window->rect.y + 0x71, (s32p)cancelLabel, 6, z);
     SUB_moveNameEntryCursor();
     if (SUB_NAME_ENTRY.onButtons == 0) {
         if (PAD_STATES[SUB_NAME_ENTRY.pad]->repeat & 0x40) {
@@ -272,8 +272,8 @@ void SUB_drawDeckNameField(UiWindow *window) {
     s32 z = window->z;
 
     sprintf(buf, "*s0%s", SUB_NAME_ENTRY.name);
-    drawText(x, y, (s32)buf, 7, z);
-    drawText(x + 0x4C, y, (s32)"Deck", 6, z);
+    drawText(x, y, (s32p)buf, 7, z);
+    drawText(x + 0x4C, y, (s32p)"Deck", 6, z);
     if (PAD_STATES[SUB_NAME_ENTRY.pad]->repeat & 4) {
         if (SUB_NAME_ENTRY.cursor != 0) {
             playMenuSound(2);
@@ -299,9 +299,9 @@ void SUB_drawNameEntryHelp(UiWindow *window) {
     s32 y = window->originY + 1;
     s32 z = window->z;
 
-    drawText(x, y, (s32)"*b0 Insert", 7, z);
-    drawText(x + 8, y + 13, (s32)"*b2 OK", 7, z);
-    drawText(x, y + 26, (s32)"*b1 Delete", 7, z);
+    drawText(x, y, (s32p)"*b0 Insert", 7, z);
+    drawText(x + 8, y + 13, (s32p)"*b2 OK", 7, z);
+    drawText(x, y + 26, (s32p)"*b1 Delete", 7, z);
 }
 
 void SUB_drawNameEntry(void) {
@@ -339,7 +339,7 @@ void SUB_enterDeckName(s32 mode, char *name, s32 pad) {
     view.w = 0x10E;
     view.h = 0x7E;
     openWindow(&SUB_NAME_ENTRY_WINDOW, &rect, -1, (s16 *)&view, 10, 0x26, 0x80, 12);
-    SUB_NAME_ENTRY_WINDOW.label = (s32)"NAME ENTRY";
+    SUB_NAME_ENTRY_WINDOW.label = (s32p)"NAME ENTRY";
     cursor.x = SUB_NAME_ENTRY_WINDOW.originX + 4;
     cursor.y = SUB_NAME_ENTRY_WINDOW.originY + 1;
     cursor.w = 12;
@@ -350,20 +350,20 @@ void SUB_enterDeckName(s32 mode, char *name, s32 pad) {
     rect.w = 0x34;
     rect.h = 0x28;
     openWindow(&SUB_NAME_ENTRY_HELP_WINDOW, &rect, -1, (s16 *)-1, 8, 0x26, 0x80, 12);
-    SUB_NAME_ENTRY_HELP_WINDOW.label = (s32)"HELP";
+    SUB_NAME_ENTRY_HELP_WINDOW.label = (s32p)"HELP";
     rect.x = 0xBC;
     rect.y = 0x1C;
     rect.w = 0x6C;
     rect.h = 0xE;
     openWindow(&SUB_DECK_NAME_WINDOW, &rect, -1, (s16 *)-1, 8, 0x26, 0x80, 12);
-    SUB_DECK_NAME_WINDOW.label = (s32)"DECK NAME";
+    SUB_DECK_NAME_WINDOW.label = (s32p)"DECK NAME";
     cursor.x = SUB_DECK_NAME_WINDOW.originX;
     cursor.y = SUB_DECK_NAME_WINDOW.originY + 13;
     cursor.w = 12;
     cursor.h = 0;
     initCursorHighlight(&SUB_DECK_NAME_CURSOR, &rect, (Bytes4 *)-1);
     playMenuSound(3);
-    addFrameCallback((s32)SUB_drawNameEntry);
+    addFrameCallback((s32p)SUB_drawNameEntry);
     for (;;) {
         waitFrames(FRAME_INTERVAL);
         if (SUB_NAME_ENTRY.state == 0) {
@@ -386,7 +386,7 @@ void SUB_enterDeckName(s32 mode, char *name, s32 pad) {
     animateWindowTo(&SUB_NAME_ENTRY_WINDOW, (Rect16 *)-1);
     animateWindowTo(&SUB_DECK_NAME_WINDOW, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)SUB_drawNameEntry);
+    removeFrameCallback((s32p)SUB_drawNameEntry);
     if (SUB_NAME_ENTRY.state == 7) {
         spawnTask(0, -1, 0, 0x1000, mode == 1 ? SUB_runDeckMenu : SUB_runAutoDeckMenu, 0, 0, 0, 0);
     } else {

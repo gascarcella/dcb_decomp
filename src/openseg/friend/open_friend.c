@@ -85,23 +85,23 @@ void OPEN_drawPlayerRecord(PlayerWindow *window) {
     for (i = 0; i < 301; i++) {
         total += getOwnedCardCount(window->player, i);
     }
-    drawText(x + 1, y, (s32)nameLabel, 6, z);
-    drawText(x + 0x43, y, (s32)PLAYER_DATA(window->player).name, 7, z);
-    drawText(x + 1, y + 12, (s32)"2 Player Battle", 6, z);
+    drawText(x + 1, y, (s32p)nameLabel, 6, z);
+    drawText(x + 0x43, y, (s32p)PLAYER_DATA(window->player).name, 7, z);
+    drawText(x + 1, y + 12, (s32p)"2 Player Battle", 6, z);
     sprintf(text, "*s0%3d    %3d", PLAYER_DATA(window->player).versusWins, PLAYER_DATA(window->player).versusLosses);
-    drawText(x + 0x52, y + 12, (s32)text, 7, z);
-    drawSmallText(x + 0x65, y + 19, (s32)"WINS", 6, z);
-    drawSmallText(x + 0x90, y + 19, (s32)"LOSSES", 6, z);
+    drawText(x + 0x52, y + 12, (s32p)text, 7, z);
+    drawSmallText(x + 0x65, y + 19, (s32p)"WINS", 6, z);
+    drawSmallText(x + 0x90, y + 19, (s32p)"LOSSES", 6, z);
     countSeenCards(window->player);
-    drawText(x + 1, y + 24, (s32)"Cards in Stock.", 6, z);
+    drawText(x + 1, y + 24, (s32p)"Cards in Stock.", 6, z);
     i = PLAYER_DATA(window->player).seenCardCount * 1000 / 301;
     sprintf(text, "*s0%3d.%1d*w4*c6%%", i / 10, i % 10);
-    drawText(x + 0x67, y + 24, (s32)text, 7, z);
-    drawText(x + 1, y + 36, (s32)"Cards in Possession.", 6, z);
+    drawText(x + 0x67, y + 24, (s32p)text, 7, z);
+    drawText(x + 1, y + 36, (s32p)"Cards in Possession.", 6, z);
     sprintf(text, "*s0%4d", total);
-    drawText(x + 0x6D, y + 36, (s32)text, 7, z);
-    drawSmallText(x + 0x87, y + 0x2B, (s32)"CARDS", 6, z);
-    drawText(x + 1, y + 0x30, (s32)"Deck", 6, z);
+    drawText(x + 0x6D, y + 36, (s32p)text, 7, z);
+    drawSmallText(x + 0x87, y + 0x2B, (s32p)"CARDS", 6, z);
+    drawText(x + 1, y + 0x30, (s32p)"Deck", 6, z);
     for (i = 0; i < 3; i++) {
         if (PLAYER_DATA(window->player).savedDecks[i].inUse) {
             strcpy(text, (char *)PLAYER_DATA(window->player).savedDecks[i].name);
@@ -109,7 +109,7 @@ void OPEN_drawPlayerRecord(PlayerWindow *window) {
         } else {
             strcpy(text, "Unused Deck");
         }
-        drawText(x + 0x37, y + (i + 4) * 12, (s32)text, 7, z);
+        drawText(x + 0x37, y + (i + 4) * 12, (s32p)text, 7, z);
     }
     if (PLAYER_DATA(window->player).tradeUnlocked) {
         drawIcon(x + 8, y + 0x44, 2, 11, z);
@@ -191,12 +191,12 @@ void OPEN_openPlayerRecordWindows(void) {
         to.y = i * 100 + 40;
         to.w = 172;
         to.h = 84;
-        openWindow(&OPEN_PLAYER_RECORD_WINDOWS[i].window, &from, (s32)&to, (s16 *)-1, 8, 0x25, 0x80, 0xC);
+        openWindow(&OPEN_PLAYER_RECORD_WINDOWS[i].window, &from, (s32p)&to, (s16 *)-1, 8, 0x25, 0x80, 0xC);
         OPEN_PLAYER_RECORD_WINDOWS[i].player = i;
         if (i == 0) {
-            OPEN_PLAYER_RECORD_WINDOWS[0].window.label = (s32)"PLAYER 1";
+            OPEN_PLAYER_RECORD_WINDOWS[0].window.label = (s32p)"PLAYER 1";
         } else {
-            OPEN_PLAYER_RECORD_WINDOWS[1].window.label = (s32)"PLAYER 2";
+            OPEN_PLAYER_RECORD_WINDOWS[1].window.label = (s32p)"PLAYER 2";
         }
     }
 }
@@ -236,7 +236,7 @@ void OPEN_runBattleWithFriend(void) {
     freeHeapBlock(arc);
     OPEN_openPlayerRecordWindows();
     playMenuSound(3);
-    addFrameCallback((s32)OPEN_drawFriendScreen);
+    addFrameCallback((s32p)OPEN_drawFriendScreen);
     do {
         waitFrames(FRAME_INTERVAL);
         OPEN_TRADE_ENABLED = PLAYER_DATA(0).tradeUnlocked | (PLAYER_DATA(1).tradeUnlocked << 1);
@@ -258,11 +258,11 @@ void OPEN_runBattleWithFriend(void) {
                     OPEN_FRIEND_MENU_SHOWN = 0;
                     OPEN_closePlayerRecordWindows();
                     waitFrames(20);
-                    removeFrameCallback((s32)OPEN_drawFriendScreen);
+                    removeFrameCallback((s32p)OPEN_drawFriendScreen);
                     spawnTask(0, -1, 0, 0x800, OPEN_runCardTrade, getCurrentTaskId(), 0, 0, 0);
                     waitFrames(0x7FFFFFFF);
                     OPEN_openPlayerRecordWindows();
-                    addFrameCallback((s32)OPEN_drawFriendScreen);
+                    addFrameCallback((s32p)OPEN_drawFriendScreen);
                 } else {
                     playMenuSound(1);
                     initDialog(dialog, message, 0);
@@ -274,40 +274,40 @@ void OPEN_runBattleWithFriend(void) {
                 OPEN_FRIEND_MENU_SHOWN = 0;
                 OPEN_closePlayerRecordWindows();
                 waitFrames(20);
-                removeFrameCallback((s32)OPEN_drawFriendScreen);
+                removeFrameCallback((s32p)OPEN_drawFriendScreen);
                 runDeckEditorFromFriendMenu(0);
                 OPEN_openPlayerRecordWindows();
-                addFrameCallback((s32)OPEN_drawFriendScreen);
+                addFrameCallback((s32p)OPEN_drawFriendScreen);
                 break;
             case 3:
                 playMenuSound(4);
                 OPEN_FRIEND_MENU_SHOWN = 0;
                 OPEN_closePlayerRecordWindows();
                 waitFrames(20);
-                removeFrameCallback((s32)OPEN_drawFriendScreen);
+                removeFrameCallback((s32p)OPEN_drawFriendScreen);
                 runDeckEditorFromFriendMenu(1);
                 OPEN_openPlayerRecordWindows();
-                addFrameCallback((s32)OPEN_drawFriendScreen);
+                addFrameCallback((s32p)OPEN_drawFriendScreen);
                 break;
             case 4:
                 playMenuSound(4);
                 OPEN_FRIEND_MENU_SHOWN = 0;
                 OPEN_closePlayerRecordWindows();
                 waitFrames(20);
-                removeFrameCallback((s32)OPEN_drawFriendScreen);
+                removeFrameCallback((s32p)OPEN_drawFriendScreen);
                 runPartnerEquipmentFromFriendMenu(0);
                 OPEN_openPlayerRecordWindows();
-                addFrameCallback((s32)OPEN_drawFriendScreen);
+                addFrameCallback((s32p)OPEN_drawFriendScreen);
                 break;
             case 5:
                 playMenuSound(4);
                 OPEN_FRIEND_MENU_SHOWN = 0;
                 OPEN_closePlayerRecordWindows();
                 waitFrames(20);
-                removeFrameCallback((s32)OPEN_drawFriendScreen);
+                removeFrameCallback((s32p)OPEN_drawFriendScreen);
                 runPartnerEquipmentFromFriendMenu(1);
                 OPEN_openPlayerRecordWindows();
-                addFrameCallback((s32)OPEN_drawFriendScreen);
+                addFrameCallback((s32p)OPEN_drawFriendScreen);
                 break;
             default:
                 playMenuSound(4);
@@ -363,7 +363,7 @@ void OPEN_runBattleWithFriend(void) {
     } while (OPEN_FRIEND_MENU_DONE == 0);
     spawnTask(0, -1, 0, 0x200, screenFadeTask, 0, 2, 8, 0);
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawFriendScreen);
+    removeFrameCallback((s32p)OPEN_drawFriendScreen);
     hideScrollingBackground();
     stopScreenFade();
     switch (((SessionView *)SESSION_DATA)->menuRow) {

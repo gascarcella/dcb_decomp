@@ -327,7 +327,7 @@ void OPEN_drawIntroMessage(UiWindow *window) {
         OPEN_INTRO_TEXT.length++;
     }
     dst = text;
-    drawText(x + 2, y + 1, (s32)dst, 7, z);
+    drawText(x + 2, y + 1, (s32p)dst, 7, z);
     if (OPEN_INTRO_TEXT.done != 0 && OPEN_INTRO_TEXT.waitInput != 0) {
         if (++OPEN_INTRO_TEXT.blink & 0x10) {
             drawIcon(x + 0x119, y + 0x1C, 0, 0x1B, z);
@@ -429,7 +429,7 @@ void OPEN_startSceneTasks(void) {
 void OPEN_stopSceneTasks(void) {
     endTask(0x1B);
     endTask(0x19);
-    removeFrameCallback((s32)renderSceneModels);
+    removeFrameCallback((s32p)renderSceneModels);
     unloadAllModels();
     freeHeapBlocksByTag(0x7F);
 }
@@ -488,7 +488,7 @@ void OPEN_runUserRegistration(s32 parentTask) {
     rect.w = 0xDC;
     rect.h = 0x52;
     openWindow(&OPEN_IMAGE_WINDOW, &rect, -1, (s16 *)-1, 8, 0x81, 0x80, 0xC);
-    OPEN_IMAGE_WINDOW.label = (s32)imageLabel;
+    OPEN_IMAGE_WINDOW.label = (s32p)imageLabel;
     OPEN_IMAGE_WINDOW.labelPalette = 7;
     animateWindowTo(&OPEN_IMAGE_WINDOW, (Rect16 *)-1);
     rect.x = 0xC;
@@ -497,13 +497,13 @@ void OPEN_runUserRegistration(s32 parentTask) {
     rect.h = 0x2A;
     openWindow(&OPEN_MESSAGE_WINDOW, &rect, -1, (s16 *)-1, 8, 0x51, 0x80, 0xC);
     OPEN_MESSAGE_WINDOW.labelPalette = 8;
-    OPEN_MESSAGE_WINDOW.label = (s32)messageLabel;
+    OPEN_MESSAGE_WINDOW.label = (s32p)messageLabel;
     rect.x = 0x18;
     rect.y = 0x18;
     rect.w = 0x48;
     rect.h = 0xC;
     openWindow(&OPEN_PLAYER_NAME_WINDOW, &rect, -1, (s16 *)-1, 8, 0x11, 0x80, 0xC);
-    OPEN_PLAYER_NAME_WINDOW.label = (s32)nameLabel;
+    OPEN_PLAYER_NAME_WINDOW.label = (s32p)nameLabel;
     animateWindowTo(&OPEN_PLAYER_NAME_WINDOW, (Rect16 *)-1);
     OPEN_INTRO_IMAGE = -1;
     OPEN_INTRO_SHOWN_IMAGE = -1;
@@ -528,7 +528,7 @@ void OPEN_runUserRegistration(s32 parentTask) {
     OPEN_startSceneTasks();
     loadDigimonModelPak(0, 0xEB, 0, 1);
     CAMERA_TARGET_MODEL = 0;
-    addFrameCallback((s32)OPEN_drawIntroScreen);
+    addFrameCallback((s32p)OPEN_drawIntroScreen);
     playMenuSound(3);
     model = 0;
     while (!done) {
@@ -709,7 +709,7 @@ void OPEN_runUserRegistration(s32 parentTask) {
     playMenuSound(4);
     spawnTask(0, -1, 0, 0x200, screenFadeTask, 0, 2, 8, 0);
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawIntroScreen);
+    removeFrameCallback((s32p)OPEN_drawIntroScreen);
     hideScrollingBackground();
     stopScreenFade();
     waitFrames(10);
