@@ -2,6 +2,9 @@
 #include "game.h"
 #include "dcb/menu.h"
 #include "dcb/saiseg.h"
+#ifdef PC_PORT
+#include "dcb/dialog.h" /* SAI_DIALOG (issue #23) */
+#endif
 
 #ifdef PC_PORT
 /* the host links every overlay: names other overlays also give their bytes
@@ -38,7 +41,11 @@ TextLine SAI_TEXT_LINES[3] = { { { 0 } } };
 u8 D_801F4900[8] = { 0 };
 OpponentList SAI_OPPONENTS = { { 0 } };
 u8 D_801F4A34[4] = { 0 };
+#ifndef PC_PORT /* PC_PORT: a Dialog (dcb/dialog.h, issue #23) */
 u8 SAI_DIALOG[0xB8] = { 0 };
+#else
+Dialog SAI_DIALOG[1] = { 0 };
+#endif
 OpponentInfo *SAI_OPPONENT_INFO = NULL;
 u8 D_801F4AF4[4] = { 0 };
 s16 SAI_SCRIPT_REWARD_CARDS[3] = { 0 };

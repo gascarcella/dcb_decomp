@@ -1070,7 +1070,7 @@ void OPEN_drawTradeScreen(void) {
 void OPEN_runCardTrade(s32 parentTask) {
     s32 open[2];
     Rect16 rect;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     s32 i;
     s32 j;
     s16 card;
@@ -1206,7 +1206,7 @@ void OPEN_runCardTrade(s32 parentTask) {
         if (OPEN_TRADE_QUIT >= 2) {
             initDialog(dialog, OPEN_STR_QUIT_TRADING, 1);
             runDialogForPad((s32 *)dialog, OPEN_TRADE_QUIT - 2);
-            switch ((s8)dialog[0xA5]) {
+            switch ((s8)DIALOG_BUFFER_CHOICE(dialog)) {
             case 1:
                 OPEN_TRADE_QUIT = 1;
                 break;

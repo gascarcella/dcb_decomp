@@ -431,7 +431,12 @@ void KAW_runDeckSelect(s32 isVersus, s32 match) {
     u8 done;
     u16 pressed;
 
+#ifdef PC_PORT
+    /* the PS1's 0x778 is sizeof(DeckScreen) there; the host's is larger (its dialog is a Dialog, issue #23) */
+    KAW_MATCH_SCREEN = allocTaskHeapBlock(sizeof(DeckScreen));
+#else
     KAW_MATCH_SCREEN = allocTaskHeapBlock(0x778);
+#endif
     spawnTask(0, -1, 0, 0x800, KAW_loadMatchGraphics, isVersus, match, getCurrentTaskId(), 0);
     KAW_MATCH_SCREEN->deckListOpen[0] = 0;
     KAW_MATCH_SCREEN->deckListOpen[1] = 0;

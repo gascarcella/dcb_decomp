@@ -884,7 +884,7 @@ const char SUB_STR_DECK_2[] = "DECK 2";
 const char SUB_STR_DECK_3[] = "DECK 3";
 
 void SUB_runDeckMenu(void) {
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     Rect16 rects[4];
     const char *labels[4] = { SUB_STR_HELP, SUB_STR_DECK_1, SUB_STR_DECK_2, SUB_STR_DECK_3 };
     s16 running = 1;
@@ -956,9 +956,9 @@ void SUB_runDeckMenu(void) {
             if (PLAYER_DATA(SUB_EDITOR.player).savedDecks[SUB_DECK_MENU.slot].inUse == 0) {
                 playMenuSound(1);
                 initDialog(dialog, (u8 *)"Do you want to create a new Deck?", 1);
-                dialog[0xA6] = SUB_EDITOR.player;
+                DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                 runDialog(dialog);
-                result = (s8)dialog[0xA5];
+                result = (s8)DIALOG_BUFFER_CHOICE(dialog);
 
                 if (result != 1) {
                     break;
@@ -1003,9 +1003,9 @@ void SUB_runDeckMenu(void) {
             if (SUB_DECK_MENU.decks[SUB_DECK_MENU.slot]->inUse != 0 && SUB_DECK_MENU.count >= 2) {
                 playMenuSound(1);
                 initDialog(dialog, (u8 *)"Do you want to delete this Deck?", 1);
-                dialog[0xA6] = SUB_EDITOR.player;
+                DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                 runDialog(dialog);
-                if ((s8)dialog[0xA5] == 1) {
+                if ((s8)DIALOG_BUFFER_CHOICE(dialog) == 1) {
                     deleteSavedDeck(SUB_EDITOR.player, SUB_DECK_MENU.slot);
                     SUB_DECK_MENU.count--;
                     for (i = 0; i < 3; i++) {
@@ -1020,9 +1020,9 @@ void SUB_runDeckMenu(void) {
             if (SUB_DECK_MENU.decks[SUB_DECK_MENU.slot]->inUse != 0 && SUB_DECK_MENU.count < 3) {
                 playMenuSound(1);
                 initDialog(dialog, (u8 *)"Do you want to copy this Deck?", 1);
-                dialog[0xA6] = SUB_EDITOR.player;
+                DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                 runDialog(dialog);
-                if ((s8)dialog[0xA5] == 1) {
+                if ((s8)DIALOG_BUFFER_CHOICE(dialog) == 1) {
                     storeSavedDeck(SUB_EDITOR.player, &PLAYER_DATA(SUB_EDITOR.player).savedDecks[SUB_DECK_MENU.slot], SUB_DECK_MENU.count);
                     SUB_DECK_MENU.count++;
                 }
@@ -1277,7 +1277,7 @@ s32 SUB_hasDeckChanged(PlayerDeck *a, PlayerDeck *b) {
 }
 
 void SUB_tickDeckSlots(PlayerDeck *deck) {
-    u8 dialog[0xC0];
+    DIALOG_BUFFER(dialog, 0xC0);
     Rect16 from;
     Rect16 to;
     s16 r;
@@ -1389,9 +1389,9 @@ void SUB_tickDeckSlots(PlayerDeck *deck) {
             }
             if (result == 1) {
                 initDialog(dialog, "There are not enough Cards.\nDo you want to quit editing this Deck?", 1);
-                dialog[0xA6] = SUB_EDITOR.player;
+                DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                 runDialog(dialog);
-                if ((s8)dialog[0xA5] == 1) {
+                if ((s8)DIALOG_BUFFER_CHOICE(dialog) == 1) {
                     if (SUB_DECK_IS_NEW == 1) {
                         deck->inUse = 0;
                     }
@@ -1399,21 +1399,21 @@ void SUB_tickDeckSlots(PlayerDeck *deck) {
                 }
             } else if (result == 2) {
                 initDialog(dialog, "Please place Digimon Cards in a Deck.", 0);
-                dialog[0xA6] = SUB_EDITOR.player;
+                DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                 runDialog(dialog);
             } else if (SUB_hasDeckChanged(&SUB_ORIGINAL_DECK, SUB_EDITED_DECK) != 0 || SUB_DECK_IS_NEW == 1) {
                 initDialog(dialog, "Do you want to update this Deck?", 1);
-                dialog[0xA6] = SUB_EDITOR.player;
+                DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                 runDialog(dialog);
-                if ((s8)dialog[0xA5] == 1) {
+                if ((s8)DIALOG_BUFFER_CHOICE(dialog) == 1) {
                     storeSavedDeck(SUB_EDITOR.player, SUB_EDITED_DECK, SUB_DECK_MENU.slot);
                     linkSavedDecks(SUB_EDITOR.player);
                     SUB_EDITOR.editing = 0;
-                } else if ((s8)dialog[0xA5] == 2) {
+                } else if ((s8)DIALOG_BUFFER_CHOICE(dialog) == 2) {
                     initDialog(dialog, "Do you want to quit editing this Deck?", 1);
-                    dialog[0xA6] = SUB_EDITOR.player;
+                    DIALOG_BUFFER_PAD(dialog) = SUB_EDITOR.player;
                     runDialog(dialog);
-                    if ((s8)dialog[0xA5] == 1) {
+                    if ((s8)DIALOG_BUFFER_CHOICE(dialog) == 1) {
                         if (SUB_DECK_IS_NEW == 1) {
                             deck->inUse = 0;
                         }

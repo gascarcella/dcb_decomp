@@ -319,7 +319,7 @@ void SUB_enterDeckName(s32 mode, char *name, s32 pad) {
     Rect16 cursor;
     Rect16 rect;
     Rect16 view;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
 
     bzero((Scene3D *)SUB_NAME_ENTRY.name, 13);
     strcpy(SUB_NAME_ENTRY.name, name);
@@ -376,7 +376,7 @@ void SUB_enterDeckName(s32 mode, char *name, s32 pad) {
         }
         if (SUB_NAME_ENTRY.state == 7 && SUB_NAME_ENTRY.name[0] == 0) {
             initDialog(dialog, (u8 *)SUB_STR_NO_DECK_NAME, 0);
-            dialog[0xA6] = pad;
+            DIALOG_BUFFER_PAD(dialog) = pad;
             runDialog(dialog);
             SUB_NAME_ENTRY.state = 0;
             continue;

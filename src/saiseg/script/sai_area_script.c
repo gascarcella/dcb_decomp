@@ -24,7 +24,11 @@
 #include "dcb/sai_digi_parts.h"
 
 
+#ifndef PC_PORT /* PC_PORT: a Dialog (dcb/dialog.h, issue #23) */
 extern u8 SAI_DIALOG[];
+#else
+extern Dialog SAI_DIALOG[];
+#endif
 
 /* Runs the area script and carries out the events it stops on: op 10 starts
    panels and tasks, op 11 sets up choices, opponents, music and exits, op 13

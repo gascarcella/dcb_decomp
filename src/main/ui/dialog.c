@@ -24,7 +24,14 @@ void initDialog(Dialog *dialog, u8 *text, u32 flags) {
     dialog->type = flags & 0xF;
     dialog->unkB6 = flags & 0x80;
     dialog->text = text;
+#ifdef PC_PORT
+    /* text 0, a dialog of labels only: the PS1 measures the string at address 0, the kernel's RAM. Under OpenBIOS,
+       the oracle's BIOS, it is an empty string (PCSX-Redux, issue #23); the retail BIOS leaves a nonzero byte there,
+       which can only widen the window past its labels */
+    measureText(text != 0 ? text : (u8 *)"");
+#else
     measureText(text);
+#endif
     dialog->halfTextWidth = (TEXT_WIDTH + 1) / 2;
     dialog->width = (TEXT_WIDTH + 1) / 2 * 2 + 4;
     dialog->height = (TEXT_HEIGHT + 1) / 2 * 2 + 4;

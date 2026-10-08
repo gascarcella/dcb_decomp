@@ -876,7 +876,7 @@ void SUB_drawPartnerEquipment(void) {
 
 void SUB_runPartnerEquipment(s32 player, s32 parentTask, s32 viewOnly) {
     Rect16 rect;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     u32 *archive;
     s32 state;
     s32 count;

@@ -320,7 +320,7 @@ void SAI_runWordInput(char *word) {
     Rect16 cursorRect;
     Rect16 rect;
     Rect16 view;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     s32 i;
 
     bzero((Scene3D *)SAI_WORD_INPUT.text, 13);

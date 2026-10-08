@@ -47,6 +47,7 @@ typedef struct {
     /* 0x7 */ s8 image;
 } ScrollPage;
 
+#ifndef PC_PORT /* PC_PORT: the Dialog itself, options[] its labels' union (dcb/dialog.h, issue #23) */
 typedef struct {
     /* 0x00 */ u8 unk0[0x98];
     /* 0x98 */ char *options[2];
@@ -56,6 +57,9 @@ typedef struct {
     /* 0xB5 */ s8 cancelDisabled; /* Dialog.cancelDisabled */
     /* 0xB6 */ u8 unkB6[2];
 } ChoiceDialog;
+#else
+typedef Dialog ChoiceDialog;
+#endif
 
 extern s32 OPEN_INTRO_IMAGE;
 extern s32 OPEN_INTRO_SHOWN_IMAGE;
