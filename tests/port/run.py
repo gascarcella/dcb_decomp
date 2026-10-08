@@ -4,11 +4,10 @@ the emulator reached. The test is psxstack's (tools/replay/port_test.py; GAME_CO
 this game's configuration of it (the disc, the scripts and expected files, the venv). The stack is the psxstack
 submodule, or $PSXSTACK_DIR when it names another checkout of it.
 
-State (M1, docs/STATUS.md): `boot` and `title` pass and gate CI: every checkpoint at the emulator's stage and map,
-the overlay sequence, twice byte-identical; their checkpoints carry no profile image (`"image": false`, issue #24).
-`new_game` and `first_duel` run to their end (SAISEG, KAWSEG; issue #23) and pass their image-less checkpoints, but
-the `saiseg` and `first_duel` hashes differ: heap bytes the game never writes (partners 1-2, decks 1-2, padding) and
-one starter card drawn with rand() (psxstack#40). So those two are not gated yet.
+State (M1 complete, docs/STATUS.md): all four scripts pass and gate CI, with --sanitize: every checkpoint at the
+emulator's stage and map, the stable profile hashes (the checkpoints before the profile exists carry no image, issue
+#24), the overlay sequence, twice byte-identical, and the sanitizer build with no ASan/UBSan report (UBSan's
+suppressions: tests/port/ubsan.supp).
 
 Usage: tests/port/run.py [SCRIPT ...] [--m32] [--sanitize] [--cd-speed instant|realistic] [--out DIR] [-j N]
 
@@ -36,7 +35,7 @@ DISC = ROOT / "disks/us/dcb_us.cue"
 VENV_BIN = ROOT / ".venv/bin"
 
 CFG = port_test.configure(root=ROOT, game_json=ROOT / "port/game/game.json", disc=DISC, scripts_dir=SCRIPTS,
-                          expected_dir=EXPECTED, venv_bin=VENV_BIN,
+                          expected_dir=EXPECTED, venv_bin=VENV_BIN, ubsan_suppressions=ROOT / "tests/port/ubsan.supp",
                           m32_log_exact=("boot",), m32_note="the other scripts' frames may differ with the heap "
                           "layout once the port runs; their cross-core view must agree")
 

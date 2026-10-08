@@ -56,10 +56,12 @@ extern u8 port_scratchpad[PORT_SCRATCHPAD_SIZE];
 #define SCRATCHPAD(type, ofs) ((type)(port_scratchpad + (ofs)))
 
 /* A pointer kept in an s32 on the PS1 (docs/PORT.md "Memory and pointers"): one into the game's heap (HEAP_ARENA)
-   becomes the PS1 address of the same byte, so the 32-bit word holds what it holds on the PS1; NULL is 0; anything
-   else goes to psxstack's PTR_TO_S32 (the overlay slot; fatal elsewhere). Defined in src/main/system/heap.c. */
+   becomes the PS1 address of the same byte (its block's PS1 address plus its offset in the block: the host spaces the
+   blocks wider), so the 32-bit word holds what it holds on the PS1; NULL is 0; anything else goes to psxstack's
+   PTR_TO_S32 (the overlay slot; fatal elsewhere). Defined in src/main/system/heap.c. */
 s32 game_ptr_to_s32(const void *p);
 void *game_s32_to_ptr(s32 v);
+s32 game_heap_owns(const void *p); /* whether p is in the heap's host bytes */
 #define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
 #define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
 
