@@ -135,8 +135,8 @@ typedef struct {
 /* per effect slot kind: the functions that update, create and free it */
 typedef void (*SlotUpdate)(u8 *value);
 
-typedef s32 (*SlotCreate)(s32 arg, EffectSlots *slots);
-typedef void (*SlotFree)(s32 value);
+typedef s32p (*SlotCreate)(s32p arg, EffectSlots *slots);
+typedef void (*SlotFree)(s32p value);
 
 extern RootEffect SUG_EFFECT_ROOT;
 extern u8 CLEAR_BG_ON_DRAW;
@@ -152,7 +152,7 @@ void SUG_getEffectParams(EffectInit *fx, EffectParams *cmd, s32 live);
 void SUG_setEffectParams();
 
 void SUG_getEffectWorldPos(void *xform, EffectParams *params);
-void SUG_createEffectEntry(s32 index, s32 kind, s32 arg, EffectSlots *slots);
+void SUG_createEffectEntry(s32 index, s32 kind, s32p arg, EffectSlots *slots);
 
 SlotUpdate SUG_EFFECT_TICK_FUNCS[18] = {
     (SlotUpdate)SUG_tickFadeRect,
@@ -266,7 +266,7 @@ void SUG_detachEffectToWorld(EffectSlots *slots, s32 id, EffectParams *cmd) {
                 if (n >= 16) {
                     break;
                 }
-                *(Xform **)((s32)p + (n << 2)) = xform;
+                *(Xform **)((s32p)p + (n << 2)) = xform;
             } while (xform != (Xform *)slots->xform);
         }
 #elif VERSION_EU
@@ -432,7 +432,7 @@ s32 SUG_tickEffectScript(EffectScript *runner) {
 
     slots = runner->slots;
     PushMatrix();
-    tickEffectMotion((s32)&SUG_EFFECT_ROOT, 0);
+    tickEffectMotion((s32p)&SUG_EFFECT_ROOT, 0);
     updateTransformMatrix(slots->xform, 0);
     PopMatrix();
     runner->regs[0] = 1;
@@ -680,7 +680,7 @@ void SUG_runEffectScript(EffectScript *runner) {
             case 12:
                 switch (SCRIPT->eventArg) {
                 case 0: /* create effect kind PARAM(1) in slot PARAM(0) */
-                    SUG_createEffectEntry(PARAM(0), PARAM(1), (s32)regs, slots);
+                    SUG_createEffectEntry(PARAM(0), PARAM(1), (s32p)regs, slots);
                     break;
 #if VERSION_US || VERSION_EU
                 case 5:
@@ -1051,7 +1051,7 @@ void SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
     SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32)entry,
                   params->flags, ctx->pak);
 #elif VERSION_US || VERSION_EU
-    SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32)entry,
+    SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32p)entry,
                   params->flags, params->allBones, ctx->pak, ctx->modelSlots[2]);
 #endif
 }
@@ -1164,7 +1164,7 @@ SlotFree SUG_EFFECT_FREE_FUNCS[18] = {
     (SlotFree)freeStreakParticles,
 };
 
-void SUG_createEffectEntry(s32 index, s32 kind, s32 arg, EffectSlots *slots) {
+void SUG_createEffectEntry(s32 index, s32 kind, s32p arg, EffectSlots *slots) {
     if (SUG_EFFECT_CREATE_FUNCS[kind] != NULL) {
         slots->slots[index].id = kind;
         slots->slots[index].active = 0;
@@ -1177,7 +1177,7 @@ void SUG_createEffectEntry(s32 index, s32 kind, s32 arg, EffectSlots *slots) {
 }
 
 void SUG_freeEffectEntries(EffectSlots *slots) {
-    void (*fn)(s32);
+    void (*fn)(s32p);
     s32 i;
 
     for (i = 2; i < 23; i++) {
@@ -1214,12 +1214,12 @@ EffectScript *SUG_createEffectScript(void *script, s32 side, s32 a2, s32 *state)
     switch (side) {
     case 0:
     case 1:
-        initTransform(runner->slots->xform, (s32)SCENE_3D->viewMatrix, 0, 0, ((ModelData *)SCENE_3D->models[side])->x, 0,
+        initTransform(runner->slots->xform, (s32p)SCENE_3D->viewMatrix, 0, 0, ((ModelData *)SCENE_3D->models[side])->x, 0,
                       ((ModelData *)SCENE_3D->models[side])->rotY, 0);
         break;
     default:
         runner->slots->modelSlots[0] = runner->slots->modelSlots[1] = 0;
-        initTransform(runner->slots->xform, (s32)SCENE_3D->viewMatrix, 0, 0, 0, 0, 0, 0);
+        initTransform(runner->slots->xform, (s32p)SCENE_3D->viewMatrix, 0, 0, 0, 0, 0, 0);
         break;
     }
     SUG_runEffectScript(runner);

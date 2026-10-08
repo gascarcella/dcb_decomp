@@ -250,7 +250,7 @@ void EVO_initCutsceneScene(s8 evolved) {
         createWireGrid(3000, 3000, 11, 11, 1, 0);
     } else {
         initScene3D(1);
-        addFrameCallback((s32)renderWireGrid);
+        addFrameCallback((s32p)renderWireGrid);
     }
     GRID_VISIBLE = 0;
     endTask(0x19);
@@ -262,12 +262,12 @@ void EVO_initCutsceneScene(s8 evolved) {
 void EVO_freeCutsceneScene(s8 evolved) {
     endTask(0x1B);
     endTask(0x19);
-    removeFrameCallback((s32)renderWireGrid);
-    removeFrameCallback((s32)EVO_tickShatter);
+    removeFrameCallback((s32p)renderWireGrid);
+    removeFrameCallback((s32p)EVO_tickShatter);
     if (evolved == 0) {
-        removeFrameCallback((s32)EVO_renderCutsceneModels);
+        removeFrameCallback((s32p)EVO_renderCutsceneModels);
     } else {
-        removeFrameCallback((s32)renderSceneModels);
+        removeFrameCallback((s32p)renderSceneModels);
     }
     waitFrames(1);
     unloadAllModels();
@@ -346,7 +346,7 @@ void EVO_initFusionBanner(void) {
     LoadImage((s16 *)&rect, (u32 *)EVO_BANNER_CLUT);
     EVO_BANNER_FADE = 2;
     EVO_BANNER_BRIGHTNESS = 0;
-    addFrameCallback((s32)EVO_drawFusionBanner);
+    addFrameCallback((s32p)EVO_drawFusionBanner);
 }
 
 const u8 EVO_OLD_FUSION_RECIPES[20][3] = {
@@ -501,7 +501,7 @@ void EVO_runFusionCutscene(void) {
     do {
         waitFrames(1);
     } while (PAD_STATES[0]->pressed & 0x40);
-    removeFrameCallback((s32)EVO_drawFusionBanner);
+    removeFrameCallback((s32p)EVO_drawFusionBanner);
     loadSoundEffectBank(1);
     changeScrollingBackground(((PlayerProfile *)PLAYER_PROFILES)->activePartner, 0x380, 0, 0x380, 0x80);
     spawnTask(0, -1, 0, 0x400, EVO_runFusion, -1, getCurrentTaskId(), 0, 0);
@@ -655,8 +655,8 @@ void EVO_initShatterScene(s32 allocBuffers) {
         SCENE_LIGHT_COLORS = colorMatrices[1];
     }
     if (allocBuffers) {
-        mountDriveTask((s32)"M:", getCurrentTaskId());
-        addFrameCallback((s32)EVO_renderCutsceneModels);
+        mountDriveTask((s32p)"M:", getCurrentTaskId());
+        addFrameCallback((s32p)EVO_renderCutsceneModels);
     }
 }
 

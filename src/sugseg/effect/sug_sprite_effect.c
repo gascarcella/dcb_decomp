@@ -47,7 +47,7 @@ void SUG_tickSpriteEffect(SpriteEffect *fx) {
 #if VERSION_JP
         tickEffectMotion((s32)fx, 1);
 #elif VERSION_US || VERSION_EU
-        tickEffectMotion((s32)fx, fx->sprite.unk8A);
+        tickEffectMotion((s32p)fx, fx->sprite.unk8A);
 #endif
     } else {
         SetRotMatrix((s32)&GsIDMATRIX);

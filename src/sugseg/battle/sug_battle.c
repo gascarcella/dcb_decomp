@@ -53,7 +53,7 @@ void SUG_initBattleScene(void) {
     s32 unused[8]; /* unused, but it is in the original stack frame */
 
     SUG_CURRENT_SCRIPT = 0;
-    addFrameCallback((s32)renderSceneModels);
+    addFrameCallback((s32p)renderSceneModels);
     SUG_initSpriteCache();
     SUG_initTamCache();
     SUG_placeBattleModels();
@@ -77,8 +77,8 @@ void SUG_freeBattleScene(void) {
 #if VERSION_US || VERSION_EU
     endTask(0x1A);
 #endif
-    removeFrameCallback((s32)renderSceneModels);
-    removeFrameCallback((s32)renderWireGrid);
+    removeFrameCallback((s32p)renderSceneModels);
+    removeFrameCallback((s32p)renderWireGrid);
     freeHeapBlock(DB(0).scenePackets);
     freeHeapBlock(DB(1).scenePackets);
     SUG_freeSprites();

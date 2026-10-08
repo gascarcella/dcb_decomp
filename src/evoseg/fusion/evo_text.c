@@ -150,7 +150,7 @@ s32 EVO_typeTextLine(s32 x, s32 y, EvoText *t, s32 z) {
 #error "evoseg/fusion/evo_text: version not checked"
 #endif
     if (t->len == t->pos) {
-        drawText(x, y, (s32)t, 7, z);
+        drawText(x, y, (s32p)t, 7, z);
         return -1;
     }
 #if VERSION_US
@@ -186,13 +186,13 @@ s32 EVO_typeTextLine(s32 x, s32 y, EvoText *t, s32 z) {
         }
         *dst = *src;
         dst[1] = 0;
-        drawText(x, y, (s32)buf, 7, z);
+        drawText(x, y, (s32p)buf, 7, z);
         t->pos += 1;
     } else {
         *dst++ = src[0];
         *dst = src[1];
         dst[1] = 0;
-        drawText(x, y, (s32)buf, 7, z);
+        drawText(x, y, (s32p)buf, 7, z);
         t->pos += 2;
     }
     return 1;

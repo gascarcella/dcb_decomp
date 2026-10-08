@@ -153,25 +153,25 @@ void EVO_drawCardInfo(UiWindow *w) {
     id = EVO_FUSION.secondCard;
     if (id < 0xBF) {
         sprintf(text, EVO_FMT_CARD_NUMBER, ((DigimonCardData *)(DIGIMON_CARDS + id * 0x13C))->id);
-        drawText(x + 0x40, y + 0xD, (s32)text, 7, z);
-        drawText(x, y, (s32)((DigimonCardData *)(DIGIMON_CARDS + id * 0x13C))->name, 7, z);
+        drawText(x + 0x40, y + 0xD, (s32p)text, 7, z);
+        drawText(x, y, (s32p)((DigimonCardData *)(DIGIMON_CARDS + id * 0x13C))->name, 7, z);
         drawIcon(x + 0x46, y + 0x1A, 0, ((DigimonCardData *)(DIGIMON_CARDS + id * 0x13C))->attr >> 4, z);
         drawIcon(x + 0x46, y + 0x27, 0, (((DigimonCardData *)(DIGIMON_CARDS + id * 0x13C))->attr & 0xF) + 0x10, z);
-        drawLargeText(x, y + 0x2A, (s32)"Level", 6, z);
+        drawLargeText(x, y + 0x2A, (s32p)"Level", 6, z);
     } else if ((id -= 0xBF) < 0x66) {
         sprintf(text, EVO_FMT_CARD_NUMBER, ((DigimonCardData *)(OPTION_CARDS + id * 0xE2))->id);
-        drawText(x + 0x40, y + 0xD, (s32)text, 7, z);
-        drawText(x, y, (s32)((DigimonCardData *)(OPTION_CARDS + id * 0xE2))->name, 7, z);
+        drawText(x + 0x40, y + 0xD, (s32p)text, 7, z);
+        drawText(x, y, (s32p)((DigimonCardData *)(OPTION_CARDS + id * 0xE2))->name, 7, z);
         drawIcon(x + 0x46, y + 0x1A, 0, 5, z);
     } else {
         id -= 0x66;
         sprintf(text, EVO_FMT_CARD_NUMBER, ((DigimonCardData *)(DIGIVOLVE_CARDS + id * 0x70))->id);
-        drawText(x + 0x40, y + 0xD, (s32)text, 7, z);
-        drawText(x, y, (s32)((DigimonCardData *)(DIGIVOLVE_CARDS + id * 0x70))->name, 7, z);
+        drawText(x + 0x40, y + 0xD, (s32p)text, 7, z);
+        drawText(x, y, (s32p)((DigimonCardData *)(DIGIVOLVE_CARDS + id * 0x70))->name, 7, z);
         drawIcon(x + 0x46, y + 0x1A, 0, 6, z);
     }
-    drawLargeText(x, y + 0x12, (s32)EVO_STR_NUMBER, 6, z);
-    drawLargeText(x, y + 0x1E, (s32)EVO_STR_SPEC, 6, z);
+    drawLargeText(x, y + 0x12, (s32p)EVO_STR_NUMBER, 6, z);
+    drawLargeText(x, y + 0x1E, (s32p)EVO_STR_SPEC, 6, z);
     rect.x = 0;
     rect.y = 0x90;
     rect.w = 0x28;

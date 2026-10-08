@@ -62,7 +62,7 @@ void EVO_drawTray(EvoTray *tray) {
 #endif
         bzero((Scene3D *)text, 0x21);
         sprintf(text, "TRAY%d", player);
-        drawLargeText(tray->x + 16, 0x5C, (s32)text, 7, 0x1D);
+        drawLargeText(tray->x + 16, 0x5C, (s32p)text, 7, 0x1D);
         uv.x = 0;
         uv.y = 0x74;
         uv.w = 0x50;

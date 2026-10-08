@@ -134,7 +134,7 @@ EvoModelFx *EVO_createModelEffect(s16 level, EvoFx *fx, s32 modelId, s32 anim, s
         obj->active = 0;
     }
     obj->clutBank = clutBank;
-    obj->model->link = (s32)obj;
+    obj->model->link = (s32p)obj;
     obj->unk570 = -1;
     {
         Rect16 rect = { 0x30, 0x70, 0x10, 0x10 };
@@ -285,7 +285,7 @@ void EVO_playEffectScript(s32 index, s32 player1, s32 player2, s32 mode1, s32 mo
     EVO_EFFECT_PLAYER = 0;
     EVO_EFFECT_SPRITE_1 = 0;
     EVO_EFFECT_SPRITE_2 = 0;
-    data = decompressArchiveEntry((s32)EVO_EFFECT_ARCHIVE, index);
+    data = decompressArchiveEntry((s32p)EVO_EFFECT_ARCHIVE, index);
     spawnTask(0, 0x1F, 0, 0x800, EVO_runEffectScriptTask, data, getCurrentTaskId());
     waitFrames(0x7FFFFFFF);
     freeHeapBlock((void *)data);
@@ -295,7 +295,7 @@ s32 EVO_tickEffectScript(EvoEffectScript *loader) {
     s32 i;
 
     PushMatrix();
-    tickEffectMotion((s32)&EVO_EFFECT_ROOT, 0);
+    tickEffectMotion((s32p)&EVO_EFFECT_ROOT, 0);
     PopMatrix();
     loader->vars[0] = 1;
     EVO_runEffectScript(loader);
@@ -705,7 +705,7 @@ EvoFx *EVO_createModelEffectFromParams(s32 *vars, EvoEffectScript *loader) {
     EvoFx *template = &fx;
 
     EVO_initEffectFromParams(template, vars, loader);
-    return (EvoFx *)EVO_createModelEffect(vars[56], template, vars[84], vars[85], -1, vars[86], vars[70], vars[87], (s32)loader->buffer, 0);
+    return (EvoFx *)EVO_createModelEffect(vars[56], template, vars[84], vars[85], -1, vars[86], vars[70], vars[87], (s32p)loader->buffer, 0);
 }
 
 EvoFx *EVO_createStreaksFromParams(s32 *vars, EvoEffectScript *loader) {

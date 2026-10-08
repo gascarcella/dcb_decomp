@@ -49,11 +49,11 @@ void EVO_openWindows(void) {
     openMenu(&EVO_CARD_LIST_MENU, &EVO_CARD_LIST_WINDOW, &EVO_CARD_LIST_CURSOR, (Bytes4 *)-1);
     animateWindowTo(&EVO_CARD_LIST_WINDOW, (Rect16 *)-1);
     EVO_CARD_LIST_WINDOW.labelPalette = 8;
-    EVO_CARD_LIST_WINDOW.label = (s32)"CARD LIST";
+    EVO_CARD_LIST_WINDOW.label = (s32p)"CARD LIST";
     EVO_CARD_LIST_MENU.active = 0;
     openMenu(&EVO_SORT_MENU, &EVO_SORT_WINDOW, &EVO_SORT_CURSOR, (Bytes4 *)-1);
     animateWindowTo(&EVO_SORT_WINDOW, (Rect16 *)-1);
-    EVO_SORT_WINDOW.label = (s32)"SORT MENU";
+    EVO_SORT_WINDOW.label = (s32p)"SORT MENU";
     EVO_SORT_WINDOW.labelPalette = 8;
     EVO_WINDOWS[12].z = 0x1B;
     EVO_WINDOWS[13].z = 5;
@@ -205,7 +205,7 @@ void EVO_runFusion(s32 unit) {
         EVO_TRAYS[i].x = -0x78;
         EVO_TRAYS[i].y = 0x29;
     }
-    addFrameCallback((s32)EVO_renderFusion);
+    addFrameCallback((s32p)EVO_renderFusion);
     EVO_loadScriptFlags();
     do {
         waitFrames(1);
@@ -280,8 +280,8 @@ void EVO_runFusion(s32 unit) {
         waitFrames(20);
     }
     EVO_saveScriptFlags();
-    removeFrameCallback((s32)EVO_renderFusion);
-    removeFrameCallback((s32)renderSceneModels);
+    removeFrameCallback((s32p)EVO_renderFusion);
+    removeFrameCallback((s32p)renderSceneModels);
     waitFrames(1);
     endTask(0x1B);
     freeHeapBlock(EVO_FUSION.cardArchive);
@@ -294,7 +294,7 @@ void EVO_runFusion(s32 unit) {
         hideScrollingBackground();
         spawnTask(0, -1, 0, 0x400, EVO_runFusionCutscene, 0, getCurrentTaskId(), 0, 0);
     } else {
-        removeFrameCallback((s32)EVO_drawScreenFlash);
+        removeFrameCallback((s32p)EVO_drawScreenFlash);
         spawnTask(0, -1, 0, 0x400, returnToWorldMap, 0, 0, 0, 0);
     }
 }

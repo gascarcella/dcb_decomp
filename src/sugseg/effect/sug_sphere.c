@@ -310,7 +310,7 @@ void SUG_tickSphereEffect(SphereEffect *fx) {
         return;
     }
     PushMatrix();
-    tickEffectMotion((s32)fx, 0);
+    tickEffectMotion((s32p)fx, 0);
     if ((fx->brightness = updateEffectBrightness(fx, fx->brightness)) == 0) {
         PopMatrix();
         return;
@@ -365,11 +365,11 @@ void SUG_drawSphereLines(SphereEffect *fx, u8 cull, s32 n, s32 speed, s32 otz) {
         rgb[2] = fx->rgb[2] * fx->brightness / 256;
     }
     for (i = 0; i < n; i++) {
-        transformAndAddLineF2((s32)&fx->lines[FRAME_BUFFER_INDEX][i], (s32)&fx->tpages[FRAME_BUFFER_INDEX][i],
-                              (s32)&fx->verts[0], (s32)&fx->verts[i + 1], fx->semiTrans, otz);
-        transformAndAddLineF2((s32)&fx->lines[FRAME_BUFFER_INDEX][fx->lineCount - n + i],
-                              (s32)&fx->tpages[FRAME_BUFFER_INDEX][fx->lineCount - n + i], (s32)&fx->verts[fx->vertCount - 1],
-                              (s32)&fx->verts[fx->vertCount - n - 1 + i], fx->semiTrans, otz);
+        transformAndAddLineF2((s32p)&fx->lines[FRAME_BUFFER_INDEX][i], (s32p)&fx->tpages[FRAME_BUFFER_INDEX][i],
+                              (s32p)&fx->verts[0], (s32p)&fx->verts[i + 1], fx->semiTrans, otz);
+        transformAndAddLineF2((s32p)&fx->lines[FRAME_BUFFER_INDEX][fx->lineCount - n + i],
+                              (s32p)&fx->tpages[FRAME_BUFFER_INDEX][fx->lineCount - n + i], (s32p)&fx->verts[fx->vertCount - 1],
+                              (s32p)&fx->verts[fx->vertCount - n - 1 + i], fx->semiTrans, otz);
         if (fx->brightness != fx->prevBrightness) {
             for (k = 0; k < 2; k++) {
                 setRGB0(&fx->lines[k][i], rgb[0], rgb[1], rgb[2]);
@@ -379,9 +379,9 @@ void SUG_drawSphereLines(SphereEffect *fx, u8 cull, s32 n, s32 speed, s32 otz) {
     }
     for (j = 0; j < fx->ringCount; j++) {
         for (i = 0, v = 1; i < n; i++, v++) {
-            transformAndAddLineF2((s32)&fx->lines[FRAME_BUFFER_INDEX][i + (j + 1) * n],
-                                  (s32)&fx->tpages[FRAME_BUFFER_INDEX][i + (j + 1) * n], (s32)&fx->verts[v + j * n],
-                                  (s32)&fx->verts[v % n + 1 + j * n], fx->semiTrans, otz);
+            transformAndAddLineF2((s32p)&fx->lines[FRAME_BUFFER_INDEX][i + (j + 1) * n],
+                                  (s32p)&fx->tpages[FRAME_BUFFER_INDEX][i + (j + 1) * n], (s32p)&fx->verts[v + j * n],
+                                  (s32p)&fx->verts[v % n + 1 + j * n], fx->semiTrans, otz);
             if (fx->brightness != fx->prevBrightness) {
                 for (k = 0; k < 2; k++) {
                     setRGB0(&fx->lines[k][i + (j + 1) * n], rgb[0], rgb[1], rgb[2]);
@@ -390,9 +390,9 @@ void SUG_drawSphereLines(SphereEffect *fx, u8 cull, s32 n, s32 speed, s32 otz) {
         }
     }
     for (i = 0, v = 1; i < (fx->ringCount - 1) * n; i++, v++) {
-        transformAndAddLineF2((s32)&fx->lines[FRAME_BUFFER_INDEX][i + (fx->ringCount + 1) * n],
-                              (s32)&fx->tpages[FRAME_BUFFER_INDEX][i + (fx->ringCount + 1) * n], (s32)&fx->verts[v],
-                              (s32)&fx->verts[v + n], fx->semiTrans, otz);
+        transformAndAddLineF2((s32p)&fx->lines[FRAME_BUFFER_INDEX][i + (fx->ringCount + 1) * n],
+                              (s32p)&fx->tpages[FRAME_BUFFER_INDEX][i + (fx->ringCount + 1) * n], (s32p)&fx->verts[v],
+                              (s32p)&fx->verts[v + n], fx->semiTrans, otz);
         if (fx->brightness != fx->prevBrightness) {
             for (k = 0; k < 2; k++) {
                 setRGB0(&fx->lines[k][i + (fx->ringCount + 1) * n], rgb[0], rgb[1], rgb[2]);
@@ -470,8 +470,8 @@ void SUG_drawSphereF(fx, cull, count, speed, otz)
         c.vx = fx->verts[next % count + 1].vx;
         c.vy = fx->verts[next % count + 1].vy;
         c.vz = fx->verts[next % count + 1].vz;
-        transformAndAddPolyF3((s32)&fx->tris[FRAME_BUFFER_INDEX][i], (s32)&fx->tpages[FRAME_BUFFER_INDEX][i],
-                              (s32)&c, (s32)&b, (s32)&a, fx->semiTrans, cull, otz);
+        transformAndAddPolyF3((s32p)&fx->tris[FRAME_BUFFER_INDEX][i], (s32p)&fx->tpages[FRAME_BUFFER_INDEX][i],
+                              (s32p)&c, (s32p)&b, (s32p)&a, fx->semiTrans, cull, otz);
         if (fx->openBottom == 0) {
             fx->tris[FRAME_BUFFER_INDEX][count + i].r0 = dimR;
             fx->tris[FRAME_BUFFER_INDEX][count + i].g0 = dimG;
@@ -487,8 +487,8 @@ void SUG_drawSphereF(fx, cull, count, speed, otz)
             c.vx = fx->verts[fx->vertCount - count - 1 + next % count].vx;
             c.vy = fx->verts[fx->vertCount - count - 1 + next % count].vy;
             c.vz = fx->verts[fx->vertCount - count - 1 + next % count].vz;
-            transformAndAddPolyF3((s32)&fx->tris[FRAME_BUFFER_INDEX][count + i],
-                                  (s32)&fx->tpages[FRAME_BUFFER_INDEX][count + i], (s32)&a, (s32)&b, (s32)&c,
+            transformAndAddPolyF3((s32p)&fx->tris[FRAME_BUFFER_INDEX][count + i],
+                                  (s32p)&fx->tpages[FRAME_BUFFER_INDEX][count + i], (s32p)&a, (s32p)&b, (s32p)&c,
                                   fx->semiTrans, cull, otz);
         }
     }
@@ -533,7 +533,7 @@ void SUG_drawSphereF(fx, cull, count, speed, otz)
         d.vx = fx->verts[count + (prev + 1)].vx;
         d.vy = fx->verts[count + (prev + 1)].vy;
         d.vz = fx->verts[count + (prev + 1)].vz;
-        transformAndAddPolyF4((s32)quad, (s32)tpage, (s32)&a, (s32)&b, (s32)&c, (s32)&d, fx->semiTrans, cull, otz);
+        transformAndAddPolyF4((s32p)quad, (s32p)tpage, (s32p)&a, (s32p)&b, (s32p)&c, (s32p)&d, fx->semiTrans, cull, otz);
     }
 }
 
@@ -623,8 +623,8 @@ void SUG_drawSphereG(fx, cull, count, speed, otz)
                 setPrimRgb2(&fx->gtris[j][i], c0.r, c0.g, c0.b);
             }
         }
-        transformAndAddPolyG3((s32)&fx->gtris[FRAME_BUFFER_INDEX][i], (s32)&fx->tpages[FRAME_BUFFER_INDEX][i],
-                              (s32)&fx->verts[next % count + 1], (s32)&fx->verts[i + 1], (s32)fx->verts, fx->semiTrans,
+        transformAndAddPolyG3((s32p)&fx->gtris[FRAME_BUFFER_INDEX][i], (s32p)&fx->tpages[FRAME_BUFFER_INDEX][i],
+                              (s32p)&fx->verts[next % count + 1], (s32p)&fx->verts[i + 1], (s32p)fx->verts, fx->semiTrans,
                               cull, otz);
         if (fx->openBottom == 0) {
             if (fx->brightness != fx->prevBrightness) {
@@ -634,11 +634,11 @@ void SUG_drawSphereG(fx, cull, count, speed, otz)
                     setPrimRgb2(&fx->gtris[j][count + i], c2.r, c2.g, c2.b);
                 }
             }
-            transformAndAddPolyG3((s32)&fx->gtris[FRAME_BUFFER_INDEX][count + i],
-                                  (s32)&fx->tpages[FRAME_BUFFER_INDEX][count + i],
-                                  (s32)&fx->verts[fx->vertCount - 1],
-                                  (s32)&fx->verts[fx->vertCount - count - 1 + i],
-                                  (s32)&fx->verts[fx->vertCount - count - 1 + next % count], fx->semiTrans, cull,
+            transformAndAddPolyG3((s32p)&fx->gtris[FRAME_BUFFER_INDEX][count + i],
+                                  (s32p)&fx->tpages[FRAME_BUFFER_INDEX][count + i],
+                                  (s32p)&fx->verts[fx->vertCount - 1],
+                                  (s32p)&fx->verts[fx->vertCount - count - 1 + i],
+                                  (s32p)&fx->verts[fx->vertCount - count - 1 + next % count], fx->semiTrans, cull,
                                   otz);
             inner = count * 2;
         } else {
@@ -692,8 +692,8 @@ void SUG_drawSphereG(fx, cull, count, speed, otz)
         } else {
             prev = next;
         }
-        transformAndAddPolyG4((s32)quad, (s32)tpage, (s32)&fx->verts[i + 1], (s32)&fx->verts[prev + 1],
-                              (s32)&fx->verts[i + 1 + count], (s32)&fx->verts[prev + 1 + count], fx->semiTrans,
+        transformAndAddPolyG4((s32p)quad, (s32p)tpage, (s32p)&fx->verts[i + 1], (s32p)&fx->verts[prev + 1],
+                              (s32p)&fx->verts[i + 1 + count], (s32p)&fx->verts[prev + 1 + count], fx->semiTrans,
                               cull, otz);
     }
     fx->prevBrightness = fx->brightness;
@@ -788,8 +788,8 @@ void SUG_drawSphereGT(fx, cull, count, speed, otz)
                 setPrimRgb2(&fx->ttris[j][i], c0.r, c0.g, c0.b);
             }
         }
-        transformAndAddPolyGT3((s32)&fx->ttris[FRAME_BUFFER_INDEX][i], (s32)&fx->verts[next % count + 1],
-                               (s32)&fx->verts[i + 1], (s32)fx->verts, cull, otz);
+        transformAndAddPolyGT3((s32p)&fx->ttris[FRAME_BUFFER_INDEX][i], (s32p)&fx->verts[next % count + 1],
+                               (s32p)&fx->verts[i + 1], (s32p)fx->verts, cull, otz);
         if (fx->openBottom == 0) {
             if (fx->brightness != fx->prevBrightness) {
                 for (j = 0; j < 2; j++) {
@@ -798,10 +798,10 @@ void SUG_drawSphereGT(fx, cull, count, speed, otz)
                     setPrimRgb2(&fx->ttris[j][count + i], c2.r, c2.g, c2.b);
                 }
             }
-            transformAndAddPolyGT3((s32)&fx->ttris[FRAME_BUFFER_INDEX][count + i],
-                                  (s32)&fx->verts[fx->vertCount - 1],
-                                  (s32)&fx->verts[fx->vertCount - count - 1 + i],
-                                  (s32)&fx->verts[fx->vertCount - count - 1 + next % count], cull, otz);
+            transformAndAddPolyGT3((s32p)&fx->ttris[FRAME_BUFFER_INDEX][count + i],
+                                  (s32p)&fx->verts[fx->vertCount - 1],
+                                  (s32p)&fx->verts[fx->vertCount - count - 1 + i],
+                                  (s32p)&fx->verts[fx->vertCount - count - 1 + next % count], cull, otz);
             inner = count * 2;
         } else {
             inner = count;
@@ -859,8 +859,8 @@ void SUG_drawSphereGT(fx, cull, count, speed, otz)
         } else {
             prev = next;
         }
-        transformAndAddPolyGT4((s32)quad, (s32)&fx->verts[i + 1], (s32)&fx->verts[prev + 1],
-                               (s32)&fx->verts[i + 1 + count], (s32)&fx->verts[prev + 1 + count], cull, otz);
+        transformAndAddPolyGT4((s32p)quad, (s32p)&fx->verts[i + 1], (s32p)&fx->verts[prev + 1],
+                               (s32p)&fx->verts[i + 1 + count], (s32p)&fx->verts[prev + 1 + count], cull, otz);
     }
     fx->prevBrightness = fx->brightness;
 }
