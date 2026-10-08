@@ -1,0 +1,27 @@
+{
+ "_comment": "tests/port/vram.py: the differences known and explained, by dump name (the same moment in every script) and check (vram, textures, frame). A listed check that differs is reported, not failed; one that is equal again is reported as stale (remove it). docs/PORT.md \"Testing\".",
+ "title": {
+  "vram": "2 pixels, the mask bit only (the picture is equal): the title's rays, polygons modulated by black, cover them in one renderer and not the other (psxstack#54, 1)"
+ },
+ "title_menu": {
+  "vram": "x 286, 5 pixels per buffer, one colour step: the last column of the menu's 255-wide mode-2 modulated sprite (psxstack#54, 2)",
+  "frame": "the same 5 pixels (psxstack#54, 2)"
+ },
+ "name_entered": {
+  "vram": "the scrolling background at another scroll position: the port reaches the checkpoint after other frame counts (#33)",
+  "frame": "the scrolling background's phase (#33)"
+ },
+ "starter_chosen": {
+  "vram": "the scrolling background's phase (#33)",
+  "frame": "the scrolling background's phase (#33)"
+ },
+ "saiseg+120": {
+  "vram": "SAISEG's area screen still loading in the emulator, the port's loads done earlier (#33)",
+  "textures": "the same: the area's textures not all uploaded yet in the emulator (#33)",
+  "frame": "black in the emulator, the loading indicator in the port (#33)"
+ },
+ "saiseg+600": {
+  "vram": "Beginner City's preview and the scrolling background at another point of their animations (#33)",
+  "frame": "the same animations' phase (#33)"
+ }
+}
