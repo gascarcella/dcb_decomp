@@ -80,7 +80,7 @@ void KAW_drawDeckName(s32 x, s32 y, char *name) {
     char buf[64];
 
     sprintf(buf, "%s Deck", name);
-    drawText(x + 0x18, y + 3, (s32)buf, 7, 1);
+    drawText(x + 0x18, y + 3, (s32p)buf, 7, 1);
     KAW_drawSprite(x, y, 0x1D0, 0xCA, 0xC0, 0x12, 0x190, 0xF9, 0, 0, 0, 0x80, 1);
 }
 
@@ -88,10 +88,10 @@ void KAW_drawBattleRecord(s32 x, s32 y, s32 wins, s32 losses) {
     char buf[64];
 
     sprintf(buf, "*s0%4d        %3d      %3d", wins + losses, wins, losses);
-    drawSmallText(x + 0x24, y + 9, (s32)"BATTLES", 6, 1);
-    drawSmallText(x + 0x66, y + 9, (s32)"WINS", 6, 1);
-    drawSmallText(x + 0x9C, y + 9, (s32)"LOSSES", 6, 1);
-    drawText(x + 8, y + 3, (s32)buf, 7, 1);
+    drawSmallText(x + 0x24, y + 9, (s32p)"BATTLES", 6, 1);
+    drawSmallText(x + 0x66, y + 9, (s32p)"WINS", 6, 1);
+    drawSmallText(x + 0x9C, y + 9, (s32p)"LOSSES", 6, 1);
+    drawText(x + 8, y + 3, (s32p)buf, 7, 1);
     KAW_drawSprite(x, y, 0x1D0, 0xB8, 0xC0, 0x12, 0x190, 0xF9, 0, 0, 0, 0x80, 1);
 }
 
@@ -196,11 +196,11 @@ void KAW_drawDeckList(ListWindow *w) {
             if (deck < 3) {
                 strcpy(buf, (char *)PLAYER_DATA(player).savedDecks[deck].name);
                 strcat(buf, " Deck");
-                drawText(x + 2, y, (s32)buf, 7, z);
+                drawText(x + 2, y, (s32p)buf, 7, z);
             } else {
                 strcpy(buf, decks[deck - 3].name);
                 strcat(buf, " Deck");
-                drawText(x + 2, y, (s32)buf, 5, z);
+                drawText(x + 2, y, (s32p)buf, 5, z);
             }
         }
         updateMenuCursor(&KAW_DECK_LIST_MENUS[player]);
@@ -213,10 +213,10 @@ void KAW_drawDeckList(ListWindow *w) {
             } else {
                 strcpy(buf, "Unused Deck");
             }
-            drawText(x + 0xE, y + i * 14, (s32)buf, 7, z);
+            drawText(x + 0xE, y + i * 14, (s32p)buf, 7, z);
         }
         drawIcon(x, y + 0x2A, 0, 10, z);
-        drawText(x + 0xE, y + 0x2A, (s32)"Choose from List", 7, z);
+        drawText(x + 0xE, y + 0x2A, (s32p)"Choose from List", 7, z);
     }
 }
 
@@ -375,7 +375,7 @@ void KAW_drawDeckInfo(ListWindow *w) {
         losses = ((PlayerProfile *)PLAYER_PROFILES)[player].opponentDeckLosses[deck - 3];
     }
     sprintf(buf, "*s0%3d *c6Wins *c7%3d *c6Losses", wins, losses);
-    drawText(x + 6, y + 0x3E, (s32)buf, 7, z);
+    drawText(x + 6, y + 0x3E, (s32p)buf, 7, z);
 }
 
 void KAW_openDeckList(s32 player) {
@@ -443,12 +443,12 @@ void KAW_runDeckSelect(s32 isVersus, s32 match) {
             openMenu(&KAW_DECK_LIST_MENUS[0], &KAW_MATCH_SCREEN->lists[0].window, &KAW_MATCH_SCREEN->highlights[0], (Bytes4 *)-1);
             KAW_MATCH_SCREEN->lists[0].player = 0;
             KAW_MATCH_SCREEN->lists[0].window.labelPalette = 7;
-            KAW_MATCH_SCREEN->lists[0].window.label = (s32) "PLAYER DECK LIST";
+            KAW_MATCH_SCREEN->lists[0].window.label = (s32p)"PLAYER DECK LIST";
             openWindow(&KAW_MATCH_SCREEN->frames[0], &KAW_DECK_INFO_RECTS[0], -1, (s16 *)-1, 8, 0x55, 0x80, 8);
             animateWindowTo(&KAW_MATCH_SCREEN->frames[0].window, (Rect16 *)-1);
             KAW_MATCH_SCREEN->frames[0].window.labelPalette = 8;
             KAW_MATCH_SCREEN->frames[0].player = 0;
-            KAW_MATCH_SCREEN->frames[0].window.label = (s32) "PLAYER DECK INFO.";
+            KAW_MATCH_SCREEN->frames[0].window.label = (s32p)"PLAYER DECK INFO.";
             done = 2;
         } else {
             for (i = 0, done = 0; i < 2; i++) {
@@ -459,17 +459,17 @@ void KAW_runDeckSelect(s32 isVersus, s32 match) {
                 KAW_MATCH_SCREEN->frames[i].window.labelPalette = 8;
                 KAW_MATCH_SCREEN->frames[i].player = i;
                 if (i == 0) {
-                    KAW_MATCH_SCREEN->lists[0].window.label = (s32) "1P DECK LIST";
-                    KAW_MATCH_SCREEN->frames[0].window.label = (s32) "1P DECK INFO.";
+                    KAW_MATCH_SCREEN->lists[0].window.label = (s32p)"1P DECK LIST";
+                    KAW_MATCH_SCREEN->frames[0].window.label = (s32p)"1P DECK INFO.";
                 } else {
-                    KAW_MATCH_SCREEN->lists[i].window.label = (s32) "2P DECK LIST";
-                    KAW_MATCH_SCREEN->frames[i].window.label = (s32) "2P DECK INFO.";
+                    KAW_MATCH_SCREEN->lists[i].window.label = (s32p)"2P DECK LIST";
+                    KAW_MATCH_SCREEN->frames[i].window.label = (s32p)"2P DECK INFO.";
                 }
                 KAW_MATCH_SCREEN->lists[i].window.labelPalette = 7;
             }
         }
         playSoundEffect(0xA3);
-        addFrameCallback((s32)KAW_renderDeckSelect);
+        addFrameCallback((s32p)KAW_renderDeckSelect);
         waitFrames(0x10);
         do {
             waitFrames(FRAME_INTERVAL);
@@ -604,7 +604,7 @@ void KAW_runDeckSelect(s32 isVersus, s32 match) {
             DECK_CHOICE(i) = -1;
         }
     }
-    removeFrameCallback((s32)KAW_renderDeckSelect);
+    removeFrameCallback((s32p)KAW_renderDeckSelect);
     markDeckCardsSeen(0);
     freeHeapBlock(((SessionData *)SESSION_DATA)->npcDeckFile);
     waitFrames(0x1E);
@@ -763,7 +763,7 @@ void KAW_runVersusIntro(s32 mode, s32 deckId) {
         }
     }
     for (i = 0; i < 2; i++) {
-        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[15] = (s32)&KAW_MATCH_SCREEN->prims[i];
+        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[15] = (s32p)&KAW_MATCH_SCREEN->prims[i];
         initPrimByType(0xC, &KAW_MATCH_SCREEN->prims[i].intro, 1, 0);
         initPrimByType(0xC, &KAW_MATCH_SCREEN->prims[i].logo, 1, 0);
         initPrimByType(8, &KAW_MATCH_SCREEN->prims[i].fade, 1, 0);
@@ -800,7 +800,7 @@ void KAW_runVersusIntro(s32 mode, s32 deckId) {
     KAW_MATCH_SCREEN->barW = 0;
     KAW_MATCH_SCREEN->barH = 0;
     KAW_MATCH_SCREEN->cursor = (s16 *)KAW_createCursor(1, 0x12, 0x16, 6, 1);
-    addFrameCallback((s32)KAW_renderVersusScreen);
+    addFrameCallback((s32p)KAW_renderVersusScreen);
     step = KAW_DUEL->tutorial;
     do {
         waitFrames(FRAME_INTERVAL);
@@ -969,7 +969,7 @@ void KAW_runVersusIntro(s32 mode, s32 deckId) {
     } else {
         DUEL->turnPlayer = 0;
     }
-    removeFrameCallback((s32)KAW_renderVersusScreen);
+    removeFrameCallback((s32p)KAW_renderVersusScreen);
     KAW_freeCursor(KAW_MATCH_SCREEN->cursor);
     waitFrames(2);
     freeHeapBlock(KAW_MATCH_SCREEN);

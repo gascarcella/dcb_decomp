@@ -102,7 +102,7 @@ void KAW_drawEffectHelp(UiWindow *w) {
         if ((w->view.y + w->rect.h) / 12 < i) {
             break;
         }
-        drawText(x, y + i * 12, (s32)KAW_EFFECT_HELP_LINES[i], 7, z);
+        drawText(x, y + i * 12, (s32p)KAW_EFFECT_HELP_LINES[i], 7, z);
     }
     if (PAD_STATES[KAW_DUEL->menuPlayer]->repeat & PAD_R2) {
         scrollWindowTo((s16 *)w, w->scroll[2], w->scroll[3] + w->rect.h);
@@ -134,7 +134,7 @@ void KAW_drawDuelMenu(UiWindow *window) {
         if (DUEL->tutorial && i == 3) {
             text = "Quit";
         }
-        drawText(x, y + i * 14, (s32)text, 7, z);
+        drawText(x, y + i * 14, (s32p)text, 7, z);
     }
     updateMenuCursor(&KAW_DUEL_MENU);
 }
@@ -157,7 +157,7 @@ void KAW_tickDuelMenu(void) {
     KAW_DUEL->menuPlayer = player;
     KAW_DUEL_MENU.pad = player;
     openMenu(&KAW_DUEL_MENU, &KAW_DUEL_MENU_WINDOW, &KAW_DUEL_MENU_CURSOR, (Bytes4 *)-1);
-    KAW_DUEL_MENU_WINDOW.label = (s32)"MENU";
+    KAW_DUEL_MENU_WINDOW.label = (s32p)"MENU";
     for (;;) {
         waitFrames(FRAME_INTERVAL);
         drawWindow(&KAW_DUEL_MENU_WINDOW, KAW_drawDuelMenu, 0);
@@ -218,7 +218,7 @@ void KAW_tickDuelMenu(void) {
                 view.w = 0xDC;
                 view.h = 0x264;
                 openWindow(&KAW_HELP_WINDOW, &rect, -1, (s16 *)&view, 10, 0x16, 0x80, 12);
-                KAW_HELP_WINDOW.label = (s32)"HELP";
+                KAW_HELP_WINDOW.label = (s32p)"HELP";
                 animateWindowTo(&KAW_DUEL_MENU_WINDOW, (Rect16 *)-1);
                 do {
                     waitFrames(FRAME_INTERVAL);

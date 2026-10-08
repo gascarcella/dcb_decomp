@@ -64,7 +64,7 @@ void KAW_pickCardArtSlot(void) {
     rect.w = 0x1B;                                                                                       \
     rect.h = 0x18;                                                                                       \
     drawPageSprite(((CardAnim *)(CARD_ANIMS + card * 36))->spr->sx + dx,                                 \
-                   ((CardAnim *)(CARD_ANIMS + card * 36))->spr->sy + dy, (s32)&rect,                     \
+                   ((CardAnim *)(CARD_ANIMS + card * 36))->spr->sy + dy, (s32p)&rect,                     \
                    getTPage(0, 2, SYSTEM_TEX_X, SYSTEM_TEX_Y), 0xC, 0x32)
 
 s32 KAW_drawHandHints(s32 player) {

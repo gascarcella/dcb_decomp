@@ -39,8 +39,8 @@ void SAI_drawOpponentInfo(void) {
     for (i = 0; i < 2; i++) {
         SAI_stepBrightness(i);
     }
-    SAI_setSpriteBrightness(SAI_SPRITES[43], SAI_OPPONENTS.current[1]);
-    SAI_setSpriteBrightness(SAI_SPRITES[45], SAI_OPPONENTS.current[0]);
+    SAI_setSpriteBrightness((Unk801EBD94 *)SAI_SPRITES[43], SAI_OPPONENTS.current[1]);
+    SAI_setSpriteBrightness((Unk801EBD94 *)SAI_SPRITES[45], SAI_OPPONENTS.current[0]);
     for (i = 0; i < 4; i++) {
         SAI_drawSprite(SAI_SPRITES[i + 42]);
     }
@@ -67,10 +67,10 @@ void SAI_drawOpponentStats(void) {
     uv.h = 0x12;
     drawTexturedSprite(x + 0x20, 0x45, &uv, 0x2A, 0x3AA1, 0x22, SAI_OPPONENT_INFO->brightness, 0);
     x = (SAI_OPPONENT_INFO->entries[1].progress * 42 + (20 - SAI_OPPONENT_INFO->entries[1].progress) * 330) / 20;
-    drawLargeText(x, 0x58, (s32)"ABILITIES", 7, 0x22);
+    drawLargeText(x, 0x58, (s32p)"ABILITIES", 7, 0x22);
     for (i = 0; i < 4; i++) {
         x = (SAI_OPPONENT_INFO->entries[i + 2].progress * 54 + (20 - SAI_OPPONENT_INFO->entries[i + 2].progress) * 330) / 20;
-        drawText(x, i * 12 + 0x64, (s32)labels[i], 7, 0x22);
+        drawText(x, i * 12 + 0x64, (s32p)labels[i], 7, 0x22);
         bzero((Scene3D *)buf, 0x19);
         switch (i) {
         case 0:
@@ -98,7 +98,7 @@ void SAI_drawOpponentStats(void) {
             break;
         }
         if (i != 0) {
-            drawText(x + 0x64, i * 12 + 0x64, (s32)buf, 7, 0x22);
+            drawText(x + 0x64, i * 12 + 0x64, (s32p)buf, 7, 0x22);
         }
     }
 }
@@ -341,7 +341,7 @@ void SAI_runOpponentInfoPanel(s32 index) {
 
     SAI_OPPONENT_INFO = allocTaskHeapBlock(0xCC);
     SAI_initOpponentInfo();
-    addFrameCallback((s32)SAI_drawOpponentInfo);
+    addFrameCallback((s32p)SAI_drawOpponentInfo);
     if (SESSION->resumeMode != 0) {
         SAI_OPPONENTS = SESSION->opponents;
         SAI_LOCATION = SESSION->location;
@@ -412,7 +412,7 @@ void SAI_runOpponentInfoPanel(s32 index) {
         waitFrames(1);
         SAI_OPPONENT_INFO->state = 4;
     } while (SAI_moveOpponentPortraits() != 0);
-    removeFrameCallback((s32)SAI_drawOpponentInfo);
+    removeFrameCallback((s32p)SAI_drawOpponentInfo);
     do {
         waitFrames(1);
     } while (SAI_coverPanel() == 0);

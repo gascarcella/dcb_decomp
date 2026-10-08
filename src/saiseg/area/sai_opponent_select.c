@@ -473,8 +473,8 @@ void SAI_drawOpponentSelect(void) {
     if (SAI_AREA.mode == AREA_MODE_SELECT_OPPONENT) {
         SAI_OPPONENTS.target[0] = SAI_OPPONENTS.target[1] = 0x80;
     }
-    SAI_setSpriteBrightness(SAI_SPRITES[45], SAI_OPPONENTS.current[0]);
-    SAI_setSpriteBrightness(SAI_SPRITES[SAI_AREA.select.selected + 37], SAI_OPPONENTS.current[1]);
+    SAI_setSpriteBrightness((Unk801EBD94 *)SAI_SPRITES[45], SAI_OPPONENTS.current[0]);
+    SAI_setSpriteBrightness((Unk801EBD94 *)SAI_SPRITES[SAI_AREA.select.selected + 37], SAI_OPPONENTS.current[1]);
     SAI_drawSprite(SAI_SPRITES[44]);
     SAI_drawSprite(SAI_SPRITES[45]);
     for (i = 0; i < 6; i++) {
@@ -493,7 +493,7 @@ void SAI_drawOpponentSelect(void) {
             SAI_SPRITES[i + 37]->quads[1].clut = getClut(0x200, 0xEB);
         } else {
             if (SAI_SCRIPT[0]->regs[i + 268] != 0) {
-                SAI_setSpriteBrightness(SAI_SPRITES[i + 37], 0x30);
+                SAI_setSpriteBrightness((Unk801EBD94 *)SAI_SPRITES[i + 37], 0x30);
             }
             SAI_AREA.select.emptyBlink[i] = 0;
         }
@@ -518,7 +518,7 @@ void SAI_runOpponentSelectPanel(void) {
     } while (SAI_spinPanel() == 0);
     SAI_AREA.imageHidden = 0;
     SAI_toggleMessageWindow(1);
-    addFrameCallback((s32)SAI_drawOpponentSelect);
+    addFrameCallback((s32p)SAI_drawOpponentSelect);
     do {
         waitFrames(1);
     } while (SAI_uncoverPanel() == 0);
@@ -552,7 +552,7 @@ void SAI_runOpponentSelectPanel(void) {
             waitFrames(1);
         } while (SAI_slideOpponentPortraits() != 0);
     }
-    removeFrameCallback((s32)SAI_drawOpponentSelect);
+    removeFrameCallback((s32p)SAI_drawOpponentSelect);
     do {
         waitFrames(1);
     } while (SAI_coverPanel() == 0);

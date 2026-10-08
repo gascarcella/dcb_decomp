@@ -154,7 +154,7 @@ PartInfo KAW_DIGI_PARTS[128] = {
 };
 
 void KAW_drawExpTitle(UiWindow *window) {
-    drawText(window->originX + 2, window->originY + 1, (s32)"Earned Experience Points", 7, 0);
+    drawText(window->originX + 2, window->originY + 1, (s32p)"Earned Experience Points", 7, 0);
 }
 
 void KAW_drawPartnerExp(ExpWindow *w) {
@@ -172,46 +172,46 @@ void KAW_drawPartnerExp(ExpWindow *w) {
         attr = ((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].attr >> 4;
         KAW_drawPortrait(x + 0x22, y + 1, w->partner * 20 + 0x2C0, 0x128, attr, w->clut);
         x += 0x6E;
-        drawText(x, y + 1, (s32)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].name, 7, z);
+        drawText(x, y + 1, (s32p)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].name, 7, z);
         sprintf(buf, "RANK   \x0c\x07%2d", (s8)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].level);
-        drawLargeText(x, y + 0xE, (s32)buf, 6, z);
+        drawLargeText(x, y + 0xE, (s32p)buf, 6, z);
         sprintf(buf, "EXP  \x0c\x07%4d", (u16)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].exp);
-        drawLargeText(x, y + 0x16, (s32)buf, 6, z);
+        drawLargeText(x, y + 0x16, (s32p)buf, 6, z);
         next = 0;
         if ((s8)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].level < 99) {
             next = getExpForNextLevel((s8)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].level) -
                    (u16)((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].exp;
         }
         sprintf(buf, "NEXT  \x0c\x07%3d", next);
-        drawLargeText(x, y + 0x1E, (s32)buf, 6, z);
+        drawLargeText(x, y + 0x1E, (s32p)buf, 6, z);
         x += 0x64;
         drawIcon(x, y + 1, 0, 0x1A, z);
         sprintf(buf, "*s0%4d", ((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].hp);
-        drawText(x + 0xE, y + 1, (s32)buf, 7, z);
+        drawText(x + 0xE, y + 1, (s32p)buf, 7, z);
         if (KAW_EXP_SCREEN->gains[w->partner][0]) {
             sprintf(buf, "*s0+%d", KAW_EXP_SCREEN->gains[w->partner][0]);
-            drawText(x + 0x2E, y + 1, (s32)buf, 5, z);
+            drawText(x + 0x2E, y + 1, (s32p)buf, 5, z);
         }
         drawIcon(x, y + 0xD, 0, 7, z);
         sprintf(buf, "*s0%4d", ((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].attack[0].power);
-        drawText(x + 0xE, y + 0xD, (s32)buf, 7, z);
+        drawText(x + 0xE, y + 0xD, (s32p)buf, 7, z);
         if (KAW_EXP_SCREEN->gains[w->partner][1]) {
             sprintf(buf, "*s0+%d", KAW_EXP_SCREEN->gains[w->partner][1]);
-            drawText(x + 0x2E, y + 0xD, (s32)buf, 5, z);
+            drawText(x + 0x2E, y + 0xD, (s32p)buf, 5, z);
         }
         drawIcon(x, y + 0x19, 0, 8, z);
         sprintf(buf, "*s0%4d", ((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].attack[1].power);
-        drawText(x + 0xE, y + 0x19, (s32)buf, 7, z);
+        drawText(x + 0xE, y + 0x19, (s32p)buf, 7, z);
         if (KAW_EXP_SCREEN->gains[w->partner][2]) {
             sprintf(buf, "*s0+%d", KAW_EXP_SCREEN->gains[w->partner][2]);
-            drawText(x + 0x2E, y + 0x19, (s32)buf, 5, z);
+            drawText(x + 0x2E, y + 0x19, (s32p)buf, 5, z);
         }
         drawIcon(x, y + 0x25, 0, 9, z);
         sprintf(buf, "*s0%4d", ((PlayerProfile *)PLAYER_PROFILES)->partners[w->partner].card[0].attack[2].power);
-        drawText(x + 0xE, y + 0x25, (s32)buf, 7, z);
+        drawText(x + 0xE, y + 0x25, (s32p)buf, 7, z);
         if (KAW_EXP_SCREEN->gains[w->partner][3]) {
             sprintf(buf, "*s0+%d", KAW_EXP_SCREEN->gains[w->partner][3]);
-            drawText(x + 0x2E, y + 0x25, (s32)buf, 5, z);
+            drawText(x + 0x2E, y + 0x25, (s32p)buf, 5, z);
         }
     }
 }
@@ -227,12 +227,12 @@ void KAW_drawBonusList(UiWindow *w) {
     x = w->originX;
     y = w->originY;
     z = w->z;
-    drawText(x + 0x28, y + 1, (s32)"Detail of Earned Experience Points", 6, 0);
+    drawText(x + 0x28, y + 1, (s32p)"Detail of Earned Experience Points", 6, 0);
     exp = DUEL->winner == 0 ? ((u8 *)SESSION_DATA)[0x74] : 0;
     rowY = y + 15;
-    drawText(x + 6, rowY, (s32)"Experience Points from Opponent", 7, z);
+    drawText(x + 6, rowY, (s32p)"Experience Points from Opponent", 7, z);
     sprintf(buf, "*s0+%3d", exp);
-    drawText(x + 0xA2, rowY, (s32)buf, 5, z);
+    drawText(x + 0xA2, rowY, (s32p)buf, 5, z);
     KAW_EXP_SCREEN->done = KAW_drawBonuses(x, y + 0x1C, KAW_EXP_SCREEN->progress / 32, z, exp);
     if (PAD_STATES[0]->pressed & PAD_CROSS) {
         KAW_EXP_SCREEN->speed = 0x20;
@@ -272,7 +272,7 @@ void KAW_drawEarnedParts(UiWindow *w) {
     x = w->originX;
     y = w->originY;
     z = w->z;
-    drawText(x + 0x5A, y + 1, (s32)"Earned Digi-Parts", 6, 0);
+    drawText(x + 0x5A, y + 1, (s32p)"Earned Digi-Parts", 6, 0);
     n = 0;
     for (i = 0; i < 128; i++) {
         if ((KAW_EXP_SCREEN->partFlags[i / 8] >> (i % 8)) & 1) {
@@ -284,7 +284,7 @@ void KAW_drawEarnedParts(UiWindow *w) {
                 continue;
             }
             sprintf(buf, "*s0%3.3d", i);
-            drawText(x + 2, y + 15 + (n - 1) * 13, (s32)buf, 5, z);
+            drawText(x + 2, y + 15 + (n - 1) * 13, (s32p)buf, 5, z);
             if (i < 7) {
                 icon = 0;
             } else if (i < 10) {
@@ -312,7 +312,7 @@ void KAW_drawEarnedParts(UiWindow *w) {
             if (i >= 41 && i < 123) {
                 palette = 5;
             }
-            drawText(x + 0x30, y + 15 + (n - 1) * 13, (s32)KAW_DIGI_PARTS[i].name, palette, z);
+            drawText(x + 0x30, y + 15 + (n - 1) * 13, (s32p)KAW_DIGI_PARTS[i].name, palette, z);
         }
     }
     w->view.h = n * 13 + 15;
@@ -331,7 +331,7 @@ void KAW_drawEarnedParts(UiWindow *w) {
         }
     }
     if (n == 0) {
-        drawText(x + 0x1A, y + 0xE, (s32)"None", 7, 0);
+        drawText(x + 0x1A, y + 0xE, (s32p)"None", 7, 0);
     }
 }
 
@@ -345,7 +345,7 @@ void KAW_drawRankUp(RankUpWindow *w) {
     y = w->window.originY;
     z = w->window.z;
     sprintf(buf, "%2d RANK UP!", w->rank);
-    drawLargeText(x + 1, y + 1, (s32)buf, 7, z);
+    drawLargeText(x + 1, y + 1, (s32p)buf, 7, z);
 }
 
 void KAW_renderExpScreen(void) {
@@ -412,14 +412,14 @@ void KAW_runExpScreen(void) {
     rect.w = 0xE0;
     rect.h = 0xA8;
     openWindow(&KAW_EXP_SCREEN->window, &rect, -1, (s16 *)-1, 10, 0x16, 0x80, 12);
-    KAW_EXP_SCREEN->window.label = (s32)"BONUS LIST";
+    KAW_EXP_SCREEN->window.label = (s32p)"BONUS LIST";
     animateWindowTo(&KAW_EXP_SCREEN->window, (Rect16 *)-1);
     rect.x = 0x10;
     rect.y = 0x2C;
     rect.w = 0x120;
     rect.h = 0xA8;
     openWindow(&KAW_EXP_SCREEN->partsWindow, &rect, -1, (s16 *)-1, 10, 0x16, 0x80, 12);
-    KAW_EXP_SCREEN->partsWindow.label = (s32)"DIGI-PARTS RECEIVED";
+    KAW_EXP_SCREEN->partsWindow.label = (s32p)"DIGI-PARTS RECEIVED";
     animateWindowTo(&KAW_EXP_SCREEN->partsWindow, (Rect16 *)-1);
     rect.x = 0x10;
     rect.y = 0x14;
@@ -446,7 +446,7 @@ void KAW_runExpScreen(void) {
         }
     }
     playSoundEffect(0xA3);
-    addFrameCallback((s32)KAW_renderExpScreen);
+    addFrameCallback((s32p)KAW_renderExpScreen);
     waitFrames(20);
     playSoundEffect(0xA3);
     rect.x = 0x30;
@@ -544,7 +544,7 @@ void KAW_runExpScreen(void) {
     }
     waitFrames(30);
     KAW_countEarnedBonuses();
-    removeFrameCallback((s32)KAW_renderExpScreen);
+    removeFrameCallback((s32p)KAW_renderExpScreen);
     waitFrames(2);
     freeHeapBlock(KAW_EXP_SCREEN);
     waitFrames(2);

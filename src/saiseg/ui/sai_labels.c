@@ -6,7 +6,7 @@
 #include "dcb/sai_sprite.h"
 #include "dcb/sai_world_map.h"
 
-void SAI_openCenteredWindow(UiWindow *window, Rect16 pos, s32 label, s32 style, s32 brightness) {
+void SAI_openCenteredWindow(UiWindow *window, Rect16 pos, s32p label, s32 style, s32 brightness) {
     Rect16 rect;
     Rect16 unused; /* unused, but it is in the original stack frame */
     Rect16 view;
@@ -30,7 +30,7 @@ void SAI_toggleMessageWindow(s32 close) {
     char *title = "MESSAGE";
 
     if (close == 0) {
-        SAI_openCenteredWindow(&SAI_MESSAGE_WINDOW, pos, (s32)title, 8, 0x51);
+        SAI_openCenteredWindow(&SAI_MESSAGE_WINDOW, pos, (s32p)title, 8, 0x51);
         animateWindowTo(&SAI_MESSAGE_WINDOW, (Rect16 *)-1);
     } else {
         rect.x = pos.x - pos.w / 2;

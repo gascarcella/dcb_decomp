@@ -173,18 +173,18 @@ void SAI_drawRewardResult(RewardWindow *win) {
     s32 z = win->window.z;
 
     if (((PlayerProfile *)PLAYER_PROFILES)->rewardResults[win->slot] < 0) {
-        drawLargeText(x + 1, y + 1, (s32)"FULL SET!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"FULL SET!", 7, z);
     } else {
-        drawLargeText(x + 1, y + 1, (s32)"RECEIVED!", 7, z);
+        drawLargeText(x + 1, y + 1, (s32p)"RECEIVED!", 7, z);
     }
 }
 
 void SAI_drawRewardTitle(UiWindow *window) {
     if (SAI_REWARD_FROM_SCRIPT == 0) {
-        drawText(window->originX + 2, window->originY + 1, (s32)"Earned a Prize Pack", 7, 0);
-        drawText(window->originX + 0x92, window->originY + 1, (s32)CARD_PACK_NAMES[SAI_PRIZE_PACK], 6, 0);
+        drawText(window->originX + 2, window->originY + 1, (s32p)"Earned a Prize Pack", 7, 0);
+        drawText(window->originX + 0x92, window->originY + 1, (s32p)CARD_PACK_NAMES[SAI_PRIZE_PACK], 6, 0);
     } else {
-        drawText(window->originX + 2, window->originY + 1, (s32)"Received", 7, 0);
+        drawText(window->originX + 2, window->originY + 1, (s32p)"Received", 7, 0);
     }
 }
 
@@ -271,7 +271,7 @@ void SAI_showRewardCards(s32 fromScript) {
     DrawSync(0);
     waitFrames(FRAME_INTERVAL);
     freeHeapBlock(tims);
-    addFrameCallback((s32)SAI_drawRewardWindows);
+    addFrameCallback((s32p)SAI_drawRewardWindows);
     waitFrames(20);
     SAI_waitForCross();
     playSoundEffect(0);
@@ -303,5 +303,5 @@ void SAI_showRewardCards(s32 fromScript) {
     waitFrames(20);
     freeHeapBlock(SAI_REWARD_SCREEN);
     waitFrames(10);
-    removeFrameCallback((s32)SAI_drawRewardWindows);
+    removeFrameCallback((s32p)SAI_drawRewardWindows);
 }

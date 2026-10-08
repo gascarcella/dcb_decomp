@@ -105,10 +105,10 @@ void SAI_runPlayerData(void) {
         SAI_openWindows(&SAI_STATS_HINT_WINDOW, &SAI_STATS_HINT_WINDOW_DEF, 1);
     }
     openMenu(&SAI_PLAYER_DATA_MENU, &SAI_PLAYER_DATA_WINDOW, &SAI_PLAYER_DATA_CURSOR, (Bytes4 *)-1);
-    SAI_PLAYER_DATA_WINDOW.label = (s32)"PLAYER'S DATA";
+    SAI_PLAYER_DATA_WINDOW.label = (s32p)"PLAYER'S DATA";
     waitFrames(1);
     playSoundEffect(3);
-    addFrameCallback((s32)SAI_drawPlayerDataWindows);
+    addFrameCallback((s32p)SAI_drawPlayerDataWindows);
     while (1) {
         waitFrames(1);
         if (PAD_STATES[0]->pressed & PAD_TRIANGLE) {
@@ -129,7 +129,7 @@ void SAI_runPlayerData(void) {
         animateWindowTo(&SAI_STATS_HINT_WINDOW, (Rect16 *)-1);
     }
     waitFrames(15);
-    removeFrameCallback((s32)SAI_drawPlayerDataWindows);
+    removeFrameCallback((s32p)SAI_drawPlayerDataWindows);
     SAI_AREA.mode = AREA_MODE_SCRIPT;
     SAI_AREA.rewardBusy = 0;
     SAI_PLAYER_STATS_STATE = 0;
@@ -246,56 +246,56 @@ void SAI_drawPlayerData(UiWindow *win) {
     x = win->originX - 0x14;
     y = win->originY + 2;
     z = win->z;
-    drawText(x + 0x62, y, (s32)SAI_PLAYER_DATA_LABELS[0], 6, z);
-    drawText(x + 0x132 - measureText(SAI_PLAYER_STATS.profile->name), y, (s32)SAI_PLAYER_STATS.profile->name, 7, z);
-    drawText(x + 0x62, y + 0xE, (s32)SAI_PLAYER_DATA_LABELS[1], 6, z);
-    drawText(x + 0x132 - measureText(SAI_PLAYER_STATS.tamerRank), y + 0xE, (s32)SAI_PLAYER_STATS.tamerRank, 7, z);
-    drawText(x + 0x62, y + 0x1C, (s32)SAI_PLAYER_DATA_LABELS[2], 6, z);
-    drawText(x + 0x132 - measureText(SAI_PLAYER_STATS.collectorRank), y + 0x1C, (s32)SAI_PLAYER_STATS.collectorRank, 7, z);
-    drawText(x + 0x62, y + 0x2A, (s32)SAI_PLAYER_DATA_LABELS[3], 6, z);
+    drawText(x + 0x62, y, (s32p)SAI_PLAYER_DATA_LABELS[0], 6, z);
+    drawText(x + 0x132 - measureText(SAI_PLAYER_STATS.profile->name), y, (s32p)SAI_PLAYER_STATS.profile->name, 7, z);
+    drawText(x + 0x62, y + 0xE, (s32p)SAI_PLAYER_DATA_LABELS[1], 6, z);
+    drawText(x + 0x132 - measureText(SAI_PLAYER_STATS.tamerRank), y + 0xE, (s32p)SAI_PLAYER_STATS.tamerRank, 7, z);
+    drawText(x + 0x62, y + 0x1C, (s32p)SAI_PLAYER_DATA_LABELS[2], 6, z);
+    drawText(x + 0x132 - measureText(SAI_PLAYER_STATS.collectorRank), y + 0x1C, (s32p)SAI_PLAYER_STATS.collectorRank, 7, z);
+    drawText(x + 0x62, y + 0x2A, (s32p)SAI_PLAYER_DATA_LABELS[3], 6, z);
     sprintf(buf, rateFormat, SAI_PLAYER_STATS.completionRate / 10, SAI_PLAYER_STATS.completionRate % 10);
-    drawText(x + 0x105, y + 0x2A, (s32)buf, 7, z);
-    drawText(x + 0x62, y + 0x38, (s32)SAI_PLAYER_DATA_LABELS[4], 6, z);
+    drawText(x + 0x105, y + 0x2A, (s32p)buf, 7, z);
+    drawText(x + 0x62, y + 0x38, (s32p)SAI_PLAYER_DATA_LABELS[4], 6, z);
     sprintf(buf, rateFormat, SAI_PLAYER_STATS.cardRate / 10, SAI_PLAYER_STATS.cardRate % 10);
-    drawText(x + 0x105, y + 0x38, (s32)buf, 7, z);
-    drawText(x + 0x62, y + 0x46, (s32)SAI_PLAYER_DATA_LABELS[5], 6, z);
+    drawText(x + 0x105, y + 0x38, (s32p)buf, 7, z);
+    drawText(x + 0x62, y + 0x46, (s32p)SAI_PLAYER_DATA_LABELS[5], 6, z);
     sprintf(buf, rateFormat, SAI_PLAYER_STATS.abilityRate / 10, SAI_PLAYER_STATS.abilityRate % 10);
-    drawText(x + 0x105, y + 0x46, (s32)buf, 7, z);
-    drawText(x + 0x15, y + 0x54, (s32)SAI_PLAYER_DATA_LABELS[6], 6, z);
+    drawText(x + 0x105, y + 0x46, (s32p)buf, 7, z);
+    drawText(x + 0x15, y + 0x54, (s32p)SAI_PLAYER_DATA_LABELS[6], 6, z);
     sprintf(buf, countFormat, ((PlayerProfile *)PLAYER_PROFILES)->battleWins);
-    drawText(x + 0x89, y + 0x54, (s32)buf, 7, z);
-    drawText(x + 0xA3, y + 0x54, (s32)"Wins", 6, z);
+    drawText(x + 0x89, y + 0x54, (s32p)buf, 7, z);
+    drawText(x + 0xA3, y + 0x54, (s32p)"Wins", 6, z);
     sprintf(buf, countFormat, ((PlayerProfile *)PLAYER_PROFILES)->battleLosses);
-    drawText(x + 0xC0, y + 0x54, (s32)buf, 7, z);
-    drawText(x + 0xDB, y + 0x54, (s32)"Losses", 6, z);
-    drawText(x + 0x15, y + 0x62, (s32)SAI_PLAYER_DATA_LABELS[7], 6, z);
+    drawText(x + 0xC0, y + 0x54, (s32p)buf, 7, z);
+    drawText(x + 0xDB, y + 0x54, (s32p)"Losses", 6, z);
+    drawText(x + 0x15, y + 0x62, (s32p)SAI_PLAYER_DATA_LABELS[7], 6, z);
     sprintf(buf, countFormat, ((PlayerProfile *)PLAYER_PROFILES)->versusWins);
-    drawText(x + 0x89, y + 0x62, (s32)buf, 7, z);
-    drawText(x + 0xA3, y + 0x62, (s32)"Wins", 6, z);
+    drawText(x + 0x89, y + 0x62, (s32p)buf, 7, z);
+    drawText(x + 0xA3, y + 0x62, (s32p)"Wins", 6, z);
     sprintf(buf, countFormat, ((PlayerProfile *)PLAYER_PROFILES)->versusLosses);
-    drawText(x + 0xC0, y + 0x62, (s32)buf, 7, z);
-    drawText(x + 0xDB, y + 0x62, (s32)"Losses", 6, z);
+    drawText(x + 0xC0, y + 0x62, (s32p)buf, 7, z);
+    drawText(x + 0xDB, y + 0x62, (s32p)"Losses", 6, z);
     for (i = 0; i < 3; i++) {
-        drawText(x + 0x15, y + (i + 8) * 14, (s32)SAI_PLAYER_DATA_LABELS[i + 8], 6, z);
+        drawText(x + 0x15, y + (i + 8) * 14, (s32p)SAI_PLAYER_DATA_LABELS[i + 8], 6, z);
         if (((PlayerProfile *)PLAYER_PROFILES)->savedDecks[i].inUse != 0) {
             sprintf(buf, "%s %s", ((PlayerProfile *)PLAYER_PROFILES)->savedDecks[i].name, SAI_PLAYER_DATA_LABELS[14]);
-            drawText(x + 0x46, y + (i + 8) * 14, (s32)buf, 7, z);
+            drawText(x + 0x46, y + (i + 8) * 14, (s32p)buf, 7, z);
             sprintf(buf, countFormat, ((PlayerProfile *)PLAYER_PROFILES)->savedDecks[i].wins);
-            drawText(x + 0xCA, y + (i + 8) * 14, (s32)buf, 7, z);
-            drawText(x + 0xE2, y + (i + 8) * 14, (s32)SAI_PLAYER_DATA_LABELS[12], 6, z);
+            drawText(x + 0xCA, y + (i + 8) * 14, (s32p)buf, 7, z);
+            drawText(x + 0xE2, y + (i + 8) * 14, (s32p)SAI_PLAYER_DATA_LABELS[12], 6, z);
             sprintf(buf, countFormat, ((PlayerProfile *)PLAYER_PROFILES)->savedDecks[i].losses);
-            drawText(x + 0xFE, y + (i + 8) * 14, (s32)buf, 7, z);
-            drawText(x + 0x116, y + (i + 8) * 14, (s32)SAI_PLAYER_DATA_LABELS[13], 6, z);
+            drawText(x + 0xFE, y + (i + 8) * 14, (s32p)buf, 7, z);
+            drawText(x + 0x116, y + (i + 8) * 14, (s32p)SAI_PLAYER_DATA_LABELS[13], 6, z);
         }
     }
-    drawText(x + 0x15, y + 0x9A, (s32)SAI_PLAYER_DATA_LABELS[11], 6, z);
+    drawText(x + 0x15, y + 0x9A, (s32p)SAI_PLAYER_DATA_LABELS[11], 6, z);
     x += 0xC;
     for (i = 0; i < 3; i++) {
         if (((PlayerProfile *)PLAYER_PROFILES)->partners[i].cardId != 0) {
-            drawText(x + 0x15 + i * 84, y + 0xA8, (s32)((PlayerProfile *)PLAYER_PROFILES)->partners[i].card[0].name, 7, z);
-            drawLargeText(x + 0x15 + i * 84, y + 0xB9, (s32)"RANK", 6, z);
+            drawText(x + 0x15 + i * 84, y + 0xA8, (s32p)((PlayerProfile *)PLAYER_PROFILES)->partners[i].card[0].name, 7, z);
+            drawLargeText(x + 0x15 + i * 84, y + 0xB9, (s32p)"RANK", 6, z);
             sprintf(buf, "%2d", (s8)((PlayerProfile *)PLAYER_PROFILES)->partners[i].level);
-            drawText(x + 0x3D + i * 84, y + 0xB6, (s32)buf, 7, z);
+            drawText(x + 0x3D + i * 84, y + 0xB6, (s32p)buf, 7, z);
             for (j = 0; j < 3; j++) {
                 if (((PlayerProfile *)PLAYER_PROFILES)->partners[i].unlockedArmors[j] != 0) {
                     partner = getSlotPartnerIndex(0, i);
@@ -315,5 +315,5 @@ void SAI_drawPlayerData(UiWindow *win) {
 void SAI_drawCompleteStatsHint(UiWindow *window) {
     char buf[0x48]; /* unused, but it is in the original stack frame */
 
-    drawText(window->originX + 6, window->originY + 1, (s32)"*b0:Player's Complete Stats", 7, window->z);
+    drawText(window->originX + 6, window->originY + 1, (s32p)"*b0:Player's Complete Stats", 7, window->z);
 }

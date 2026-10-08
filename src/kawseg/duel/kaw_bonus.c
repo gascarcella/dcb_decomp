@@ -284,9 +284,9 @@ s32 KAW_addBonusLine(BonusEntry *entry, s32 x, s32 y, s32 last, s32 z) {
     char buf[72];
 
     KAW_DUEL->bonusFlags[entry->id] = 1;
-    drawText(x + 6, y + KAW_BONUS_ROW * 13, (s32)entry->name, 7, z);
+    drawText(x + 6, y + KAW_BONUS_ROW * 13, (s32p)entry->name, 7, z);
     sprintf(buf, "*s0+%3d*c7(%3d)", entry->bonus, ((ProfileK *)PLAYER_PROFILES)->counts[entry->id] + 1);
-    drawText(x + 0xA2, y + KAW_BONUS_ROW * 13, (s32)buf, 5, z);
+    drawText(x + 0xA2, y + KAW_BONUS_ROW * 13, (s32p)buf, 5, z);
     KAW_BONUS_ROW++;
     KAW_BONUS_EXP += entry->bonus;
     return KAW_BONUS_ROW == last;
@@ -435,10 +435,10 @@ s32 KAW_drawBonuses(s32 x, s32 y, s32 count, s32 z, s32 exp) {
     }
     i = 46;
     do {
-        drawText(x + i * 5, y + KAW_BONUS_ROW * 13, (s32)"-", 7, z);
+        drawText(x + i * 5, y + KAW_BONUS_ROW * 13, (s32p)"-", 7, z);
     } while (--i >= 0);
     sprintf(buf, "+%3d", KAW_BONUS_EXP);
-    drawText(x + 0xA2, y + KAW_BONUS_ROW * 13 + 11, (s32)buf, 5, z);
+    drawText(x + 0xA2, y + KAW_BONUS_ROW * 13 + 11, (s32p)buf, 5, z);
     return 1;
 }
 
@@ -531,7 +531,7 @@ void KAW_showBonusBanner(s32 player, s32 id) {
                 h = 0;
             }
         }
-        drawText(x - measureText(KAW_BONUSES[id].name) / 2, y - 6, (s32)KAW_BONUSES[id].name, 7, 0);
+        drawText(x - measureText(KAW_BONUSES[id].name) / 2, y - 6, (s32p)KAW_BONUSES[id].name, 7, 0);
         SetDrawTPage(&BANNER->bannerMode[FRAME_BUFFER_INDEX], 0, 0, GetTPage(0, 2, 0, 0));
         initPrimByType(8, &BANNER->banner[FRAME_BUFFER_INDEX], 1, 0);
         setPrimRgb0(&BANNER->banner[FRAME_BUFFER_INDEX], 0xC0, 0xC0, 0xC0);

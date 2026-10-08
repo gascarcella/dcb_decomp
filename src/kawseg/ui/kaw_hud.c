@@ -95,7 +95,7 @@ s32 KAW_initHudPanels(void) {
 
     KAW_DUEL->hudPrims = allocTaskHeapBlock(sizeof(HudPrims) * 2);
     for (i = 0; i < 2; i++) {
-        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[11] = (s32)&KAW_DUEL->hudPrims[i];
+        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[11] = (s32p)&KAW_DUEL->hudPrims[i];
     }
     HUD_PANELS = allocTaskHeapBlock(sizeof(HudPanelK) * 12);
     for (i = 0; i < 12; i++) {
@@ -195,7 +195,7 @@ s32p KAW_allocCardPolys(void) {
 
     CARD_POLY_PACKETS = allocTaskHeapBlock(sizeof(Unk14F0) * 2);
     for (i = 0; i < 2; i++) {
-        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[10] = (s32)&CARD_POLY_PACKETS[i];
+        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[10] = (s32p)&CARD_POLY_PACKETS[i];
     }
     allocTaskHeapBlock(0xE10);
 }
@@ -233,7 +233,7 @@ s32p KAW_createCursor(s32 mode, s32 x, s32 y, s32 d, s32 count) {
 
     CURSOR_PACKETS = allocTaskHeapBlock(count * sizeof(GradPacket) * 2);
     for (i = 0; i < 2; i++) {
-        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[12] = (s32)&CURSOR_PACKETS[i * count];
+        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[12] = (s32p)&CURSOR_PACKETS[i * count];
         for (j = 0; j < count; j++) {
             setDrawMode(&CURSOR_PACKETS[i * count + j].dm, 0, 0, GetTPage(0, 1, 0, 0));
             for (k = 0; k < 8; k++) {
@@ -258,7 +258,7 @@ s32p KAW_createCursor(s32 mode, s32 x, s32 y, s32 d, s32 count) {
         rgb[2] = 0;
         KAW_initCursorShape(&shapes[i], x, y, d);
     }
-    return (s32)shapes;
+    return (s32p)shapes;
 }
 
 void KAW_initCursorShape(Shape *shape, s32 x, s32 y, s32 d) {
@@ -467,7 +467,7 @@ void KAW_initRing(void) {
 
     KAW_DUEL->ringPrims = allocTaskHeapBlock(sizeof(RingPrims) * 2);
     for (i = 0; i < 2; i++) {
-        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[13] = (s32)&KAW_DUEL->ringPrims[i];
+        ((Graphics *)&GRAPHICS)->buffers[i].primSlots[13] = (s32p)&KAW_DUEL->ringPrims[i];
     }
     DUEL->ringMode = -1;
     DUEL->ringRadius = 320;
