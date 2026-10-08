@@ -43,7 +43,7 @@ void initDuelPlayers(s32 isCpuDuel) {
     s32 cardId;
 
     for (i = 0; i < 2; i++) {
-        DUEL_PLAYERS[i] = allocTaskHeapBlock(0x1E4); /* a Player */
+        DUEL_PLAYERS[i] = allocTaskHeapBlock(HOST_SIZE(0x1E4, PLAYER_BLOCK_SIZE)); /* a Player */
         PLAYER(i)->controller = (1 - isCpuDuel) * 2 + i;
         PLAYER(i)->unk0 = 1;
         for (j = 0; j < 30; j++) {

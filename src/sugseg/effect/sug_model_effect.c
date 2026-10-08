@@ -7,6 +7,13 @@
 #include "dcb/anim_control.h"
 #include "dcb/scroll_bg.h"
 #include "dcb/sug_tex_anim.h"
+#ifdef PC_PORT
+#include "dcb/scene3d.h"
+_Static_assert(__builtin_offsetof(ModelEffect, model) == __builtin_offsetof(ModelLink, model) &&
+                   __builtin_offsetof(ModelEffect, flags) == __builtin_offsetof(ModelLink, axisMode) &&
+                   __builtin_offsetof(ModelEffect, active) == __builtin_offsetof(ModelLink, enabled),
+               "ModelLink is a view of ModelEffect (issue #30)");
+#endif
 
 void SUG_uploadShadedClut(ClutFade *fade, u16 stp) {
     u16 *src;

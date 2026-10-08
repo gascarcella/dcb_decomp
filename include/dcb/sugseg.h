@@ -30,6 +30,9 @@ typedef struct {
     /* 0x18 */ s32 type; /* 0-3: scroll left, right, up, down; else play the frames */
     /* 0x1C */ u8 *pixels;
 } TexAnim;
+#ifdef PC_PORT
+_Static_assert(sizeof(TexAnim) == 0x20 + TEX_ANIM_HOST_EXTRA, "TexAnim on the host (game.h)");
+#endif
 
 typedef struct {
     Rect16 rect;
@@ -329,6 +332,8 @@ typedef struct {
 } BattleState;
 #endif
 
+#ifndef PC_PORT /* PC_PORT: the Model itself, x/rotX/rotY/animClip/animKeyTimer/boneMatrices/owner/clutRect its
+                   unions' names (game.h, issue #30) */
 typedef struct {
     u8 unk0[6];
     s16 id;
@@ -352,6 +357,9 @@ typedef struct {
     u8 unk26F4[4];
     u16 clut[256];
 } ModelData;
+#else
+typedef Model ModelData;
+#endif
 
 typedef struct {
     Rect16 rect;
@@ -387,6 +395,8 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     u8 unk0[0x9C]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    u8 unk0[0x98 + EFFECT_OBJECT_PARENT_EXTRA]; /* the host's EffectObject (game.h, issue #30) */
 #elif VERSION_US || VERSION_EU
     u8 unk0[0x98];
 #endif
@@ -475,12 +485,20 @@ typedef struct {
     POLY_G4 *g4s[2];
     POLY_FT4 *ft4s[2];
     POLY_GT4 *gt4s[2];
+#ifndef PC_PORT
     u8 edges[2][0x4C];
+#else
+    u8 edges[2][TRANSFORM_HOST_SIZE] __attribute__((aligned(sizeof(s32p)))); /* Transforms (game.h, issue #30) */
+#endif
     PosHistory *histories[2];
     Short4 lastPos[2];
     VECTOR prevPos[2];
     SVECTOR prevRot[2];
+#ifndef PC_PORT
     u8 xform[0x4C];
+#else
+    u8 xform[TRANSFORM_HOST_SIZE] __attribute__((aligned(sizeof(s32p)))); /* a Transform (game.h, issue #30) */
+#endif
     Rect16 uv;
     s32 tpage;
     s32 clut;

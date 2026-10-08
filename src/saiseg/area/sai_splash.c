@@ -137,7 +137,7 @@ void SAI_drawSplash(void) {
 }
 
 void SAI_runSplash(s32 index, s32 task) {
-    SAI_SPLASH = allocTaskHeapBlock(0x15C);
+    SAI_SPLASH = allocTaskHeapBlock(0x15C); /* PC_PORT: bytes (Splash is pointer-free) */
     SAI_SPLASH->loading = 1;
     SAI_loadSplashImage(index);
     do {

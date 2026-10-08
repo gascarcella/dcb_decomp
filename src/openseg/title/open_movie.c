@@ -312,10 +312,10 @@ void OPEN_initMovieStream(CdLocation *loc, void (*callback)()) {
 
     callbacks = &FRAME_CALLBACKS;
     OPEN_MOVIE_FRAMES_SHOWN = 0;
-    OPEN_VLC_TABLE = allocTaskHeapBlock(0x11000);
-    OPEN_STREAM_RING = allocTaskHeapBlock(0x20000);
-    OPEN_MOVIE_VLC_BUFFER = allocTaskHeapBlock(0x50000);
-    OPEN_MOVIE_IMAGE_BUFFER = allocTaskHeapBlock(0x5A00);
+    OPEN_VLC_TABLE = allocTaskHeapBlock(0x11000); /* PC_PORT: bytes (the movie decoder's) */
+    OPEN_STREAM_RING = allocTaskHeapBlock(0x20000); /* PC_PORT: bytes (the movie decoder's) */
+    OPEN_MOVIE_VLC_BUFFER = allocTaskHeapBlock(0x50000); /* PC_PORT: bytes (the movie decoder's) */
+    OPEN_MOVIE_IMAGE_BUFFER = allocTaskHeapBlock(0x5A00); /* PC_PORT: bytes (the movie decoder's) */
     OPEN_MOVIE_FRAME = 0;
     OPEN_MOVIE_ENDED = 0;
     *callbacks++ = (s32p)OPEN_showMovieFrame;

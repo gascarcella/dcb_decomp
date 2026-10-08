@@ -110,6 +110,7 @@ typedef struct {
     TmdPrim prims[1];
 } TmdObject;
 
+#ifndef PC_PORT /* PC_PORT: the Model itself, partCount/parts/pose/matrices its unions' names (game.h, issue #30) */
 typedef struct {
     u8 pad0[8];
     TmdObject *tmd;
@@ -125,6 +126,10 @@ typedef struct {
     u8 pad1F84[0x22B0 - 0x1F84];
     MATRIX matrices[2];
 } EvoModel;
+#else
+typedef struct EvoPart EvoPart; /* Model.obj[i] with its tmd a TmdObject */
+typedef Model EvoModel;
+#endif
 
 /* The state of the fusion screen (EVO_FUSION) */
 typedef struct {
@@ -209,7 +214,11 @@ typedef struct {
     /* 0x020 */ VECTOR curRot;
     /* 0x030 */ SVECTOR curScale;
     /* 0x038 */ s32 curPos[3];
+#ifndef PC_PORT
     /* 0x044 */ u8 pad44[0x98 - 0x44];
+#else
+    u8 pad44[0x98 - 0x44 + EFFECT_OBJECT_PARENT_EXTRA]; /* the host's EffectObject (game.h, issue #30) */
+#endif
     /* 0x098 */ void *parent;
     /* 0x09C */ u8 pad9C[0xAC - 0x9C];
     /* 0x0AC */ VECTOR pos;

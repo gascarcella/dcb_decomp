@@ -354,9 +354,9 @@ void SUB_runCardList(void) {
         SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32p)labels[i], flags, style);
     }
     animateWindowTo(&SUB_CARD_DATA_WINDOW, (Rect16 *)-1);
-    SUB_COLLECTION_STATS.lists[8] = allocTaskHeapBlock(0x2A);
+    SUB_COLLECTION_STATS.lists[8] = allocTaskHeapBlock(0x2A); /* PC_PORT: bytes (CardCounts, pointer-free) */
     for (i = 0; i < 8; i++) {
-        SUB_COLLECTION_STATS.lists[i] = allocTaskHeapBlock(0xA4);
+        SUB_COLLECTION_STATS.lists[i] = allocTaskHeapBlock(0xA4); /* PC_PORT: bytes (CardCounts, pointer-free) */
     }
     SUB_initCollectionStats();
     SUB_COLLECTION_STATS.showInfo = 0;
@@ -1102,8 +1102,8 @@ void SUB_initDeckEdit(PlayerDeck *deck) {
     s32 flags;
     s32 style;
 
-    SUB_DECK_EDIT.deckCounts = allocTaskHeapBlock(301);
-    SUB_EDITED_DECK = allocTaskHeapBlock(0x110);
+    SUB_DECK_EDIT.deckCounts = allocTaskHeapBlock(301); /* PC_PORT: bytes (a count per card) */
+    SUB_EDITED_DECK = allocTaskHeapBlock(HOST_SIZE(0x110, sizeof(PlayerDeck)));
     *SUB_EDITED_DECK = *deck;
     SUB_DECK_EDIT.statsPage = 0;
     SUB_DECK_EDIT.slot = 0;

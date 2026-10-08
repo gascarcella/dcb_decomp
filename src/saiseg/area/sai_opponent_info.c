@@ -339,7 +339,7 @@ void SAI_tickOpponentBanner(void) {
 void SAI_runOpponentInfoPanel(s32 index) {
     Rect16 rect;
 
-    SAI_OPPONENT_INFO = allocTaskHeapBlock(0xCC);
+    SAI_OPPONENT_INFO = allocTaskHeapBlock(0xCC); /* PC_PORT: bytes (OpponentInfo is pointer-free) */
     SAI_initOpponentInfo();
     addFrameCallback((s32p)SAI_drawOpponentInfo);
     if (SESSION->resumeMode != 0) {

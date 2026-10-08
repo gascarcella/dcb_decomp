@@ -41,9 +41,9 @@ u16 SFX_BASE_FINE = 0x3C;
 
 #if VERSION_JP
 void initSound(void) {
-    SOUND_STATE.seBank.buf = allocHeapBlock(0x2100, -2);
-    SOUND_STATE.slot[0].buf = allocHeapBlock(0x9300, -2);
-    SOUND_STATE.slot[1].buf = allocHeapBlock(0x9300, -2);
+    SOUND_STATE.seBank.buf = allocHeapBlock(0x2100, -2); /* PC_PORT: bytes (sound data) */
+    SOUND_STATE.slot[0].buf = allocHeapBlock(0x9300, -2); /* PC_PORT: bytes (sound data) */
+    SOUND_STATE.slot[1].buf = allocHeapBlock(0x9300, -2); /* PC_PORT: bytes (sound data) */
     SsInit();
     SsSetTableSize(&SOUND_SEQ_ATTR_TABLE, 0x20, 1);
     SsSetTickMode(1);
@@ -71,9 +71,9 @@ void initSound(void) {
     SsStart();
     setReverbType(1);
     SsSetStereo();
-    SOUND_STATE.seBank.buf = allocHeapBlock(0x2100, -2);
-    SOUND_STATE.slot[0].buf = allocHeapBlock(0x9300, -2);
-    SOUND_STATE.slot[1].buf = allocHeapBlock(0x9300, -2);
+    SOUND_STATE.seBank.buf = allocHeapBlock(0x2100, -2); /* PC_PORT: bytes (sound data) */
+    SOUND_STATE.slot[0].buf = allocHeapBlock(0x9300, -2); /* PC_PORT: bytes (sound data) */
+    SOUND_STATE.slot[1].buf = allocHeapBlock(0x9300, -2); /* PC_PORT: bytes (sound data) */
     /* nothing loaded, nothing playing */
     SOUND_STATE.slot[1].id = 0xFF;
     SOUND_STATE.slot[0].id = 0xFF;

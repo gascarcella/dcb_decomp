@@ -301,8 +301,9 @@ override and derived symbol file with the pin bump.
     `s32`: the effect VMs read the register file as structs of words (`EffectParams`, `EvoFxParams`, KAWSEG's
     `EFFECT_PARAMS` at byte 0x248), and SAISEG's registers 12.. become the saved `areaScriptFlags`. Only op 8 puts an
     address in a register (of an inline block of the script, which is loaded into the heap): it goes through
-    `GAME_PTR_TO_S32`, and the readers (the text lines, the tutorial's names, SUGSEG's `vramEntries`) through
-    `GAME_S32_TO_PTR`. SAISEG's `ScriptRunner.unk0` (the script file) is `s32p`.
+    `GAME_PTR_TO_S32`, and the readers (the text lines, the tutorial's names) through `GAME_S32_TO_PTR`. SUGSEG's
+    `vramEntries` is not an address: it is `loadModel`'s VRAM slot, which the PS1 steps by an `Entry16` per model slot
+    as a pointer; the host does the same arithmetic on the integer (issue #30). SAISEG's `ScriptRunner.unk0` (the script file) is `s32p`.
   - **Effect objects** (M1 step 3): `EffectObject.parent` is `s32p`, as the `EvoFx` and `EffectInit` views of the
     same object already had a pointer there; the fields after it are 4 bytes further on the host, so
     `EffectTemplate` and the effects that start with an EffectObject's bytes (`RingEffect`, SUGSEG's) take the host's
@@ -326,8 +327,37 @@ override and derived symbol file with the pin bump.
     the views' names as members of unions in `Dialog` (`options[2]` and `yes`/`no` over `yesLabel`/`noLabel` at 0x98,
     `draw` over `onFrame` at 0xA0, `result` over `choice` at 0xA5), the buffers through `DIALOG_BUFFER(name, size)`
     with `DIALOG_BUFFER_CHOICE`/`DIALOG_BUFFER_PAD` for their bytes 0xA5 and 0xA6 (`dialog.h`; on the PS1 each is the
-    original text). `Model2220` is the `Model` (only `bonepos` is read through it). Still views: `EvoModel` (EVOSEG's
-    cutscenes) and `ModelData` (SUGSEG).
+    original text). `Model2220`, `EvoModel` (EVOSEG) and `ModelData` (SUGSEG) are the `Model`: their names are
+    members of unions in `Model` (`partCount`, `x` = `pos.vz`, `rotX`/`rotY`, `parts` over `obj` with its `tmd`, `pose`
+    over `bonepos`, `animClip`/`animKeyTimer`, `matrices`/`boneMatrices` over `lw`, `owner` over `link`, `clutRect`
+    over `crect`; `clut` is 256 `u16` on the host).
+  - **Views with the host's offsets** (issue #30): where a view names one region of another object, it keeps its type
+    and its pads become the other type's host offsets (`__builtin_offsetof`), each pinned by a `_Static_assert` (the
+    `EFFECT_OBJECT_HOST_EXTRA` pattern). The duel state (`DUEL_STATE`): the host `Duel` holds the pointers of KAWSEG's
+    views at their PS1 places and the PS1 block's 0x86C bytes; `DuelK`, `DuelAi`, `DuelBanner`, `DuelRing` pad to it.
+    `ProfileK` pads to the host `PlayerProfile`, `PlayerStats` to the host `Player`, `HudPanel` holds a pointer as
+    `Panel` and `HudPanelK` do. Raw offsets become names on the host (macros whose PS1 side is the original text):
+    `CARD_ANIM_SIZE`/`SPRITE_KIND` (`CardAnim`), a player's HUD panel state (`HUD_PANELS + p * 0xD8 + 0xD`), a
+    `Player`'s bit-field word (0x178, `PLAYER_FLAGS_OFS`), `Graphics`' camera words (`camera.c`), `Scene3D`'s view
+    matrix (0x78) and byte 0x130, `SessionData`'s `opponentDeck` bytes (0x70-0x74), `scrollWindowTo`'s `UiWindow`
+    halfwords, a `Model`'s keys (0xD80), a chain of `Xform` pointers, and a saved deck copied over a `Player` (its
+    0x110 bytes, up to `bonusFlags`).
+  - **Transforms** (issue #30): an effect (`EffectObject`) is a `Transform` (parent at 0x48) whose target
+    (`targetMatrix`, 0x4C) is another (parent at 0x94); on the host both parents are pointer-wide words in
+    `EffectObject`, so its own `parent` is at 0xA0 and everything after it 0xC further (`EFFECT_OBJECT_HOST_EXTRA`,
+    `EFFECT_OBJECT_PARENT_EXTRA`); the views (`EffectInit`, `RootEffect`, `EvoFx`, `ModelLink`, `RingEffect`) follow.
+    A streak `Particle` holds its parent at 0x48 too, and the `u8[0x4C]` transforms (`EffectSlots.xform`,
+    `TrailEffect.edges`/`xform`) are `TRANSFORM_HOST_SIZE`. SUGSEG's `TexAnim` holds four pointers, so `RingEffect`'s
+    `texAnim`, `ModelLink` and `EvoModelFx` make room for it (`TEX_ANIM_HOST_EXTRA`).
+  - **Stack locals as arrays**: `SUG_tickHudSlides` walks a function's separate `HudSlide` locals as an array (the
+    PS1 frame has them adjacent); on the host they are one array.
+  - **Heap sizes** (issue #31): of the 42 literal `alloc*HeapBlock` sizes in the `us` units, 8 are a host-grown type's
+    PS1 size and go through `HOST_SIZE(ps1, host)` (`port.h`: the literal on the PS1, a `sizeof` on the host:
+    `SESSION_DATA`, `CARD_ANIMS`, `DUEL_STATE`, `DUEL_PLAYERS` (`PLAYER_BLOCK_SIZE`: the name runs past the struct),
+    `rollRewardCards`' pointers, `SUG_SPRITE_CACHE`, `EVO_SHARDS`, `SUB_EDITED_DECK`); 3 were host-sized before (the
+    card directories, `KAW_MATCH_SCREEN`); 31 are true byte counts, marked `/* PC_PORT: bytes */`. The blocks before
+    `PLAYER_PROFILES` keep their PS1 sizes. psxstack's `counts --sites size` knows only the first game's allocator
+    names, so it lists none here.
   - **Reads through null pointers** the PS1 survives (address 0 is the kernel's RAM, zeros under OpenBIOS):
     `initDialog` measures a null text, `unloadModelAnimations` reads the id of a slot `unloadModel` cleared. On the
     host each reads OpenBIOS's zeros (an empty string, id 0) under `PC_PORT`.

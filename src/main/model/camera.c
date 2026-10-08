@@ -23,6 +23,16 @@
 #include "dcb/frame_callback.h"
 #include "dcb/window.h"
 
+#ifdef PC_PORT
+/* Graphics's word at PS1 offset ofs, from vblanksPerFrame (0x50) on: the host's frameCallbacks before it are pointers,
+   and nothing from 0x48 to targetFacedModel is (issue #30) */
+#define CAMERA_WORD(camera, ofs) (*(s32 *)((camera) + __builtin_offsetof(Graphics, vblanksPerFrame) + ((ofs) - 0x50)))
+_Static_assert(__builtin_offsetof(Graphics, pitch) - __builtin_offsetof(Graphics, vblanksPerFrame) == 0x70 - 0x50,
+               "Graphics is pointer-free from vblanksPerFrame to pitch");
+#else
+#define CAMERA_WORD(camera, ofs) *(s32 *)(camera + ofs)
+#endif
+
 s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
     s32 speed;
     s32 steps;
@@ -30,15 +40,15 @@ s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
     s32 step;
 
     if (CAMERA_SNAP != 0) {
-        *(s32 *)(camera + 0x5C) = -pos[0];
-        *(s32 *)(camera + 0x60) = -pos[1];
-        *(s32 *)(camera + 0x64) = -pos[2];
-        *(s32 *)(camera + 0x68) = target[2] << 12;
-        *(s32 *)(camera + 0x6C) = target[3] << 12;
-        *(s32 *)(camera + 0x70) = target[1] << 12;
+        CAMERA_WORD(camera, 0x5C) = -pos[0];
+        CAMERA_WORD(camera, 0x60) = -pos[1];
+        CAMERA_WORD(camera, 0x64) = -pos[2];
+        CAMERA_WORD(camera, 0x68) = target[2] << 12;
+        CAMERA_WORD(camera, 0x6C) = target[3] << 12;
+        CAMERA_WORD(camera, 0x70) = target[1] << 12;
         return target[4];
     }
-    speed = *(s32 *)(camera + 0x50);
+    speed = CAMERA_WORD(camera, 0x50);
     if (speed == 0) {
         speed = 1;
     }
@@ -46,7 +56,7 @@ s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
     if (steps == 0) {
         steps = 1;
     }
-    delta = (target[3] << 12) - *(s32 *)(camera + 0x6C);
+    delta = (target[3] << 12) - CAMERA_WORD(camera, 0x6C);
     if (delta != 0) {
         step = delta / steps;
         if (step == 0) {
@@ -56,9 +66,9 @@ s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
         } else if (step < -0x10000) {
             step = -0x8000;
         }
-        *(s32 *)(camera + 0x6C) += step;
+        CAMERA_WORD(camera, 0x6C) += step;
     }
-    delta = (target[2] << 12) - *(s32 *)(camera + 0x68);
+    delta = (target[2] << 12) - CAMERA_WORD(camera, 0x68);
     if (delta != 0) {
         step = delta / steps;
         if (step == 0) {
@@ -68,9 +78,9 @@ s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
         } else if (step < -0x10000) {
             step = -0x8000;
         }
-        *(s32 *)(camera + 0x68) += step;
+        CAMERA_WORD(camera, 0x68) += step;
     }
-    delta = (target[1] << 12) - *(s32 *)(camera + 0x70);
+    delta = (target[1] << 12) - CAMERA_WORD(camera, 0x70);
     if (delta != 0) {
         step = delta / steps;
         if (step == 0) {
@@ -80,7 +90,7 @@ s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
         } else if (step < -0x10000) {
             step = -0x8000;
         }
-        *(s32 *)(camera + 0x70) += step;
+        CAMERA_WORD(camera, 0x70) += step;
     }
     delta = target[4] - distance;
     if (delta != 0) {
@@ -90,9 +100,9 @@ s32 stepCameraTowardTarget(u8 *camera, s32 *pos, s32 distance, s16 *target) {
         }
         distance += step;
     }
-    *(s32 *)(camera + 0x5C) = -pos[0];
-    *(s32 *)(camera + 0x60) = -pos[1];
-    *(s32 *)(camera + 0x64) = -pos[2];
+    CAMERA_WORD(camera, 0x5C) = -pos[0];
+    CAMERA_WORD(camera, 0x60) = -pos[1];
+    CAMERA_WORD(camera, 0x64) = -pos[2];
     return distance;
 }
 

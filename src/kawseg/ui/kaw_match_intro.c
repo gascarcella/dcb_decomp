@@ -25,6 +25,14 @@
 #include "dcb/kaw_hand.h"
 #include "dcb/kaw_hud.h"
 
+#ifdef PC_PORT
+/* a saved deck over a Player's first bytes: the PS1 copies the 0x110 bytes of a PlayerDeck, up to bonusFlags; the
+   host's PlayerDeck ends in padding that would reach bonusFlags (issue #30) */
+#define KAW_COPY_DECK(player, deck) bcopy(&(deck), (player), __builtin_offsetof(Player, bonusFlags))
+#else
+#define KAW_COPY_DECK(player, deck) *(PlayerDeck *)player = deck
+#endif
+
 extern s32 KAW_MATCH_LOADING;
 extern POLY_G4 KAW_DECK_CHART_POLYS[2][2][3];
 extern TILE KAW_DECK_LEVEL_BARS[2][2][4];
@@ -591,14 +599,14 @@ void KAW_runDeckSelect(s32 isVersus, s32 match) {
         } while (done != 3);
         waitFrames(0x10);
         if (((SessionData *)SESSION_DATA)->npcDeckIndex[0] == -1) {
-            *(PlayerDeck *)DUEL_PLAYERS[0] = PLAYER_DATA(0).savedDecks[DECK_CHOICE(0)];
+            KAW_COPY_DECK(DUEL_PLAYERS[0], PLAYER_DATA(0).savedDecks[DECK_CHOICE(0)]);
             linkDeckCardData(0, (PlayerDeck *)DUEL_PLAYERS[0]);
         } else {
             loadPresetDeckForPlayer(0);
         }
         if (isVersus == 0) {
             if (((SessionData *)SESSION_DATA)->npcDeckIndex[1] == -1) {
-                *(PlayerDeck *)DUEL_PLAYERS[1] = PLAYER_DATA(1).savedDecks[DECK_CHOICE(1)];
+                KAW_COPY_DECK(DUEL_PLAYERS[1], PLAYER_DATA(1).savedDecks[DECK_CHOICE(1)]);
                 linkDeckCardData(1, (PlayerDeck *)DUEL_PLAYERS[1]);
             } else {
                 loadPresetDeckForPlayer(1);
@@ -744,8 +752,8 @@ void KAW_runVersusIntro(s32 mode, s32 deckId) {
     KAW_MATCH_SCREEN = allocTaskHeapBlock(sizeof(DeckScreen));
     waitForMusicChange();
     if (mode != 0) {
-        loadMusicTrack(0, ((u8 *)SESSION_DATA)[0x70], 0x7F);
-        loadMusicTrack(1, ((u8 *)SESSION_DATA)[0x71], 0x64);
+        loadMusicTrack(0, KAW_SESSION_BYTE(0x70), 0x7F);
+        loadMusicTrack(1, KAW_SESSION_BYTE(0x71), 0x64);
     } else {
         loadMusicTrack(0, rand() % 2 + 0x8F, 0x7F);
         loadMusicTrack(1, rand() % 2 + 0x93, 0x64);

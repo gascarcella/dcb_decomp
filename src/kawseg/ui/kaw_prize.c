@@ -132,7 +132,7 @@ void KAW_drawPrizeResult(RewardWindow *w) {
 
 void KAW_drawPrizeTitle(UiWindow *window) {
     drawText(window->originX + 2, window->originY + 1, (s32p)"Earned a Prize Pack", 7, 0);
-    drawText(window->originX + 0x92, window->originY + 1, (s32p)CARD_PACK_NAMES[((u8 *)SESSION_DATA)[0x73]], 6, 0);
+    drawText(window->originX + 0x92, window->originY + 1, (s32p)CARD_PACK_NAMES[KAW_SESSION_BYTE(0x73)], 6, 0);
 }
 
 void KAW_renderPrizeScreen(void) {
@@ -150,7 +150,7 @@ void KAW_renderPrizeScreen(void) {
 void KAW_rollPrizeCards(u8 *archive) {
     s32 i;
 
-    rollRewardCards(0, ((u8 *)SESSION_DATA)[0x73]);
+    rollRewardCards(0, KAW_SESSION_BYTE(0x73));
     for (i = 0; i < 3; i++) {
         uploadTim((u32 *)(archive + ((s32 *)archive)[((PlayerProfile *)PLAYER_PROFILES)->rewardCards[i]]), i * 20 + 0x2C0, 0x100, -1, -1);
         KAW_DUEL->rewardCluts[i] = getClut(LOADED_TIM.crect->x, LOADED_TIM.crect->y);

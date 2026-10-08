@@ -39,6 +39,9 @@ typedef u32 u32p;
    s32 field), and back: the address itself on the PS1 */
 #define GAME_PTR_TO_S32(p) ((s32)(p))
 #define GAME_S32_TO_PTR(type, v) ((type)(v))
+/* the size of an object the PS1 code writes as its byte count (a heap block's size): the literal on the PS1, the host
+   type's size on the host, where the type holds pointers and is larger (docs/PORT.md "Memory and pointers") */
+#define HOST_SIZE(ps1, host) ps1
 
 #else
 
@@ -62,6 +65,9 @@ s32 game_ptr_to_s32(const void *p);
 void *game_s32_to_ptr(s32 v);
 #define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
 #define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
+
+/* A size the PS1 code writes as its byte count, of an object whose type is larger on the host: the host's (a sizeof) */
+#define HOST_SIZE(ps1, host) (host)
 
 /* The arguments of a call to one of startup.s's stubs that the game declares without a prototype and calls with as
  * many arguments as it uses (spawnTask, resumeTask; include/game.h): each one an s32p, the missing ones 0. On the

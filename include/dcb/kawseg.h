@@ -12,6 +12,18 @@
 
 /* the duel state (DUEL) as KAWSEG sees it */
 #define KAW_DUEL ((DuelK *)DUEL_STATE)
+#ifdef PC_PORT
+/* Scene3D's view matrix, read by its PS1 offset 0x78 (the host's ot[] and root hold pointers; issue #30) */
+#define KAW_VIEW_MATRIX ((MATRIX *)SCENE_3D->viewMatrix)
+#else
+#define KAW_VIEW_MATRIX (MATRIX *)((u8 *)SCENE_3D + 0x78)
+#endif
+#ifdef PC_PORT
+/* SessionData's byte ofs, one of opponentDeck's (0x8 on the PS1; the host's npcDeckFile before it is a pointer) */
+#define KAW_SESSION_BYTE(ofs) (((u8 *)&((SessionData *)SESSION_DATA)->opponentDeck)[(ofs) - 8])
+#else
+#define KAW_SESSION_BYTE(ofs) ((u8 *)SESSION_DATA)[ofs]
+#endif
 
 #define setRGB1(p, _r1, _g1, _b1) (p)->r1 = _r1, (p)->g1 = _g1, (p)->b1 = _b1
 #define setRGB2(p, _r2, _g2, _b2) (p)->r2 = _r2, (p)->g2 = _g2, (p)->b2 = _b2
@@ -82,6 +94,42 @@ typedef struct {
     /* 0x442 */ u8 winner;
     /* 0x443 */ s8 tutorial;
 } DuelK;
+#elif defined(PC_PORT)
+/* the host's DuelK: its pads are the host Duel's offsets (game.h; issue #30) */
+#define DUEL_OFS(f) __builtin_offsetof(Duel, f)
+typedef struct {
+    struct ScriptRunner *tutorialScript;
+    struct RingPrims *ringPrims;
+    u8 unk8[0x40];
+    struct HudPrims *hudPrims;
+    s32p effectArchive; /* CBTL_EFF.ARC */
+    u8 unk50[DUEL_OFS(unk7C4) - DUEL_OFS(firstAttacker)];
+    DigivolvePlan *selected;
+    DigivolvePlan slots[4];
+    u8 unk7E0[DUEL_OFS(cursorMode) - DUEL_OFS(cache)];
+    s8 cursorMode; /* which cards the card cursor offers, -1: none */
+    u8 winner;
+    s8 tutorial;
+    s8 tutorialBusy; /* set while the tutorial script runs */
+    s8 menuPlayer;
+    s8 awaitingInput;
+    s8 menuOpen;
+    s8 quit; /* 2 + the winner when the duel ends early (tutorial, Give Up) */
+    u8 unk825[DUEL_OFS(unk840) - DUEL_OFS(unk825)];
+    u8 bonusFlags[32];
+    s16 rewardCluts[3];
+    s16 partnerCluts[3];
+} DuelK;
+#define DUEL_K_SAME(f) __builtin_offsetof(DuelK, f) == DUEL_OFS(f)
+_Static_assert(DUEL_OFS(unk0) == 0 && __builtin_offsetof(DuelK, unk50) == DUEL_OFS(firstAttacker) &&
+                   __builtin_offsetof(DuelK, selected) == DUEL_OFS(unk7C4) &&
+                   __builtin_offsetof(DuelK, slots) == DUEL_OFS(unk7C8) &&
+                   __builtin_offsetof(DuelK, unk7E0) == DUEL_OFS(cache) && DUEL_K_SAME(unk8) &&
+                   DUEL_K_SAME(cursorMode) && DUEL_K_SAME(winner) && DUEL_K_SAME(tutorial) &&
+                   DUEL_K_SAME(tutorialBusy) && DUEL_K_SAME(menuPlayer) && DUEL_K_SAME(awaitingInput) &&
+                   DUEL_K_SAME(menuOpen) && DUEL_K_SAME(quit) && DUEL_K_SAME(unk825) &&
+                   __builtin_offsetof(DuelK, bonusFlags) == DUEL_OFS(unk840) && sizeof(DuelK) <= sizeof(Duel),
+               "DuelK is a view of the host's Duel");
 #elif VERSION_US || VERSION_EU
 typedef struct {
     /* 0x000 */ struct ScriptRunner *tutorialScript;
@@ -250,6 +298,21 @@ typedef struct {
     /* 0x03A0 */ u16 cardLosses[0x6E];
     /* 0x047C */ u8 unk47C[0x145C - 0x47C];
 } ProfileK;
+#elif defined(PC_PORT)
+/* the host's ProfileK: a PlayerProfile (game.h), whose partners hold pointers; its pads are the host profile's
+   offsets, counts its bonusCounts and bestDamage its maxAttackPowers (issue #30) */
+#define PROFILE_OFS(f) __builtin_offsetof(PlayerProfile, f)
+typedef struct {
+    u8 unk0[PROFILE_OFS(bonusCounts)];
+    u16 counts[32];
+    u8 unk888[PROFILE_OFS(maxAttackPowers) - PROFILE_OFS(comWins)];
+    u16 bestDamage[0xBF][3];
+    u8 unk11B6[sizeof(PlayerProfile) - PROFILE_OFS(cardWins)];
+} ProfileK;
+_Static_assert(__builtin_offsetof(ProfileK, counts) == PROFILE_OFS(bonusCounts) &&
+                   __builtin_offsetof(ProfileK, bestDamage) == PROFILE_OFS(maxAttackPowers) &&
+                   sizeof(ProfileK) == sizeof(PlayerProfile),
+               "ProfileK is a view of the host's PlayerProfile");
 #elif VERSION_US || VERSION_EU
 typedef struct {
     /* 0x0000 */ u8 unk0[0x848];
@@ -291,11 +354,16 @@ typedef struct {
 typedef struct {
 #if VERSION_JP
     u8 unk0[4];
+#elif defined(PC_PORT)
+    u8 unk0[DUEL_OFS(unk5C)]; /* the host's Duel (game.h; issue #30) */
 #elif VERSION_US || VERSION_EU
     u8 unk0[0x5C];
 #endif
     AttackSim sims[3];
 } DuelAi;
+#ifdef PC_PORT
+_Static_assert(sizeof(DuelAi) <= DUEL_OFS(unk7C4), "DuelAi's sims sit in the host Duel's unk5C");
+#endif
 
 #ifndef PC_PORT /* PC_PORT: the Dialog itself, yes/no/draw/result its unions' names (dcb/dialog.h, issue #23) */
 typedef struct {

@@ -11,11 +11,17 @@ typedef struct {
     /* 0x030 */ SVECTOR rot;
 #if VERSION_JP
     /* 0x038 */ u8 unk38[0x108]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    u8 unk38[0x104 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (game.h, issue #30) */
 #elif VERSION_US || VERSION_EU
     /* 0x038 */ u8 unk38[0x104];
 #endif
     /* 0x13C */ Model *model;
+#ifndef PC_PORT
     /* 0x140 */ u8 unk140[0x42F];
+#else
+    u8 unk140[0x42F + TEX_ANIM_HOST_EXTRA]; /* the host's TexAnim (game.h, issue #30) */
+#endif
     /* 0x56F */ u8 axisMode;
     /* 0x570 */ u8 unk570;
     /* 0x571 */ s8 enabled;

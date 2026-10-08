@@ -9,6 +9,8 @@
 typedef struct {
 #if VERSION_JP
     s32 words[0xA4 / 4];
+#elif defined(PC_PORT)
+    s32 words[PLAYER_BLOCK_SIZE / 4]; /* the host's Player block (game.h, issue #30) */
 #elif VERSION_US || VERSION_EU
     s32 words[0x1E4 / 4];
 #else

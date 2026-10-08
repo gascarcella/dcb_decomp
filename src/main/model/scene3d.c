@@ -177,7 +177,7 @@ void initScene3D(s32 allocBuffers) {
     EnterCriticalSection();
     for (i = 0; i < 2; i++) {
         if (allocBuffers) {
-            DB(i).scenePackets = allocHeapBlock(0xBB80, 0x7F);
+            DB(i).scenePackets = allocHeapBlock(0xBB80, 0x7F); /* PC_PORT: bytes (GPU packets) */
         }
         SCENE_3D->ot[i].length = 12;
         SCENE_3D->ot[i].org = DB(i).ot;

@@ -63,9 +63,16 @@ typedef struct {
 } PlayerStats;
 #elif VERSION_US || VERSION_EU
 typedef struct {
+#ifndef PC_PORT
     /* 0x000 */ u8 unk0[0x110];
     /* 0x110 */ s32 unk110;
     /* 0x114 */ u8 unk114[8];
+#else
+    /* the host's Player (game.h) holds pointers before stats: the pads are its offsets (issue #30) */
+    u8 unk0[__builtin_offsetof(Player, bonusFlags)];
+    s32 unk110;
+    u8 unk114[__builtin_offsetof(Player, stats) - __builtin_offsetof(Player, bonusFlags) - 4];
+#endif
     /* 0x11C */ s16 stats[5];
     /* 0x126 */ u8 unk126[0x32];
     /* 0x158 */ s16 hpBeforeBattle;
@@ -79,6 +86,12 @@ typedef struct {
     /* 0x178 */ Flags178 flags;
     /* 0x17C */ u8 wins;
 } PlayerStats;
+#ifdef PC_PORT
+_Static_assert(__builtin_offsetof(PlayerStats, stats) == __builtin_offsetof(Player, stats) &&
+                   __builtin_offsetof(PlayerStats, hpAfterBattle) == __builtin_offsetof(Player, hpAfterBattle) &&
+                   __builtin_offsetof(PlayerStats, wins) == __builtin_offsetof(Player, wins),
+               "PlayerStats is a view of the host's Player");
+#endif
 #else
 #error "untested version"
 #endif

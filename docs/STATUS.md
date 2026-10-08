@@ -82,7 +82,15 @@ runners).
   no report the base did not have. The `saiseg` and `first_duel` hashes match too, with the bytes the game never writes and the
   `rand()` starter card (`cardCollection` 28 and 137) in `VOLATILE_RANGES`: **all four scripts pass the port test and
   gate CI** (about 100 s).
-- Next: `first_duel`'s duel (#4).
+- **The duel's views and sizes (#30, #31):** `EvoModel`, `ModelData` and the other views of the duel's objects by PS1
+  offsets (the duel state, the profile, the players, the HUD panels, the camera, the effects' transforms) agree with
+  the host's layout, and the heap blocks of host-grown types take the host's size (`docs/PORT.md` "Memory and
+  pointers"). A scratch script past `first_duel` (presses through the tutorial) runs the first round of the tutorial
+  duel on the port: the support card, SUGSEG's polygon battle (attacks, damage) and back to KAWSEG, then round 2's
+  Digivolve and Battle phases, with no crash (frame 26460, where the blind presses stall at a card select); the
+  sanitizer build has no report the base did not have. The emulator cannot replay frame-timed presses there (its
+  timing differs): a duel replay script needs waits on the duel's state.
+- Next: a replay script through the tutorial duel, and the rest of the duel (#4).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).
