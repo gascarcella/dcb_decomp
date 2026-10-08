@@ -12,7 +12,10 @@ tools/port_inventory.py (docs/THIRD_PARTY.md).
   .venv/bin/python port/tools/port_inventory.py link                   # probe, then nm: duplicate / undefined globals
 
 The units are the ones `mk/version/us.mk` builds (MAIN_C_SRC and <OVERLAY>_C_SRC: the tree also holds jp/eu-only
-files and the Psy-Q objects' C, which the shim replaces). The probe's objects go to build/port_inventory/m64/, its
+files and the Psy-Q objects' C, which the shim replaces), and the executable's game .bss as C, which
+port/tools/port_bss.py writes to build/port_inventory/gen/bss_standins.c first (as the port's configure does to
+build/port/gen/): the probe compiles it, and the link check sees the labels it defines. The probe's objects go to
+build/port_inventory/m64/, its
 override headers to build/port_inventory/include/; psxstack/tools/port_inventory.py's docstring describes the
 commands and the site kinds. The stack writes the no-op override of include/gte.h's macros itself (the GTEMAC's
 include path, psxstack >= 0.3.0), and the Psy-Q names of config/us/symbols.txt, whose one "PsyQ 4.7 SDK" section
@@ -31,6 +34,9 @@ VERSION = "us"
 OUT = ROOT / "build" / "port_inventory"
 sys.path.insert(0, str(PSXSTACK / "tools"))
 import port_inventory as inv  # noqa: E402
+import port_bss  # noqa: E402
+
+BSS = OUT / "gen" / "bss_standins.c"
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -48,8 +54,17 @@ def version_units(version=VERSION):
     return [ROOT / u for u in units]
 
 
+def probe_units():
+    """The version's units, then the game .bss as C (port_bss.py, written now: it follows the tree)."""
+    port_bss.generate(VERSION, BSS)
+    return version_units() + [BSS]
+
+
 def module_of(rel):
-    """src/main/system/task.c -> main/system; src/main/main.c -> main; src/kawseg/ui/kaw_hud.c -> kawseg/ui."""
+    """src/main/system/task.c -> main/system; src/main/main.c -> main; src/kawseg/ui/kaw_hud.c -> kawseg/ui; the
+    generated .bss -> port_bss."""
+    if ROOT / rel == BSS:
+        return "port_bss"
     parts = rel.split("/")
     if parts[0] == "include":
         return "include/" + parts[-1]
@@ -93,7 +108,7 @@ def psyq_libraries():
 
 CFG = inv.configure(
     root=ROOT, game_json=ROOT / "port/game/game.json",
-    sources=version_units,
+    sources=probe_units,
     headers=lambda: sorted((ROOT / "include").rglob("*.h")),
     include_dirs=[ROOT / "port/include", ROOT / "include", ROOT],
     symbol_files=[ROOT / "config" / VERSION / "symbols.txt"] + sorted((ROOT / "config" / VERSION).glob("symbols_*.txt")),

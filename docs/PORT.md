@@ -31,7 +31,7 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 | `video.rate` | 60 (NTSC) |
 | `memory.slots` | **One slot**, `overlay`, the overlay area at `0x801DDF38` (`OVERLAY_AREA`, `config/us/symbols_overlay_calls.txt`), `0x1EAF8` bytes: the largest overlay, KAWSEG (to `0x801FCA30`; OPENSEG reaches `0x801F8188`). Each overlay's zeroed data is inside its file, so file size = memory size. KAWSEG and OPENSEG run into the 32 KB the start-up reserves for the stack (`0x801F8000`-`0x80200000`) |
 | `memory.heap` | **None** (psxstack 0.3.0 made it optional, [psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): this game's heap is its own `.bss` array (`HEAP_ARENA`), game data the port saves, resets and snapshots like the rest; the arena holds the slot alone. See "Memory and pointers" |
-| `UNITS`, `MAIN_UNIT` | `port/tools/port_inputs.py` writes them from `MAIN_C_SRC` and `<OVERLAY>_C_SRC` of `mk/version/us.mk`: 155 units, without `src/main/psyq/` (the shim replaces the libraries), `startup.s` and `libmath.s` (host replacements, below). `main()` is `src/main/main.c:54`: it starts the scheduler with `runMainTask` (`src/main/system/boot.c:76`) and spins on `rand()` |
+| `UNITS`, `MAIN_UNIT` | `port/tools/port_inputs.py` writes them from `MAIN_C_SRC` and `<OVERLAY>_C_SRC` of `mk/version/us.mk`: 155 units and the generated game `.bss` (`port_bss.py`, "Beyond the gate"), without `src/main/psyq/` (the shim replaces the libraries), `startup.s` and `libmath.s` (host replacements, below). `main()` is `src/main/main.c:54`: it starts the scheduler with `runMainTask` (`src/main/system/boot.c:76`) and spins on `rand()` |
 | `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below). Decided game-side (2026-10-08): the ID is the overlay's 1-based index in `us.mk`'s `OVERLAYS` list (`port_inputs.py`), and at M1 the adapter maps `"P:\\kawseg.bin"` to it in `loadFileToAddress`'s hook |
 | `EXE_SYMBOLS` | `config/us/`'s symbol files (the EXE's names, and `symbols_overlay_calls.txt` for the 84 overlay functions the EXE calls) |
 | `GTEMAC` | **Not passed.** `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). psxstack's translator cannot take them: it rejects output operands (`gte_mfc2`'s `"=r"`), knows only `.word` commands (ours are the `.inc` mnemonics), keeps temporaries per macro (`gte_prefetchv3c` hands `$8`-`$13` to `gte_ldv3_prefetched`), and writes its override as `psyq/gtemac.h`, which never shadows `"gte.h"`. Decided (2026-10-08) and **done**: `port/include/gte.h`, a host-only header first on the include path with the real one's guard (`GTE_H`), has all 40 macros by hand over `psyq_gte_mtc2`/`mfc2`/`ctc2`/`cfc2`/`cmd`/`swc2_` (the mnemonics as `gte_macros.inc`'s command words; the prefetch pair's `$8`-`$13` a static six-word buffer). The six units that use them compile with it with no GTE diagnostic; `scripts/gte_test.sh` (`tests/port/gte_host_test.c`) checks every macro against the shim's software GTE (LIBGTE functions, rtpt = 3 x rtps, ncct = 3 x nccs, the formulas). The probe still stubs the macros with its own override (it does not need their bodies); a macro added upstream and missing from the host header shows as an implicit declaration in the port build |
@@ -55,9 +55,10 @@ errors, 1 fatal. `link` over the 35 objects: 4 duplicate globals, 160 undefined 
 script VMs' `regs[]`/`vars[]`, `EffectTemplate`, `ScriptRunner.unk0`, the heap, `tmd_sort.c`, `scene3d.c`, the loader.
 
 **After M1 step 3** (the heap, the scratchpad, the TMD words, the script registers, the effects' parent, the
-`decls`, the aliased labels of issue #11; "Memory and pointers"): **154 of 155 units compile**; the one left is
-`task.c`'s fatal `<kernel.h>` (the scheduler glue replaces it). `decls`: 0 mismatching against v0.3.0 and against
-psxstack main (91 same, 12 compatible of 184). `link`: the same 5 duplicate overlay globals.
+`decls`, the aliased labels of issue #11; "Memory and pointers"): **155 of 156 units compile** (with the generated
+`.bss` unit), at `-m64` and at `-m32`; the one left is `task.c`'s fatal `<kernel.h>` (the scheduler glue replaces
+it). `decls`: 0 mismatching against v0.3.0 and against psxstack main (91 same, 12 compatible of 184). `link`: the
+same 5 duplicate overlay globals, 323 undefined (357 before: the aliased labels are fields now).
 
 **After M1 step 1** (`include/port.h`, the declarations, the prototypes; 2026-10-08): **67 of 155 units compile; 88
 fail with 1,016 diagnostics:** 945 pointer-to-int-cast (the explicit casts: `drawText` and its siblings 445,
@@ -115,15 +116,29 @@ of them inside two header macros that one typedef covers.
   defines it, written to `build/port_inventory/psyq_symbols.txt` in the form the inventory parses): LIBGPU 50
   functions (`DrawSync` 50 sites, `SetSemiTrans` 50, `AddPrim` 43, `GetTPage` 27, `SetDrawTPage` 25, `LoadImage` 22,
   …), LIBSND 26, LIBGS 20, LIBCD 18, the pad and BIOS file calls 13, LIBCARD 5, LIBSPU 3, LIBAPI 3, LIBETC 2.
-- **The executable's game `.bss` is not C.** `config/us/main.yaml:187` keeps it as one splat `bss` segment, `game`
-  (`0x80077A08` to `0x801D83D8`, `0x1609D0` bytes under 140 labels in the generated `asm/us/main/data/game.bss.s`:
-  `GRAPHICS`, `DUEL_STATE`, `TASKS`, `HEAP_ARENA`, `FRAME_CALLBACKS`, `PAD_STATES`, …); the C only declares them
-  (`extern` in `game.h` and `include/dcb/*.h` for 116 of the 140; the other 24 in the units that use them). The
-  overlays' zeroed data is C (`<prefix>_bss.c`). On the host each needs a C definition: psxstack's asm-data stand-in
-  pattern (dw2003's `port/game/asmdata.c`), here generated at configure time from tracked files (the addresses and
-  sizes from `config/us/symbols.txt` within the segment's range, the types from the `extern` declarations), so that
-  every byte stays in the renamed sections the overlay manager and the save states snapshot. An M1 piece of the
-  generator, no stack change.
+- **The executable's game `.bss` is generated C** (`port/tools/port_bss.py`, at configure time through
+  `port_inputs.py --bss`, into `build/port/gen/bss_standins.c`, a MAIN unit, so the compile launcher puts it in
+  `dcb_bss_main`, which the reset and the save states snapshot; the probe writes its own copy and compiles it). The C
+  only declares these labels. The labels are those of `config/us/symbols.txt` in the executable's `.bss`, outside
+  the file's Psy-Q section: the 122 of splat's `game` segment (`0x80077A08` to `0x801D83D8`, `0x1609D0` bytes;
+  splat's 18 other `D_` labels there are in no tracked file and no C names them), and 21 more in its `psyq`
+  segment, after libspu's first `0x14` bytes (`HUD_PANELS` at `0x801D83EC` to `HACK_SCRIPT_CURSOR`, up to libspu's
+  `D_801D8560`: psylink's object order). Each one is an alias of a union of its declared type (`__typeof__` of
+  the `extern`, so `s32p` changes need no new run), the types the C casts it to (`(Graphics *)&GRAPHICS`,
+  `(FileEntry *)&DRIVE_DIRECTORY`) and its PS1 bytes (`HEAP_ARENA`, declared `s32`, is `0x148000`). 139 typed (6
+  from a unit's declaration, 2 of them `void *` because the type is the unit's own), 2 byte arrays (`SOFT_FLOAT_*`,
+  `libmath.s`'s), 2 kept apart (below). Checks: each storage is at least its PS1 bytes and its host type
+  (`_Static_assert`); with `-DPORT_BSS_CHECK_PS1` at `-m32`, each declared type fits its PS1 bytes, all but
+  `DUEL_MSG_BAR`. `link` (after M1 step 2): its "asm-only data" undefined globals go from 144 to 20, none of them
+  the executable's game `.bss` (Psy-Q's `Gs*` and `StCdIntrFlag`, overlay data, `OVERLAY_AREA`).
+- **PS1 aliases the host does not keep** (#11): some bytes have two names in the C, and on the host each name is
+  its own object. `SCREEN_COPY_MODE` is `SCREEN_COPY_EFFECT.mode` (`screen_copy.c` uses both) and `TASK_GP` sits in
+  `TASKS` (both inside a `size:`); `GRAPHICS` is a whole `Graphics` whose fields are labels too (`FRAME_CALLBACKS`,
+  `SCENE_3D_ENABLED`, `VBLANKS_PER_FRAME`, `CAMERA_SNAP`, `CAMERA_TARGET_MODEL`, `CAMERA_TARGET_PITCH`,
+  `CLEAR_BG_ON_DRAW` = `DB(0).draw.isbg`); `DUEL_MSG_BAR` is a `0x1A`-byte `MsgBar` over 8 PS1 bytes that holds
+  `MSG_BAR_PLAYER_LABEL`, `MSG_BAR_NEXT`, `MSG_BAR_NEXT2` and reaches into libspu's `D_801D83D8`. M1 maps such a name
+  onto its field in a `PC_PORT` block of its header (`#define SCREEN_COPY_MODE (SCREEN_COPY_EFFECT.mode)`), which
+  the generator then leaves to the C.
 - **Duplicate globals** (`link`): `D_801F5254`, `D_801F535C`, `D_801F5454` in `evo_bss.c` and `sai_bss.c`,
   `D_801F540C` in `evo_bss.c` and `open_bss.c`: overlay data sharing an address and a splat name. psxstack links
   every overlay statically, so they need distinct names (an upstream rename with the overlay prefix, as
@@ -218,7 +233,9 @@ override and derived symbol file with the pin bump.
     `CAMERA_SNAP`, `CAMERA_TARGET_MODEL`, `CAMERA_TARGET_PITCH`, `CLEAR_BG_ON_DRAW` (fields of `GRAPHICS`),
     `MSG_BAR_PLAYER_LABEL`/`NEXT`/`NEXT2` (`DUEL_MSG_BAR`) and `SCREEN_COPY_MODE` (`SCREEN_COPY_EFFECT`) are
     `#define`d onto their fields under `PC_PORT` (`game.h`, `vblank.h`), and `GRAPHICS` is declared a `Graphics`;
-    `TASK_GP` goes with the scheduler glue.
+    `TASK_GP` goes with the scheduler glue. `port_bss.py` gives a `#define`d label's PS1 bytes to the label before
+    it, so `GRAPHICS` spans its fields (0x8218 bytes) and fits at `-m32` with `-DPORT_BSS_CHECK_PS1`;
+    `DUEL_MSG_BAR` still does not (its 8 bytes before libspu's data, issue #11).
 - **Ordering tables:** `P_TAG.addr:24` with `addPrim`/`setaddr` (293 uses in 44 files), and `packet & 0xFFFFFF` in
   `tmd_sort.c:621, 640`. psxstack's tag window already handles 24-bit tags over the units' data and the arena
   (psxstack `docs/PORT.md` "Ordering tables on 64-bit"). `tmd_sort.c`'s tags go through `PTR_TO_U32`, and

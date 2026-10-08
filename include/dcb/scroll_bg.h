@@ -37,7 +37,7 @@ typedef struct {
 #if VERSION_JP
     s32 data[0x50]; /* an EffectObject: jp's has one more word */
 #elif defined(PC_PORT)
-    s32 data[0x50] __attribute__((aligned(8))); /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
+    s32 data[(0x13C + EFFECT_OBJECT_HOST_EXTRA) / 4] __attribute__((aligned(sizeof(s32p)))); /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     s32 data[0x4F];
 #endif
@@ -129,7 +129,7 @@ typedef struct {
 #ifdef PC_PORT
 /* the views of an EffectObject (EffectTemplate, EvoFx, EffectInit, the effects
    that start with one) count on this layout */
-_Static_assert(__builtin_offsetof(EffectObject, parent) == 0x98 && sizeof(EffectObject) == 0x140 &&
+_Static_assert(__builtin_offsetof(EffectObject, parent) == 0x98 && sizeof(EffectObject) == 0x13C + EFFECT_OBJECT_HOST_EXTRA &&
                    sizeof(EffectTemplate) == sizeof(EffectObject),
                "the host's EffectObject");
 #endif

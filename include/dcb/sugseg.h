@@ -80,7 +80,7 @@ typedef struct {
 #if VERSION_JP
     /* 0x000 */ u8 unk0[0x13D]; /* jp's EffectObject: the fields below are 4 bytes further */
 #elif defined(PC_PORT)
-    /* 0x000 */ u8 unk0[0x13D]; /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
+    /* 0x000 */ u8 unk0[0x139 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     /* 0x000 */ u8 unk0[0x139];
 #endif
@@ -365,7 +365,7 @@ typedef struct {
 #if VERSION_JP
     u8 unk0[0x13D]; /* jp's EffectObject: the fields below are 4 bytes further */
 #elif defined(PC_PORT)
-    u8 unk0[0x13D]; /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
+    u8 unk0[0x139 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     u8 unk0[0x139];
 #endif
@@ -437,7 +437,7 @@ typedef struct {
 #if VERSION_JP
     u8 unk0[0x13D]; /* jp's EffectObject: the fields below are 4 bytes further */
 #elif defined(PC_PORT)
-    u8 unk0[0x13D]; /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
+    u8 unk0[0x139 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     u8 unk0[0x139];
 #endif
@@ -456,7 +456,7 @@ typedef struct {
 #if VERSION_JP
     u8 unk3C[0xF6]; /* jp's EffectObject: the fields below are 4 bytes further */
 #elif defined(PC_PORT)
-    u8 unk3C[0xF6]; /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
+    u8 unk3C[0xF2 + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     u8 unk3C[0xF2];
 #endif

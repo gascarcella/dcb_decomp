@@ -31,8 +31,11 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
   implicit declaration left; 5 duplicate overlay globals (`D_801DDF38` shows up now that its units compile).
 - **M1 step 2, the casts** (#10, #13-#16 and the final pass): the probe is **140 of 155 units compile; 15 fail with 49
   diagnostics** (was 128 / 271 before the final pass); what is left is step 3 (script VM registers, heap, `tmd_sort.c`).
+- The executable's game `.bss` (143 labels the C only declares) is generated C, a MAIN unit (`port/tools/port_bss.py`,
+  `docs/PORT.md` "Beyond the gate"): the probe counts 141 of 156 (the 49 unchanged), `link` 357 undefined
+  (481 without it).
 - **M1 step 3, the last diagnostics** (the heap's block table, the scratchpad, the OMD words, the script registers,
-  the effects' parent, issue #11's labels, `decls` against psxstack main): **154 of 155 units compile**; the one left
+  the effects' parent, issue #11's labels, `decls` against psxstack main): **155 of 156 units compile**; the one left
   is `task.c`'s `<kernel.h>` (the scheduler glue). `decls`: 0 mismatching against v0.3.0 and psxstack main.
 - `game.json` has no heap (the game's is its own data); the shim compiles against the stack's declarations.
 - Decided (2026-10-08): the hooks use a pointer-width typedef, `s32p` (`docs/PORT.md` "Open questions" 2).

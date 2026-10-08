@@ -621,11 +621,17 @@ typedef struct {
 typedef struct {
     u8 b[8];
 } Bytes8;
+#ifdef PC_PORT
+/* What an EffectObject (scroll_bg.h) gains on the host: its parent is pointer-wide
+   (4 bytes at -m64, none at -m32), so every field after it is that much further,
+   and so are the effects that start with an EffectObject's bytes */
+#define EFFECT_OBJECT_HOST_EXTRA (sizeof(s32p) - 4)
+#endif
 typedef struct {
 #if VERSION_JP
     /* 0x000 */ u8 unk0[0x140]; /* jp's EffectObject: the fields below are 4 bytes further */
 #elif defined(PC_PORT)
-    /* 0x000 */ u8 unk0[0x140]; /* the host's EffectObject: its parent is pointer-wide, the fields below are 4 bytes further */
+    /* 0x000 */ u8 unk0[0x13C + EFFECT_OBJECT_HOST_EXTRA]; /* the host's EffectObject (EFFECT_OBJECT_HOST_EXTRA) */
 #elif VERSION_US || VERSION_EU
     /* 0x000 */ u8 unk0[0x13C];
 #endif
