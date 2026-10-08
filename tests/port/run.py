@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """The PC port's replay test (docs/PORT.md "Testing"): the port replays the emulator's pad scripts and must reach what
 the emulator reached. The test is psxstack's (tools/replay/port_test.py; GAME_CONTRACT.md "6. Tests"): this file is
-this game's configuration of it (the disc, the scripts and expected files, the venv). NOT RUNNABLE until M1 (issue
-#4): the port does not link yet (docs/STATUS.md), so `cmake --build build/port` fails and this test stops at the
-build. It is here so that M1 has its gate ready. The stack is the psxstack submodule, or $PSXSTACK_DIR when it names
-another checkout of it.
+this game's configuration of it (the disc, the scripts and expected files, the venv). The stack is the psxstack
+submodule, or $PSXSTACK_DIR when it names another checkout of it.
+
+State (M1, docs/STATUS.md): `boot` and `title` reach every checkpoint with the emulator's stages and overlay
+sequence, twice byte-identical, but the stable profile hashes differ: at boot the profile holds what the heap held
+before (resetPlayerData leaves most of it) and serials drawn from rand(), which no host layout reproduces (issue #24).
+`new_game` and `first_duel` stop at the registration's first dialog (issue #23). So this is not a CI gate yet;
+scripts/port_build.sh --boot is (the boot to OPENSEG).
 
 Usage: tests/port/run.py [SCRIPT ...] [--m32] [--sanitize] [--cd-speed instant|realistic] [--out DIR] [-j N]
 

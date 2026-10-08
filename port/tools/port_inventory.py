@@ -115,7 +115,7 @@ CFG = inv.configure(
     module_of=module_of, gtemac=ROOT / "include/gte.h", include_asm=ROOT / "include/include_asm.h",
     port_h=ROOT / "include/port.h", psyq_dir=ROOT / "include", tool_dirs=[],
     defines=["VERSION_US", "SKIP_ASM"], out=OUT, psyq_libraries=psyq_libraries,
-    psyq_decl_headers=[ROOT / "include/game.h"])
+    psyq_decl_headers=[ROOT / "include/game.h", ROOT / "include/dcb/evoseg.h"])
 
 
 def main():

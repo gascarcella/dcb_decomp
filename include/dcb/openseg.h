@@ -167,13 +167,27 @@ extern s32 OPEN_TITLE_PART_COUNT;
 extern s32 OPEN_PANEL_X;
 extern s32 OPEN_PANEL_Y;
 extern MemcardScreen OPEN_MEMCARD;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 OPEN_MEMCARD_PROGRESS;
 extern u8 OPEN_MEMCARD_MODE;
 extern s8 OPEN_MEMCARD_MESSAGE;
+#endif
 extern Window OPEN_DIALOG;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 OPEN_MEMCARD_STATE;
 extern s8 OPEN_MEMCARD_READY;
 extern u8 OPEN_MEMCARD_FREE_BLOCKS;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_openseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define OPEN_MEMCARD_PROGRESS (OPEN_MEMCARD.progress)      /* OPEN_MEMCARD + 0x53F */
+#define OPEN_MEMCARD_MODE (OPEN_MEMCARD.mode)              /* OPEN_MEMCARD + 0x537 */
+#define OPEN_MEMCARD_MESSAGE (OPEN_MEMCARD.message)        /* OPEN_MEMCARD + 0x534 */
+#define OPEN_MEMCARD_STATE (OPEN_MEMCARD.state)            /* OPEN_MEMCARD + 0x535 */
+#define OPEN_MEMCARD_READY (OPEN_MEMCARD.ready)            /* OPEN_MEMCARD + 0x53A */
+#define OPEN_MEMCARD_FREE_BLOCKS (OPEN_MEMCARD.freeBlocks) /* OPEN_MEMCARD + 0x536 */
+#endif
 
 void SsSetMono(void);
 s32 OPEN_setPartnerObtainedFlag(s32 kind);

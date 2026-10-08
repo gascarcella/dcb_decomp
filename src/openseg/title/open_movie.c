@@ -73,7 +73,12 @@ extern s32 OPEN_MOVIE_END_FRAME;
 extern s32 OPEN_RING_FREE_SECTORS;
 extern s32 OPEN_RING_OVER_SECTORS;
 extern s8 OPEN_MOVIE_BUFFER_INDEX;
+#ifndef PC_PORT
 extern s32 StCdIntrFlag;
+#else
+/* the stack's (psxstack/psyq/libcd.h): one byte, which the shim never sets */
+extern u8 StCdIntrFlag;
+#endif
 
 void StUnSetRing(void);
 s32 DecDCTvlc2(u32 *bs, u32 *buf, u16 *table);
@@ -145,11 +150,11 @@ Movie OPEN_MOVIES[3] = {
 s32 OPEN_MOVIE_HEIGHT = 0xB0;
 
 void OPEN_searchCdFile(void *file, char *name) {
-    s32 found;
+    s32p found;
 
     while (1) {
         CdSync(0, 0);
-        found = CdSearchFile(file, name);
+        found = (s32p)CdSearchFile(file, name);
         if (found == 0) continue;
         if (found != -1) break;
     }

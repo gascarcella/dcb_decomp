@@ -38,6 +38,8 @@ _Static_assert(GAME_SPAN(PlayerProfile, rewardCards, unk2771) == GAME_PROFILE_SI
                "PlayerProfile: rewardCards..unk2771");
 _Static_assert(offsetof(PlayerProfile, areaId) == 0x0E && sizeof(((PlayerProfile *)0)->areaId) == 1,
                "PlayerProfile.areaId: tests/replay/probes.lua PROFILE_AREA_ID");
+_Static_assert(offsetof(PlayerProfile, profileSize) == 0x16 && sizeof(((PlayerProfile *)0)->profileSize) == 2,
+               "PlayerProfile.profileSize");
 _Static_assert(offsetof(PlayerProfile, profileId) == 0x10 && offsetof(PlayerProfile, playTime) == 0x24,
                "PlayerProfile: tests/replay/replay.py VOLATILE_RANGES");
 /* a partner: card[2] (0x278, pointer-free), baseCard, armorCard, then 0x280-0x298 (hpBonus .. unk295) */
@@ -78,6 +80,20 @@ static void game_put32(u8 *out, uint32_t v) {
  * fatal outside the arena). It equals the emulator's only while the host heap lays its blocks out as the PS1's. */
 static uint32_t game_heap_ps1(const void *p) {
     return (uint32_t)GAME_PTR_TO_S32(p);
+}
+
+/* A pointer field of the profile as the image holds it: a pointer into the heap (or NULL) as its PS1 address; any
+ * other value is not a pointer the game made but the bytes the heap block held before (resetPlayerData leaves the
+ * partners' and the decks' card pointers as it finds them, and the boot's checkpoints come before a profile exists):
+ * its low 32 bits, the word the PS1 would read there if its bytes were the same. */
+extern s32 HEAP_ARENA;
+#define GAME_HEAP_SIZE 0x148000 /* src/main/system/heap.c HEAP_SIZE, us */
+
+static uint32_t game_image_ptr(const void *p) {
+    if (p == NULL || (uintptr_t)p - (uintptr_t)&HEAP_ARENA < GAME_HEAP_SIZE) {
+        return game_heap_ps1(p);
+    }
+    return (uint32_t)(uintptr_t)p;
 }
 
 /* ---- OPENSEG's OPEN_MEMCARD.cancelled, which the executable reads by its own name (game_flow.c) */
@@ -143,8 +159,8 @@ uint32_t game_state_image_size(void) {
 
 static void game_image_partner(u8 *out, const Partner *p) {
     game_copy(out, p->card, sizeof(p->card));
-    game_put32(out + 0x278, game_heap_ps1(p->baseCard));
-    game_put32(out + 0x27C, game_heap_ps1(p->armorCard));
+    game_put32(out + 0x278, game_image_ptr(p->baseCard));
+    game_put32(out + 0x27C, game_image_ptr(p->armorCard));
     game_copy(out + 0x280, &p->hpBonus, GAME_SPAN(Partner, hpBonus, unk295));
 }
 
@@ -154,7 +170,7 @@ static void game_image_deck(u8 *out, const PlayerDeck *d) {
     for (i = 0; i < (int)(sizeof(d->cards) / sizeof(d->cards[0])); i++) {
         u8 *o = out + 0x14 + GAME_CARD_SLOT_SIZE * i;
         game_copy(o, &d->cards[i], GAME_SPAN(CardSlot, type, id));
-        game_put32(o + 4, game_heap_ps1(d->cards[i].card));
+        game_put32(o + 4, game_image_ptr(d->cards[i].card));
     }
     game_copy(out + 0x104, &d->unk104, GAME_SPAN(PlayerDeck, unk104, unk10E));
 }
@@ -169,6 +185,11 @@ void game_state_image(uint8_t *out) {
         return;
     }
     game_copy(out, p, offsetof(PlayerProfile, partners));
+    if (p->profileSize == (s16)sizeof(PlayerProfile)) {
+        /* resetPlayerData stores sizeof(PlayerProfile): the PS1's is the image's */
+        out[offsetof(PlayerProfile, profileSize)] = (u8)GAME_PROFILE_SIZE;
+        out[offsetof(PlayerProfile, profileSize) + 1] = (u8)(GAME_PROFILE_SIZE >> 8);
+    }
     for (i = 0; i < 3; i++) {
         game_image_partner(out + 0x80 + GAME_PARTNER_SIZE * i, &p->partners[i]);
         game_image_deck(out + 0x2438 + GAME_DECK_SIZE * i, &p->savedDecks[i]);

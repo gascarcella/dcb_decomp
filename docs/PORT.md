@@ -35,7 +35,7 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 | `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below). Decided game-side (2026-10-08): the ID is the overlay's 1-based index in `us.mk`'s `OVERLAYS` list (`port_inputs.py`), and at M1 the adapter maps `"P:\\kawseg.bin"` to it in `loadFileToAddress`'s hook |
 | `EXE_SYMBOLS` | `config/us/`'s symbol files (the EXE's names, and `symbols_overlay_calls.txt` for the 84 overlay functions the EXE calls) |
 | `GTEMAC` | **Not passed.** `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). psxstack's translator cannot take them: it rejects output operands (`gte_mfc2`'s `"=r"`), knows only `.word` commands (ours are the `.inc` mnemonics), keeps temporaries per macro (`gte_prefetchv3c` hands `$8`-`$13` to `gte_ldv3_prefetched`), and writes its override as `psyq/gtemac.h`, which never shadows `"gte.h"`. Decided (2026-10-08) and **done**: `port/include/gte.h`, a host-only header first on the include path with the real one's guard (`GTE_H`), has all 40 macros by hand over `psyq_gte_mtc2`/`mfc2`/`ctc2`/`cfc2`/`cmd`/`swc2_` (the mnemonics as `gte_macros.inc`'s command words; the prefetch pair's `$8`-`$13` a static six-word buffer). The six units that use them compile with it with no GTE diagnostic; `scripts/gte_test.sh` (`tests/port/gte_host_test.c`) checks every macro against the shim's software GTE (LIBGTE functions, rtpt = 3 x rtps, ncct = 3 x nccs, the formulas). The probe still stubs the macros with its own override (it does not need their bodies); a macro added upstream and missing from the host header shows as an implicit declaration in the port build |
-| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching at M0 (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours); fixed game-side at M1, byte-identical: 45 same, 9 compatible, 0 mismatching (against psxstack main's 184 at step 3: 91 same, 12 compatible, 0 mismatching; `game.h` declares the stack's return types under `PC_PORT`, as for `LoadImage`) |
+| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching at M0 (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours); fixed game-side at M1, byte-identical: 45 same, 9 compatible, 0 mismatching (against psxstack main's 184 at step 3: 91 same, 12 compatible, 0 mismatching; `game.h` declares the stack's return types under `PC_PORT`, as for `LoadImage`). At v0.3.1 (286 functions; `decls` also reads `include/dcb/evoseg.h`): 142 same, 13 compatible, 0 mismatching, and `scripts/probe.sh` gates on it |
 
 ## The host-compile probe
 ### The baseline (M0, 2026-10-08, at 3802dee)
@@ -256,8 +256,13 @@ override and derived symbol file with the pin bump.
     covers a tag if one ever appears.
   - *Data by name.* `KAW_RESULT_SCREEN_STATE` is KAWSEG's global; `OPEN_MEMCARD_CANCELLED` (inside
     `OPEN_MEMCARD`) is, in the EXE, `*game_open_memcard_cancelled()`, the adapter's pointer to the field
-    (`overlay_calls.h`). OPENSEG's own use of the name (`open_memcard.c`) is among the 81 `undefined_syms` aliases,
-    still to map (#20).
+    (`overlay_calls.h`). OPENSEG's own use of the name (`open_memcard.c`) is among the `undefined_syms` aliases below.
+  - *Names inside overlay objects* (#20, M1 step 4). `undefined_syms_{open,sai,sub}seg.txt` and `symbols_subseg.txt`
+    name addresses inside `OPEN_MEMCARD`, `SAI_AREA`, `SAI_WORLD_MAP`, `SUB_WINDOWS`, the menus and others. The 71
+    the compiled C references are `#define`d onto their fields under `PC_PORT`, in the header or unit that declares
+    them (`#define SAI_MAP_STATE (SAI_WORLD_MAP.state)`; a cast keeps the declared type where the field's differs,
+    `(*(u8 *)&SAI_WORLD_MAP.active)`), each offset checked against its container at -m32. The 10 no unit references
+    keep their externs (a use would fail the link).
   - *The stale addresses are never reached* (US disc): only effect kind 0, the fade rect, uses them, and the 31
     scripts of `CBTL_EFF.ARC`, KAWSEG's only source of effect scripts, create 240 effects, all of constant kinds 1
     (201), 2 (6) and 3 (33). On the PS1 they would enter `KAW_chooseSupportCard` mid-body (0x801E6424 is a load
@@ -278,6 +283,11 @@ override and derived symbol file with the pin bump.
   - A heap pointer kept in an `s32` (a script register, below) goes through `GAME_PTR_TO_S32`/`GAME_S32_TO_PTR`
     (`include/port.h`, defined in `heap.c`): on the host it becomes the PS1 address of the same byte, so the word
     holds what it holds on the PS1; a pointer elsewhere goes to psxstack's `PTR_TO_S32` (the slot, else fatal).
+  - The heap's layout is the PS1's up to the player profiles (the replay scripts wait for `PLAYER_PROFILES` at
+    0x800C8964, and the checkpoint image writes heap pointers as PS1 addresses), so a permanent block that is larger
+    on the host must not grow there: the memory card directories (`CardDir`, 0x260 bytes on the PS1, larger on the
+    host because the shim's `DIRENTRY` holds a pointer) are host storage in `memcard.c`, and the PS1's two blocks are
+    still allocated (M1 step 4). Host structs then sit at the PS1's 4-byte alignment (UBSan: issue #25).
 - **Psy-Q's libc heap:** `InitHeap` puts it over the overlay area, but game code never calls malloc or free.
 - **Pointers held in integers:**
   - `addFrameCallback(s32)`: 56 sites, 55 with `(s32)fn`.
@@ -416,7 +426,8 @@ runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configure
 | Host-compile probe | Every unit compiles at `-m64` with pointer/int casts and implicit declarations as errors; no duplicate global | `scripts/probe.sh` (CI `probe`; the count is the baseline until M1) |
 | The emulator boots the disc | PCSX-Redux (`scripts/setup.sh redux`, the pin in the data checkout) loads OPENSEG for the opening movie | `scripts/check_emulator.sh` (`tests/replay/replay.py boot`) |
 | Emulator replays | Four pad scripts replayed from boot, each twice byte-identical: `boot` (the title, frame 7866), `title` (the menu), `new_game` (the registration: name, starter, the save to a fresh card, SAISEG at 11681), `first_duel` (Beginner City's script into KAWSEG at 14211), with the player profile hashed at every checkpoint | `tests/replay/replay.py check` (CI `replay`), `tests/replay/scripts/`, `expected/`, `probes.lua` |
-| The port against the emulator | The port replays the same scripts and reaches the emulator's checkpoints (the cross-core view: names, stages, maps, stable profile hashes, the overlay sequence) twice byte-identical | `tests/port/run.py`: written, **not runnable until M1** (the port does not link) |
+| The port builds and boots | `build/port/dcb` links (every writable section renamed: `port_gen.py sections`); booted headless from the disc for 600 frames it exits 0 at the frame cap with OPENSEG loaded (stage 8) | `scripts/port_build.sh` (CI `probe`), `scripts/port_build.sh --boot` (CI `replay`) |
+| The port against the emulator | The port replays the same scripts and reaches the emulator's checkpoints (the cross-core view: names, stages, maps, stable profile hashes, the overlay sequence) twice byte-identical | `tests/port/run.py`: runs; not a gate yet. `boot` and `title` reach every checkpoint with the emulator's stages and overlay sequence, deterministic, but the hashes differ (the profile is uninitialised heap at boot: issue #24); `new_game` and `first_duel` stop at the registration's first dialog (issue #23) |
 
 **The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG
 4, KAWSEG 5, SAISEG 6, SUBSEG 7, OPENSEG 8, EVOSEG 9, ENDSEG 10; 0 before a load); `map` the profile's `areaId`;

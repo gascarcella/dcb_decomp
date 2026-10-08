@@ -72,6 +72,11 @@ s32 isMusicIdle(void) {
 }
 #endif
 
+#ifdef PC_PORT
+/* the card directories on the host (startMemoryCardEvents) */
+static CardDir HOST_CARD_DIRECTORIES[2];
+#endif
+
 void initMemoryCard(void) {
     InitCARD(0);
     startMemoryCardEvents();
@@ -100,7 +105,19 @@ void startMemoryCardEvents(void) {
     EnableEvent(MEMORY_CARD_HW_EVENT_TIMEOUT);
     EnableEvent(MEMORY_CARD_HW_EVENT_NEW_CARD);
     for (i = 0; i < 2; i++) {
+#ifndef PC_PORT
         MEMORY_CARD_DIRECTORIES[i] = allocPermanentHeapBlock(0x260);
+#else
+        /* The PS1's CardDir is 0x260 bytes; the host's is larger (DirEntry.next
+           is a host pointer, and the shim's firstfile and nextfile write the
+           host's layout), so the directories are host storage of their own. The
+           PS1's block is still allocated: the heap's later permanent blocks (the
+           card database, the player profiles) keep their PS1 addresses, which
+           the replay scripts and the checkpoint image use (docs/PORT.md
+           "Testing") */
+        allocPermanentHeapBlock(0x260);
+        MEMORY_CARD_DIRECTORIES[i] = &HOST_CARD_DIRECTORIES[i];
+#endif
     }
     MEMORY_CARD_SAVE_HEADER = allocPermanentHeapBlock(0x200);
 }

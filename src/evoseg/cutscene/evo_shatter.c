@@ -250,7 +250,7 @@ void EVO_drawShardTG3(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -306,7 +306,7 @@ void EVO_drawShardTF3(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -368,7 +368,7 @@ void EVO_drawShardTG4(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -430,7 +430,7 @@ void EVO_drawShardTF4(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -486,7 +486,7 @@ void EVO_drawShardTNF3(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -548,7 +548,7 @@ void EVO_drawShardTNF4(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -835,7 +835,7 @@ void EVO_drawSpark(EvoSpark *spark) {
     if ((u32)((RotTransPers3((SVECTOR *)&tip, (SVECTOR *)&from, (SVECTOR *)&to, (s32 *)&poly->x0, (s32 *)&poly->x1, (s32 *)&poly->x2, &depthCue, &flag) >> 2) - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         AddPrim((s32 *)CURRENT_FRAME_BUFFER->ot, poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
     PopMatrix();
 }
@@ -889,7 +889,7 @@ void EVO_drawShardF4(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -938,7 +938,7 @@ void EVO_drawShardG3(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -991,7 +991,7 @@ void EVO_drawShardG4(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }
 
@@ -1040,6 +1040,6 @@ void EVO_drawShardF3(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
     if ((u32)(otz - 0x21) < 0xFDF) {
         setSemiTrans(poly, 1);
         addPrim(&CURRENT_FRAME_BUFFER->ot[otz], poly);
-        GsSetWorkBase((long)(poly + 1));
+        GsSetWorkBase((GsWorkBase)(poly + 1));
     }
 }

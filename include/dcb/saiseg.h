@@ -349,7 +349,9 @@ typedef struct {
 } PartnerList;
 
 extern PlayerStats SAI_PLAYER_STATS;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SAI_AREA_MODE;
+#endif
 extern OpponentList SAI_OPPONENTS;
 extern u8 SAI_CHOICE_STATES[];
 extern s16 SAI_SCRIPT_REWARD_CARDS[3];
@@ -358,16 +360,35 @@ extern AreaState SAI_AREA;
 extern ScriptRunner *SAI_SCRIPT[1];
 extern s8 SAI_OPPONENT_IDS[24];
 extern Sprite3D *SAI_SPRITES[];
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SAI_PANEL_COVER_ALPHA;
+#endif
 extern UiWindow SAI_MESSAGE_WINDOW;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SAI_PANEL_IMAGE_HIDDEN;
+#endif
 extern WorldMap SAI_WORLD_MAP;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SAI_LOCATION;
 extern u8 SAI_OPEN_PANEL;
 extern s8 SAI_PLAYER_STATS_STATE;
 extern s8 SAI_CLOSE_PANEL;
 extern s8 SAI_ICON_RUNNING;
 extern s8 SAI_EXIT_ACTION;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_AREA_MODE (SAI_AREA.mode)                   /* SAI_AREA + 0x10E */
+#define SAI_PANEL_COVER_ALPHA (SAI_AREA.coverAlpha)     /* SAI_AREA + 0x117 */
+#define SAI_PANEL_IMAGE_HIDDEN (SAI_AREA.imageHidden)   /* SAI_AREA + 0x109 */
+#define SAI_LOCATION (SAI_AREA.location)                /* SAI_AREA + 0x11A */
+#define SAI_OPEN_PANEL (*(u8 *)&SAI_AREA.openPanel)     /* SAI_AREA + 0x10A */
+#define SAI_PLAYER_STATS_STATE (SAI_PLAYER_STATS.state) /* SAI_PLAYER_STATS + 0x20 */
+#define SAI_CLOSE_PANEL (SAI_AREA.closePanel)           /* SAI_AREA + 0x10B */
+#define SAI_ICON_RUNNING (SAI_WORLD_MAP.iconRunning)    /* SAI_WORLD_MAP + 0x408 */
+#define SAI_EXIT_ACTION (SAI_AREA.exitAction)           /* SAI_AREA + 0x10D */
+#endif
 extern s8 SAI_PARTNER_CHOICES[4];
 
 #if VERSION_JP

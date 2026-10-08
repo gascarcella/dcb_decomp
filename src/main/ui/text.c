@@ -54,7 +54,14 @@ void initSystemSprites(s32 vramX, s32 vramY, s32 poolSize) {
         DB(i).spritePool = (s32p)(pool + SPRITE_POOL_SIZE * i);
     }
     initSpritePoolPackets();
+#ifndef PC_PORT
     SPRITE_POOL_CURSOR = CURRENT_FRAME_BUFFER->spritePool;
+#else
+    /* At boot the render loop has not run, so CURRENT_FRAME_BUFFER is still
+       NULL: the PS1 reads a word of the BIOS's RAM (0x40B8 in us), which
+       resetSpritePool replaces before the first sprite is drawn */
+    SPRITE_POOL_CURSOR = CURRENT_FRAME_BUFFER != NULL ? CURRENT_FRAME_BUFFER->spritePool : 0;
+#endif
 }
 
 void initSpritePoolPackets(void) {

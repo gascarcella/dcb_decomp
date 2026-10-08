@@ -48,22 +48,43 @@ typedef struct {
     /* 0x0E */ s16 y;
 } CardAnimFrame;
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern Unk801F7C88 OPEN_MEMCARD_SLOT_WINDOWS[3];
 extern UiWindow OPEN_MEMCARD_INFO_WINDOW;
+#endif
 extern UiWindow OPEN_OPERATION_WINDOW;
 extern s8 OPEN_MEMCARD_EMPTY[2][3];
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 OPEN_MEMCARD_EXIT_ACTION;
+#endif
 extern UiWindow OPEN_MEMCARD_MESSAGE_WINDOW;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 OPEN_MEMCARD_CANCELLED;
+#endif
 extern u8 *OPEN_SAVE_PLACE_IMAGES;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 OPEN_MEMCARD_LOADING;
 extern u8 OPEN_MEMCARD_CARD;
+#endif
 
 /* "Arena": the string is followed by two leftover bytes (E0 03) in the ROM, so it stays as data */
 extern const char OPEN_STR_ARENA[];
 
 extern s32 MEMORY_CARD_WAIT_COUNTER;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 OPEN_MEMCARD_SLOT;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_openseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define OPEN_MEMCARD_SLOT_WINDOWS (OPEN_MEMCARD.slotWindows)      /* OPEN_MEMCARD + 0x100 */
+#define OPEN_MEMCARD_INFO_WINDOW (OPEN_MEMCARD.infoWindow.window) /* OPEN_MEMCARD + 0x1D8 */
+#define OPEN_MEMCARD_EXIT_ACTION (OPEN_MEMCARD.exitAction)        /* OPEN_MEMCARD + 0x542 */
+#define OPEN_MEMCARD_CANCELLED (OPEN_MEMCARD.cancelled)           /* OPEN_MEMCARD + 0x539 */
+#define OPEN_MEMCARD_LOADING (OPEN_MEMCARD.loading)               /* OPEN_MEMCARD + 0x53E */
+#define OPEN_MEMCARD_CARD (OPEN_MEMCARD.card)                     /* OPEN_MEMCARD + 0x53C */
+#define OPEN_MEMCARD_SLOT (OPEN_MEMCARD.slot)                     /* OPEN_MEMCARD + 0x53B */
+#endif
 
 void OPEN_openMemcardWindows(void);
 void OPEN_initTransferArrow(POLY_FT4 *poly, s32 shade);

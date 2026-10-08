@@ -107,7 +107,14 @@ void initWindowPrimPool(s32 count) {
             SetTexWindow(prims->twin, texWindow);
         }
     }
+#ifndef PC_PORT
     WINDOW_PRIM_CURSOR = CURRENT_FRAME_BUFFER->windowPrimPool;
+#else
+    /* as initSystemSprites: before the render loop's first frame the PS1 reads
+       a word of the BIOS's RAM (0x40BC in us), which resetWindowPrimPool
+       replaces before the first window is drawn */
+    WINDOW_PRIM_CURSOR = CURRENT_FRAME_BUFFER != NULL ? CURRENT_FRAME_BUFFER->windowPrimPool : 0;
+#endif
 }
 
 void resetWindowPrimPool(void) {

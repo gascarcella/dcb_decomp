@@ -62,10 +62,10 @@ jobs:
     # The shell scripts this fork adds parse.
     - run: for f in scripts/*.sh; do bash -n "$f"; done
 
-  # The PC port's host-compile probe (docs/PORT.md "The host-compile probe"; issue #2): no disc, no game data. The port
-  # configures from the tracked sources alone, then psxstack's inventory compiles every `us` unit for the host. The
-  # job fails when the configure or the probe cannot run; the diagnostics' counts are the baseline that M1 drives to
-  # zero, and they are not gated on until then (scripts/probe.sh).
+  # The PC port's host-compile probe (docs/PORT.md "The host-compile probe"; issue #2) and its build: no disc, no game
+  # data. The port configures from the tracked sources alone, psxstack's inventory compiles every `us` unit for the
+  # host (0 diagnostics, no duplicate global), the Psy-Q declarations agree with the stack's and the shim covers every
+  # call (scripts/probe.sh, a gate since M1 drove it to zero); then the port builds and links (scripts/port_build.sh).
   probe:
     runs-on: ubuntu-24.04
     name: port probe (us)
@@ -86,6 +86,9 @@ jobs:
 
     - run: scripts/probe.sh
 
+    # The port's build and link (build/port/dcb), and its version.
+    - run: scripts/port_build.sh
+
     # The host GTE macros (port/include/gte.h) against psxstack's software GTE: gcc only, no disc.
     - run: scripts/gte_test.sh
 
@@ -102,7 +105,9 @@ jobs:
   # The emulator replays (docs/PORT.md "Testing"; issue #3): the pad scripts of tests/replay/scripts/ run in the
   # pinned PCSX-Redux from the data checkout and must give the records of tests/replay/records/. Needs the disc
   # image (rebuilt from the data checkout's xz parts) and the emulator zip, both through the deploy key, so only the
-  # fork's own runs have it, as the build job. The stack's runners are the submodule's tools/replay/.
+  # fork's own runs have it, as the build job. The stack's runners are the submodule's tools/replay/. Then the port
+  # boots the same disc headless to OPENSEG (scripts/port_build.sh --boot; tests/port/run.py is not a gate yet:
+  # docs/PORT.md "Testing").
   replay:
     if: >-
       github.repository == 'gascarcella/dcb_decomp' &&
@@ -130,7 +135,9 @@ jobs:
       with:
         python-version: '3.12'
 
-    - run: python3 -m venv .venv
+    - run: |
+        python3 -m venv .venv
+        .venv/bin/pip install cmake ninja
 
     - run: |
         export DCB_GAMEDATA="$PWD/gamedata-checkout"
@@ -138,3 +145,5 @@ jobs:
         scripts/setup.sh disc redux
         scripts/check_emulator.sh
         .venv/bin/python tests/replay/replay.py check -j 2
+
+    - run: scripts/port_build.sh --boot
