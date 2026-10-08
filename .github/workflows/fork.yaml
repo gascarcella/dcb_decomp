@@ -137,6 +137,7 @@ jobs:
 
     - run: |
         export DCB_GAMEDATA="$PWD/gamedata-checkout" PSXSTACK_DIR="$PWD/psxstack-main"
+        export DCB_UBUNTU_MIRROR=http://azure.archive.ubuntu.com/ubuntu   # the runners' own archive: archive.ubuntu.com stalls from them
         scripts/setup.sh disc redux
         scripts/check_emulator.sh
         .venv/bin/python tests/replay/replay.py check -j 2
