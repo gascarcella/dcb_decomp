@@ -30,12 +30,12 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 | Disc | SLUS-01328, "Digimon Digital Card Battle (USA)": SHA-1 `b3945b3e76c1fcc554a7614e2b4211d974990105`, 215661936 bytes, one MODE2/2352 track |
 | `video.rate` | 60 (NTSC) |
 | `memory.slots` | **One slot**, `overlay`, the overlay area at `0x801DDF38` (`OVERLAY_AREA`, `config/us/symbols_overlay_calls.txt`), `0x1EAF8` bytes: the largest overlay, KAWSEG (to `0x801FCA30`; OPENSEG reaches `0x801F8188`). Each overlay's zeroed data is inside its file, so file size = memory size. KAWSEG and OPENSEG run into the 32 KB the start-up reserves for the stack (`0x801F8000`-`0x80200000`) |
-| `memory.heap` | **A placeholder** (`0x801FCA30`-`0x80200000`, the PS1 stack area, used by nothing): the contract requires a heap right after the last slot, and this game's heap lies before it, as its own `.bss` array. The decision (2026-10-08): psxstack makes `memory.heap` optional ([psxstack#26](https://github.com/gascarcella/psxstack/issues/26)); the game keeps `HEAP_ARENA` as game data. See "Memory and pointers" |
+| `memory.heap` | **None** (psxstack 0.3.0 made it optional, [psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): this game's heap is its own `.bss` array (`HEAP_ARENA`), game data the port saves, resets and snapshots like the rest; the arena holds the slot alone. See "Memory and pointers" |
 | `UNITS`, `MAIN_UNIT` | `port/tools/port_inputs.py` writes them from `MAIN_C_SRC` and `<OVERLAY>_C_SRC` of `mk/version/us.mk`: 155 units, without `src/main/psyq/` (the shim replaces the libraries), `startup.s` and `libmath.s` (host replacements, below). `main()` is `src/main/main.c:54`: it starts the scheduler with `runMainTask` (`src/main/system/boot.c:76`) and spins on `rand()` |
 | `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below). Decided game-side (2026-10-08): the ID is the overlay's 1-based index in `us.mk`'s `OVERLAYS` list (`port_inputs.py`), and at M1 the adapter maps `"P:\\kawseg.bin"` to it in `loadFileToAddress`'s hook |
 | `EXE_SYMBOLS` | `config/us/`'s symbol files (the EXE's names, and `symbols_overlay_calls.txt` for the 84 overlay functions the EXE calls) |
 | `GTEMAC` | **Not passed.** `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). psxstack's translator cannot take them: it rejects output operands (`gte_mfc2`'s `"=r"`), knows only `.word` commands (ours are the `.inc` mnemonics), keeps temporaries per macro (`gte_prefetchv3c` hands `$8`-`$13` to `gte_ldv3_prefetched`), and writes its override as `psyq/gtemac.h`, which never shadows `"gte.h"`. Decided (2026-10-08): M1 writes `port/include/gte.h`, a host-only header first on the include path, by hand over `psyq_gte_mtc2`/`mfc2`/`cmd`/`swc2_`; the probe stubs the macros with an override of its own meanwhile |
-| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so the shim cannot compile against this tree until psxstack owns its declarations (psxstack #7). `include/stdarg.h` (Psy-Q's `va_list`) shadows the host's for anything compiled with these directories: the game units never include it, but psxstack gives the runtime and the shim the same include list (`cmake/psxstack.cmake:151, 282`), which M1 must change there |
+| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so since psxstack 0.3.0 the shim compiles against the stack's own declarations (psxstack #7) and `port_inventory.py decls` compares `game.h`'s prototypes with them: 29 same, 9 compatible, 16 mismatching (`s32` returns where the stack returns `void` or a pointer, `ClearImage`'s colours), fixed game-side at M1, byte-identical |
 
 ## The host-compile probe
 ### The baseline (M0, 2026-10-08, at 3802dee)
@@ -112,14 +112,11 @@ of them inside two header macros that one typedef covers.
   every overlay statically, so they need distinct names (an upstream rename with the overlay prefix, as
   CONTRIBUTING.md asks, or `PC_PORT` renames).
 
-### What got in the way in psxstack v0.2.1 (for its issues)
-- `tools/port_inventory.py:608-626` and `tools/port_gen.py:291` name the GTE override `psyq/gtemac.h`; a game whose
-  header is `gte.h` gets none. Worked around: the wrapper writes `build/port_inventory/include/gte.h` itself.
-- `tools/port_inventory.py:243-260` learns libraries only from `// LIBxxx.LIB/OBJ.OBJ` comments; hence the derived
-  `psyq_symbols.txt`.
-- `psyq/check.sh:33-50` hardcodes `tools/port_inventory.py`, `tools/venv/bin/python` and `port/game/game.json`.
-- `cmake/psxstack.cmake:151, 282` give the runtime and the shim the game's include directories, where this tree's
-  `include/stdarg.h` shadows the host's (M1 cannot build the adapter until that changes).
+### What got in the way in psxstack v0.2.1
+Fixed in v0.3.0 (psxstack #28, #7): the GTE override is written at the game's header's path, the inventory takes a
+Psy-Q library map (`psyq_libraries`), `psyq/check.sh` takes its paths, and the runtime and the shim no longer see the
+game's include directories (this tree's `include/stdarg.h` shadowed the host's). The wrapper here lost its own
+override and derived symbol file with the pin bump.
 
 ## What the game needs
 
@@ -264,9 +261,11 @@ optional in psxstack, [psxstack#26](https://github.com/gascarcella/psxstack/issu
 scratchpad (game-side, no contract change), the GTE macros (a host `port/include/gte.h`), the probe's CI gate (it
 must run; the counts are the baseline until M1 drives them to zero), and the test runners (lifted into psxstack
 first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then consumed here, issue #3). Still open:
-1. Fibers in psxstack ([psxstack#25](https://github.com/gascarcella/psxstack/issues/25)): the API (create, switch, destroy), Windows (fibers) and Linux (`ucontext` or hand-written
-   switches), AddressSanitizer annotations, save states holding every stack. When may a vblank preempt? Only at the
-   pump's points: are they enough for `memcard.c`'s spin?
+1. ~~Fibers in psxstack~~ Done in psxstack 0.3.0 ([psxstack#25](https://github.com/gascarcella/psxstack/issues/25);
+   its `docs/PORT.md` "Fibers", `examples/tasks`): `port_fiber_create/switch/exit/destroy/preempt`, a vblank handler
+   preempts at the end of the tick. M1's glue: `spawnTask` creates, `yieldTask`/`waitFrames` switch, `exitTask`
+   exits, `handleVsyncPreemption` preempts to TASKS[0]; `main()`'s spin gets a `PLATFORM_WAIT()`. Whether the pump's
+   points suffice for `memcard.c`'s spin is checked then.
 2. ~~The hooking strategy~~ Decided (2026-10-08): **a pointer-width integer typedef**, `s32p`/`u32p` (`s32`/`u32` on
    the PS1, `intptr_t`/`uintptr_t` under `PC_PORT`, defined in `include/port.h`), at the declarations of the
    pointer-holding globals, parameters, return values and fields and at the `(s32)&x` casts ("The host-compile
@@ -275,9 +274,8 @@ first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then co
    Both sides are byte-identical; the diff stays readable for upstream.
 3. The stale KAWSEG addresses (0x801E6424, 0x801E651C): what happens on the PS1 when they run? With the emulator
    (issue #3), before the adapter resolves them at M1.
-4. Psy-Q declarations ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)): this game has no recovered
-   `include/psyq/`, so the shim cannot compile here until psxstack owns its declarations. It blocks M1's link, not
-   M0.
+4. ~~Psy-Q declarations~~ Done in psxstack 0.3.0 ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)):
+   the stack owns them; M1 fixes the 16 prototypes of `game.h` that `decls` reports and makes `decls` a gate.
 5. Would upstream take the hooks? They leave the PS1 build identical, and upstream's CONTRIBUTING.md forbids
    `NON_MATCHING`, not `PC_PORT`. Not asked yet (the owner's call, 2026-10-08): the hooks stay in the fork for now;
    the 36 missing prototypes and the 4 duplicate overlay names are upstream PR candidates on their own.
