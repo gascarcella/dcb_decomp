@@ -336,14 +336,14 @@ void EVO_initFusionBanner(void) {
             EVO_BANNER_CLUT[i] = 0;
         }
     }
-    LoadImage((s16 *)&rect, (s32)EVO_BANNER_CLUT);
+    LoadImage((s16 *)&rect, (u32 *)EVO_BANNER_CLUT);
     for (i = 0; i < 16; i++) {
         if (EVO_BANNER_CLUT[i] != 0) {
             EVO_BANNER_CLUT[i] = 0xFFFF;
         }
     }
     rect.y = 241;
-    LoadImage((s16 *)&rect, (s32)EVO_BANNER_CLUT);
+    LoadImage((s16 *)&rect, (u32 *)EVO_BANNER_CLUT);
     EVO_BANNER_FADE = 2;
     EVO_BANNER_BRIGHTNESS = 0;
     addFrameCallback((s32)EVO_drawFusionBanner);

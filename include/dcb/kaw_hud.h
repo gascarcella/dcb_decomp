@@ -12,5 +12,8 @@ void KAW_drawPortraitColored(s32 x, s32 y, s32 u, s32 v, s32 frame, u16 clut, By
 void KAW_showCardLabel(CardSprite *sprite, s32 num);
 void KAW_hideCardLabel(CardSprite *sprite);
 void KAW_drawCursorAt();
+#if VERSION_US || VERSION_EU
+s32p KAW_createCursor(s32 mode, s32 x, s32 y, s32 d, s32 count);
+#endif
 
 #endif /* DCB_KAW_HUD_H */

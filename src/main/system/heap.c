@@ -166,7 +166,7 @@ void releaseHeapBlock(void *ptr) {
 
 /* merges the block with a free neighbour on either side, then moves the rest
    of the table up over the entries that merged */
-s32 freeHeapBlock(void *ptr) {
+s32p freeHeapBlock(void *ptr) {
     HeapBlock *block;
     HeapBlock *nextBlock;
     s32 i;

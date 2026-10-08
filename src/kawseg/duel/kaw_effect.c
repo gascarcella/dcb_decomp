@@ -128,7 +128,7 @@ s32 KAW_playEffectOnOpponent(s32 entry, s32 player) {
 }
 
 void KAW_playEffectScript(s32 entry, s32 player1, s32 player2, s32 mode1, s32 mode2) {
-    s32 data;
+    s32p data;
 
     KAW_EFFECT_PLAYER = player1;
     switch (mode1) {
@@ -188,7 +188,7 @@ void KAW_freeEffectEntries(EffectTable *table) {
 
 void KAW_getCardPosition(s32 index, u8 *fx) {
     CardAnim *anim;
-    s32 base;
+    s32p base;
 
     if (index >= 0) {
         base = (s32)CARD_ANIMS;

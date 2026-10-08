@@ -176,5 +176,8 @@ extern s8 OPEN_MEMCARD_READY;
 extern u8 OPEN_MEMCARD_FREE_BLOCKS;
 
 void SsSetMono(void);
+s32 OPEN_setPartnerObtainedFlag(s32 kind);
+/* open_movie.c calls it with its DecEnv, which it doesn't take */
+u32 *OPEN_getNextMovieFrame();
 
 #endif /* DCB_OPENSEG_H */

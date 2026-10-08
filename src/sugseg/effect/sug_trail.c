@@ -10,6 +10,7 @@
 #include "dcb/sug_history.h"
 #include "dcb/sug_gradient.h"
 #include "dcb/sug_tex_anim.h"
+#include "dcb/prim3d.h"
 
 void SUG_setTrailColors(TrailEffect *obj, u8 kind, Bytes4 *c0, Bytes4 *c1, Bytes4 *c2, Bytes4 *c3);
 void SUG_initTrailPrims(TrailEffect *obj, u8 semiTrans, u8 blend, u8 kind, u8 texAnimId, Rect16 *uv, s32 tpage, s32 clut);
@@ -23,7 +24,7 @@ TrailEffect *SUG_createTrailEffect(s16 brightness, Bytes4 *c0, Bytes4 *c1, Bytes
 #elif VERSION_US || VERSION_EU
 TrailEffect *SUG_createTrailEffect(s16 brightness, Bytes4 *c0, Bytes4 *c1, Bytes4 *c2, Bytes4 *c3, EffectTemplate *template, s16 x0, s16 x1,
                            s32 count, s16 rows, u8 followMode, u8 colorMode, u8 semiTrans, u8 blend, u8 primKind, s32 texAnimId, Rect16 *uv, s32 tpage, s32 clut,
-                           s32 otz, s32 pak) {
+                           s32 otz, s32p pak) {
 #endif
     TrailEffect *obj;
     s32 i;

@@ -27,6 +27,8 @@
 #include "dcb/text.h"
 #include "dcb/str_util.h"
 #include "dcb/fade.h"
+#include "dcb/frame_callback.h"
+#include "dcb/card_db.h"
 #include "dcb/overlay_calls.h"
 
 void initDuelState(s32 isCpuDuel) {

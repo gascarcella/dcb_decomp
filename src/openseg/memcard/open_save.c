@@ -54,10 +54,10 @@ u8 OPEN_checkSaveIsCurrent(s32 player, s32 port, s32 slot);
 #else
 #error "openseg/memcard/open_save: version not checked"
 #endif
-s32 OPEN_SAVE_FILE_NAMES[3] = {
-    (s32)SAVE_FILE_PREFIX "_A",
-    (s32)SAVE_FILE_PREFIX "_B",
-    (s32)SAVE_FILE_PREFIX "_C",
+s32p OPEN_SAVE_FILE_NAMES[3] = {
+    (s32p)SAVE_FILE_PREFIX "_A",
+    (s32p)SAVE_FILE_PREFIX "_B",
+    (s32p)SAVE_FILE_PREFIX "_C",
 };
 
 #if VERSION_EU

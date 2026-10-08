@@ -122,7 +122,7 @@ s16 ATTACK_ICON_ORIGIN_Y[2][3] = { { -0xF0, 0x99, 0x99 }, { 0xF0, 0x1C, 0x1C } }
 
 void renderScrollingBackground(void) {
     ScrollBackground *bg;
-    s32 tim;
+    s32p tim;
     s16 texWindow[4];
     u8 buffer;
 

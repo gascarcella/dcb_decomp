@@ -100,14 +100,14 @@ void decompressLzHuffman(u32 outputSize) {
     }
 }
 
-s32 decompressArchiveEntry(s32 archive, s32 index) {
+s32p decompressArchiveEntry(s32p archive, s32 index) {
     return decompressForTask(archive + ((s32 *)archive)[index]);
 }
 
-s32 decompressToHeap(s32 src, s32 heapTag) {
+s32p decompressToHeap(s32p src, s32 heapTag) {
     s32 sizeHigh;
     s32 size;
-    s32 dst;
+    s32p dst;
 
     BITSTREAM_BITS_LEFT = 0;
     BITSTREAM_BYTE = 0;
@@ -120,6 +120,6 @@ s32 decompressToHeap(s32 src, s32 heapTag) {
     return dst;
 }
 
-s32 decompressForTask(s32 src) {
+s32p decompressForTask(s32p src) {
     return decompressToHeap(src, getCurrentTaskId());
 }

@@ -7,13 +7,13 @@
 #include "dcb/sug_sprite.h"
 
 #if VERSION_JP
-void *SUG_createSpriteEffect(s32 brightness, EffectTemplate *template, s32 key, s32 otz, s32 subKey) {
+void *SUG_createSpriteEffect(s32 brightness, EffectTemplate *template, s32 key, s32 otz, s32p subKey) {
     SpriteEffect *fx;
 
     fx = allocTaskHeapBlock(sizeof(SpriteEffect));
     SUG_initSprite(&fx->sprite, key, 4, 4, 0, 0, 0, otz, subKey);
 #elif VERSION_US || VERSION_EU
-void *SUG_createSpriteEffect(s32 brightness, EffectTemplate *template, s32 key, s32 flipX, s32 flipY, s32 a5, s32 useOrigin, s32 otz, s32 subKey) {
+void *SUG_createSpriteEffect(s32 brightness, EffectTemplate *template, s32 key, s32 flipX, s32 flipY, s32 a5, s32 useOrigin, s32 otz, s32p subKey) {
     SpriteEffect *fx;
 
     fx = allocTaskHeapBlock(sizeof(SpriteEffect));

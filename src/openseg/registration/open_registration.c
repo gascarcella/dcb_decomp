@@ -482,7 +482,7 @@ void OPEN_runUserRegistration(s32 parentTask) {
     rect.y = 0x1FF;
     rect.w = 0x100;
     rect.h = 1;
-    LoadImage((s16 *)&rect, (s32)OPEN_WHITE_CLUT);
+    LoadImage((s16 *)&rect, (u32 *)OPEN_WHITE_CLUT);
     rect.x = 0x32;
     rect.y = 0x48;
     rect.w = 0xDC;

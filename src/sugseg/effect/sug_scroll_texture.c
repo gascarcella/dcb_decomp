@@ -111,8 +111,8 @@ void SUG_scrollTexture(ScrollTex *tex) {
 #if VERSION_US || VERSION_EU
     DrawSync(0);
 #endif
-    LoadImage((s16 *)&rects[2], (s32)tex->buf1);
-    LoadImage((s16 *)&rects[3], (s32)tex->buf0);
+    LoadImage((s16 *)&rects[2], (u32 *)tex->buf1);
+    LoadImage((s16 *)&rects[3], (u32 *)tex->buf0);
 #if VERSION_US || VERSION_EU
     DrawSync(0);
 #endif

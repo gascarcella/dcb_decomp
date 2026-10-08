@@ -12,6 +12,8 @@
 #include "dcb/libmath.h"
 #include "dcb/pad.h"
 #include "dcb/kaw_battle_sim.h"
+#include "dcb/kaw_bonus.h"
+#include "dcb/kaw_effect.h"
 
 void KAW_pickCardArtSlot(void) {
     s32 id;

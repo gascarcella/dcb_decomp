@@ -107,7 +107,7 @@ void unloadEffectAnimations(void) {
     freeHeapBlocksByTag(0x82);
 }
 
-s32 findAnimationCacheEntry(s32 key, s32 count, KeyValue **freeEntry) {
+s32p findAnimationCacheEntry(s32 key, s32 count, KeyValue **freeEntry) {
     KeyValue *entry;
     KeyValue *emptyEntry;
     s32 i;
@@ -126,10 +126,10 @@ s32 findAnimationCacheEntry(s32 key, s32 count, KeyValue **freeEntry) {
     return 0;
 }
 
-s32 loadAnimationData(s32 id, s32 anim, s32 slot, Chunk *pak) {
+s32p loadAnimationData(s32 id, s32 anim, s32 slot, Chunk *pak) {
     char path[24];
     KeyValue *cacheEntry;
-    s32 animData;
+    s32p animData;
     s32 chunkSub;
 
     cacheEntry = (KeyValue *)SCENE_3D->animCache;
@@ -167,8 +167,8 @@ void setModelAnimationData(Model *model, s32 *data, s32 anim) {
     model->anims[anim].data = data;
 }
 
-s32 loadModelAnimation(s32 slot, s32 anim, s32 index, s32 pak) {
-    s32 animData;
+s32 loadModelAnimation(s32 slot, s32 anim, s32 index, s32p pak) {
+    s32p animData;
     Model *model;
 
     model = SCENE_3D->models[slot];

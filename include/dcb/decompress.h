@@ -7,9 +7,9 @@
 s32 readBitstreamBit(void);
 u32 readBitstreamBits(s32 bitCount);
 s32 readHuffmanTree(void);
-s32 decompressForTask(s32 src);
-s32 decompressArchiveEntry(s32 archive, s32 index);
+s32p decompressForTask(s32p src);
+s32p decompressArchiveEntry(s32p archive, s32 index);
 void decompressLzHuffman(u32 outputSize);
-s32 decompressToHeap(s32 src, s32 heapTag);
+s32p decompressToHeap(s32p src, s32 heapTag);
 
 #endif /* DCB_DECOMPRESS_H */

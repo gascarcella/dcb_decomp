@@ -255,7 +255,7 @@ typedef struct {
     s32 brightness;
     s32 style;
     s32 flags;
-    s32 label;
+    s32p label;
     u8 labelPalette;
 } EvoWindowDef;
 

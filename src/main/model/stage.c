@@ -124,7 +124,7 @@ ArenaStage ARENA_STAGES[56] = {
 #if VERSION_JP
 s32 loadDigimonModelPak(s32 slot, s32 id) {
     char path[32];
-    s32 pak;
+    s32p pak;
     KeyFrame *key;
 
     sprintf(path, "F:\\%03d.PAK", id);
@@ -153,7 +153,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id) {
 #elif VERSION_US || VERSION_EU
 s32 loadDigimonModelPak(s32 slot, s32 id, s8 format, s32 loadAllAnims) {
     char path[32];
-    s32 pak;
+    s32p pak;
 
     if (format == 1) {
         sprintf(path, "G:\\%03d.PAK", id);
@@ -189,7 +189,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id, s8 format, s32 loadAllAnims) {
 void syncPlayerDigimonModel(s32 player, DigimonCardData *card) {
     s32 modelId;
     s32 loadedId;
-    s32 pak;
+    s32p pak;
     DuelDigimonModels *models;
     DigimonCardData *cardData;
 
@@ -242,7 +242,7 @@ void runDuelStageTask(s32 stageId, s32 music) {
 #elif VERSION_US || VERSION_EU
 void runDuelStageTask(s32 stageId) {
 #endif
-    s32 pak;
+    s32p pak;
     s32 i;
     DigimonCardData *battleCard;
 
@@ -372,7 +372,7 @@ void loadArenaStage(s32 stageId) {
 void showArenaStage(s16 rotX) {
     Scene3D *scene;
 #if VERSION_US || VERSION_EU
-    s32 tim;
+    s32p tim;
 #endif
 
     SCENE_3D_ENABLED = 1;

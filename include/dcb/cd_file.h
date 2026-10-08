@@ -23,7 +23,7 @@ int closeAllDiscFiles(void);
 CdFile *openDiscFile(s8 *path, s32 openMode);
 s32 closeDiscFile(CdFile *file);
 s32 readDiscFile(CdFile *file, s32 size, u8 *dst);
-s32 mountDrive(s32 path);
+s32 mountDrive(s32p path);
 FileEntry *findDirectoryEntryOnDisc(CdFile *file, char *name, s32 key);
 FileEntry *findDirectoryEntryInCache(char *name, s32 key);
 s32 readDiscFileByte(CdFile *file);

@@ -10,5 +10,9 @@ void KAW_drawSprite(s32 x, s32 y, s32 u, s32 v, s32 w, s32 h, s32 clutX, s32 clu
 
 void KAW_drawCard3D(Icon3D *icon, s32 z, RawPolyFT4 *pk);
 void KAW_waitForCross(void);
+#if VERSION_US || VERSION_EU
+s32 KAW_openCardSelect(s32 player);
+s32 KAW_closeCardSelect(s32 index);
+#endif
 
 #endif /* DCB_KAW_HAND_H */

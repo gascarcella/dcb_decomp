@@ -160,14 +160,14 @@ void stepPrimFade(u8 fadeOut, s16 step, u8 *state, u8 *prim) {
     }
 }
 
-void uploadClut256(s32 clutData, s16 x, s16 y) {
+void uploadClut256(s32p clutData, s16 x, s16 y) {
     s16 rect[4];
 
     rect[0] = x;
     rect[1] = y;
     rect[2] = 0x100;
     rect[3] = 1;
-    LoadImage(rect, clutData);
+    LoadImage(rect, (u32 *)clutData);
     DrawSync(0);
 }
 

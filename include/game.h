@@ -4,7 +4,7 @@
 #include "common.h"
 
 #define setlen(p, _len) (((P_TAG *)(p))->len = (u8)(_len))
-#define setaddr(p, _addr) (((P_TAG *)(p))->addr = (u32)(_addr))
+#define setaddr(p, _addr) (((P_TAG *)(p))->addr = PTR_TO_U32(_addr))
 #define getaddr(p) (u32)(((P_TAG *)(p))->addr)
 #define getcode(p) (u8)(((P_TAG *)(p))->code)
 #define setcode(p, _code) (((P_TAG *)(p))->code = (u8)(_code))
@@ -82,16 +82,16 @@ typedef struct {
     /* 0x4070 */ void *scenePackets;
     /* 0x4074 */ s32 unk4074;
 #if VERSION_JP
-    /* 0x4078 */ s32 primSlots[17]; /* jp has one more slot */
-    /* 0x40BC */ s32 spritePool;
-    /* 0x40C0 */ s32 windowPrimPool;
+    /* 0x4078 */ s32p primSlots[17]; /* jp has one more slot */
+    /* 0x40BC */ s32p spritePool;
+    /* 0x40C0 */ s32p windowPrimPool;
 #if JP_DEBUG_BUILD
     /* 0x40C4 */ u8 unk40C4[8]; /* the debug build's are 8 bytes longer */
 #endif
 #elif VERSION_US || VERSION_EU
-    /* 0x4078 */ s32 primSlots[16];
-    /* 0x40B8 */ s32 spritePool;
-    /* 0x40BC */ s32 windowPrimPool;
+    /* 0x4078 */ s32p primSlots[16];
+    /* 0x40B8 */ s32p spritePool;
+    /* 0x40BC */ s32p windowPrimPool;
 #else
 #error "FrameBuffer: version not checked"
 #endif
@@ -173,7 +173,7 @@ typedef struct {
     /* 0x13C */ void *models[24];
     /* 0x19C */ struct {
         s32 key;
-        s32 value;
+        s32p value;
     } animCache[32];
 } Scene3D;
 typedef struct {
@@ -266,7 +266,7 @@ typedef struct {
 } ScrollBgSprite;
 typedef struct {
     /* 0x00 */ ScrollBgSprite buf[2];
-    /* 0x68 */ s32 tim;
+    /* 0x68 */ s32p tim;
     /* 0x6C */ s8 mode;
     /* 0x6D */ s8 shownImage;
     /* 0x6E */ u8 scrollMode;
@@ -325,7 +325,7 @@ typedef struct {
     /* 0x14 */ Rect16 cur;
     /* 0x1C */ Rect16 from;
     /* 0x24 */ Rect16 delta;
-    /* 0x2C */ s32 label;
+    /* 0x2C */ s32p label;
     /* 0x30 */ s16 scroll[4];
     /* 0x38 */ u8 palette;
     /* 0x39 */ u8 labelPalette;
@@ -824,7 +824,11 @@ typedef struct {
 /* the byte of a card's DigimonCardData at FIELD, read through an s8 or u8
    pointer to the data as KAWSEG does: the offset follows each version's
    layout */
+#ifdef PC_PORT
+#define CARD_BYTE(data, field) ((data)[__builtin_offsetof(DigimonCardData, field)])
+#else
 #define CARD_BYTE(data, field) ((data)[(s32) & ((DigimonCardData *)0)->field])
+#endif
 typedef struct {
     /* 0x00 */ u8 unk0[0xE];
     /* 0x0E */ s16 value;
@@ -1179,7 +1183,7 @@ typedef struct {
     /* 0x26D4 */ s32 tpageOffset;
     /* 0x26D8 */ s32 rootOnly;
     /* 0x26DC */ void *data;
-    /* 0x26E0 */ s32 link;
+    /* 0x26E0 */ s32p link;
     /* 0x26E4 */ Rect16 prect;
     /* 0x26EC */ Rect16 crect;
 #if VERSION_US || VERSION_EU
@@ -1451,10 +1455,10 @@ typedef struct {
     /* 0x6 */ s16 supportIcon;
 } PartnerAbility;
 
-extern s32 SPRITE_POOL_CURSOR;
+extern s32p SPRITE_POOL_CURSOR;
 extern u16 SYSTEM_TEX_X;
 extern u16 SYSTEM_TEX_Y;
-extern s32 PLAYER_PROFILES;
+extern s32p PLAYER_PROFILES;
 extern FrameBuffer *CURRENT_FRAME_BUFFER;
 extern u8 FRAME_BUFFER_INDEX;
 extern s32 FRAME_INTERVAL;
@@ -1468,7 +1472,7 @@ extern s32 LOADED_FILE_SIZE;
 extern TIM_IMAGE LOADED_TIM;
 extern s32 SCENE_3D_ENABLED;
 extern Scene3D *SCENE_3D;
-extern s32 OVERLAY_LOAD_ADDR;
+extern s32p OVERLAY_LOAD_ADDR;
 extern s32 MUSIC_CHANGE_BUSY;
 extern s32 PENDING_MUSIC_CHANGES;
 extern u8 *DIGIMON_CARDS;
@@ -1490,13 +1494,20 @@ void SetShadeTex(void *, s32);
 s32 rand(void);
 s32 sprintf(char *, const char *, ...);
 s32 DrawSync(s32);
-s32 LoadImage(s16 *, s32);
+/* the stack's LoadImage returns nothing; the PS1 keeps Psy-Q's int, which no
+   caller reads (declared void, jp's GCC 2.8.1 allocates registers differently) */
+#ifdef PC_PORT
+void LoadImage(s16 *, u32 *);
+#else
+s32 LoadImage(s16 *, u32 *);
+#endif
 s32 exitTask();
 void ResetCallback(void);
 void SetDispMask(s32);
 void GsInitGraph(u16, u16, u16, u16, u16);
-s32 ClearImage(Rect16 *, s32, s32, s32);
+s32 ClearImage(Rect16 *, u8, u8, u8);
 void MoveImage(Rect16 *rect, s32 x, s32 y);
+s32 MoveImage2(Rect16 *rect, s32 x, s32 y);
 void SsInit(void);
 void launchTaskScheduler(s32, s32, void (*)(), s32, s32, s32, s32);
 s32 EnterCriticalSection();
@@ -1511,7 +1522,7 @@ void SetDrawStp(DR_STP *, s32);
 u16 GetTPage(s32, s32, s32, s32);
 void SetGraphDebug(s32);
 void InitGeom(void);
-s32 waitFrames(s32);
+s32p waitFrames(s32);
 void yieldTask(void);
 void ClearOTagR(u32 *, s32);
 void GsSwapDispBuff(void);
@@ -1523,7 +1534,7 @@ s32 spawnTask();
 s32 CdInit(void);
 s32 CdControlB(u8, u8 *, u8 *);
 void CdSetDebug(s32);
-s32 CdIntToPos(s32, u8 *);
+u8 *CdIntToPos(s32, u8 *);
 s32 CdRead(s32, u8 *, s32);
 s32 CdReadSync(s32, u8 *);
 int toupper(int);
@@ -1537,7 +1548,7 @@ void GetDispEnv(DISPENV *);
 void SetDrawArea(DR_AREA *, Rect16 *);
 extern int printf(const char *, ...);
 s32 strlen(u8 *);
-s32 PadInitDirect(void *, void *);
+void PadInitDirect(void *, void *);
 s32 PadStartCom(void);
 s32 PadGetState(s32);
 s32 PadInfoMode(s32, s32, s32);
@@ -1579,7 +1590,7 @@ s32 RotTransPers4(s32, s32, s32, s32, s32, s32, s32, s32, s32 *, s32 *);
 s32 RotTransPers(s32, s32, s32 *, s32 *);
 s32 RotMatrix(void *, void *);
 s32 TransMatrix(MATRIX *, VECTOR *);
-s32 ScaleMatrix(void *, void *);
+MATRIX *ScaleMatrix(void *, void *);
 void composeTransformMatrix(SVECTOR *, VECTOR *, VECTOR *, MATRIX *, s32);
 MATRIX *MulMatrix2(MATRIX *, MATRIX *);
 s32 RotTrans(u16 *, void *, s32 *);
@@ -1600,12 +1611,12 @@ void SetGeomScreen(s32);
 void GsSetProjection(s32);
 s32 GsSetRefView2(GsRVIEW2 *);
 s32 GsSetAmbient(s32, s32, s32);
-s32 GsSetLightMode(s32);
-s32 SetBackColor(s32, s32, s32);
+void GsSetLightMode(s32);
+void SetBackColor(s32, s32, s32);
 void GsInit3D(void);
-s32 SsSetMVol(s32, s32);
-s32 SsSetTableSize(s32 *, s32, s32);
-s32 SsSetTickMode(s32);
+void SsSetMVol(s16, s16);
+void SsSetTableSize(s32 *, s16, s16);
+void SsSetTickMode(s32);
 s32 SsStart();
 s32 SsSetStereo();
 void SsVabClose(s16);
@@ -1613,18 +1624,18 @@ void bcopy(void *, void *, s32);
 s16 SsSeqOpen(u8 *, s16);
 void SsSeqClose(s16);
 s32 SpuClearReverbWorkArea(s32);
-s32 SsUtSetReverbDepth(s32, s32);
-s32 SsUtSetReverbType(s16);
+void SsUtSetReverbDepth(s16, s16);
+s16 SsUtSetReverbType(s16);
 s32 SsUtReverbOff();
-s32 SsUtReverbOn();
+void SsUtReverbOn(void);
 void SpuSetVoiceAttr(SpuVoiceAttr *);
 s16 SsVabOpenHeadSticky(u8 *, s16, s32);
-s16 SsVabTransBody(s32, s16);
-s32 SsVabTransCompleted(s32);
+s16 SsVabTransBody(u8 *, s16);
+s16 SsVabTransCompleted(s16);
 extern short SsUtKeyOnV(short voice, short vabId, short prog, short tone,
                         short note, short fine, short voll, short volr);
 s32 SsUtKeyOffV(s16);
-s32 SsUtAllKeyOff(s32);
+void SsUtAllKeyOff(s16);
 s32 SsSeqStop(s16);
 void SsSeqGetVol(s16, s16, s16 *, s16 *);
 void SsSeqSetVol(s16, s16, s16);

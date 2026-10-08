@@ -190,7 +190,7 @@ void KAW_drawPortraitColored(s32 x, s32 y, s32 u, s32 v, s32 frame, u16 clut, By
     }
 }
 
-s32 KAW_allocCardPolys(void) {
+s32p KAW_allocCardPolys(void) {
     s32 i;
 
     CARD_POLY_PACKETS = allocTaskHeapBlock(sizeof(Unk14F0) * 2);
@@ -224,7 +224,7 @@ void KAW_fadeCardSprite(CardSprite *sprite, u8 *to) {
     sprite->to[2] = to[2];
 }
 
-s32 KAW_createCursor(s32 mode, s32 x, s32 y, s32 d, s32 count) {
+s32p KAW_createCursor(s32 mode, s32 x, s32 y, s32 d, s32 count) {
     s32 k;
     s32 i;
     s32 j;

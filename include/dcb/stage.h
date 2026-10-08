@@ -6,8 +6,8 @@
 typedef struct {
     /* 0x00 */ s32 modelId;
     /* 0x04 */ s32 unk4;
-    /* 0x08 */ s32 attackModels[3]; /* skills[0] of each attack */
-    /* 0x14 */ s32 unk14[3];        /* skills[1] of each attack */
+    /* 0x08 */ s32p attackModels[3]; /* skills[0] of each attack */
+    /* 0x14 */ s32p unk14[3];        /* skills[1] of each attack */
 } DuelDigimonModels;
 
 extern DuelDigimonModels DUEL_DIGIMON_MODELS[2];
@@ -16,7 +16,7 @@ extern void *EAT_UP_HP_SKILL;
 extern ArenaStage ARENA_STAGES[];
 extern s32 STAGE_FADE_LEVEL;
 extern u8 STAGE_CLEAR_COLOR[3];
-extern s32 STAGE_PAK;
+extern s32p STAGE_PAK;
 
 void animateStageTexture(Model *model);
 #if VERSION_JP

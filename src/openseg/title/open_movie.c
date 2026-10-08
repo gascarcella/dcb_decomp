@@ -355,7 +355,7 @@ void OPEN_uploadMovieSlice(void) {
         OPEN_DEC_ENV.slice.x = OPEN_DEC_ENV.rect[OPEN_DEC_ENV.rectid].x;
         OPEN_DEC_ENV.slice.y = OPEN_DEC_ENV.rect[OPEN_DEC_ENV.rectid].y;
     }
-    LoadImage((s16 *)&snap, (s32)OPEN_DEC_ENV.imgbuf[id]);
+    LoadImage((s16 *)&snap, (u32 *)OPEN_DEC_ENV.imgbuf[id]);
 }
 
 s32 OPEN_decodeMovieFrame(DecEnv *env) {

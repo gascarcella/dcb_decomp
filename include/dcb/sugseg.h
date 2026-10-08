@@ -528,7 +528,7 @@ typedef struct {
 typedef struct {
     s32 key;
     u8 *data;
-    s32 subKey;
+    s32p subKey;
 } SpriteEntry;
 
 extern BattleState *SUG_BATTLE;
@@ -538,5 +538,7 @@ extern s16 CAMERA_TARGET_MODEL;
 
 s32 StoreImage(Rect16 *rect, void *p);
 void initPolyF4Pair();
+void initLineG2Pair(s32 *line, s32 *otherLine, u8 *color0, u8 *color1, s32 blendMode, void *tpage0, void *tpage1, u8 semiTrans,
+                    u8 unused);
 
 #endif /* DCB_SUGSEG_H */

@@ -13,6 +13,7 @@
 #include "dcb/pad.h"
 #include "dcb/kawseg.h"
 #include "dcb/kaw_hud.h"
+#include "dcb/kaw_hand.h"
 
 extern UiWindow KAW_TUTORIAL_WINDOW;
 
