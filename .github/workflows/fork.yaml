@@ -61,3 +61,34 @@ jobs:
 
     # The shell scripts this fork adds parse.
     - run: for f in scripts/*.sh; do bash -n "$f"; done
+
+  # The PC port's host-compile probe (docs/PORT.md "The host-compile probe"; issue #2): no disc, no game data. The port
+  # configures from the tracked sources alone, then psxstack's inventory compiles every `us` unit for the host. The
+  # job fails when the configure or the probe cannot run; the diagnostics' counts are the baseline that M1 drives to
+  # zero, and they are not gated on until then (scripts/probe.sh).
+  probe:
+    runs-on: ubuntu-24.04
+    name: port probe (us)
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+        cache: pip
+
+    - run: |
+        python3 -m venv .venv
+        .venv/bin/pip install cmake ninja
+
+    - run: scripts/probe.sh
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: probe-summary
+        path: build/port_inventory/summary.txt
+        if-no-files-found: ignore

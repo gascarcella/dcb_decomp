@@ -7,8 +7,9 @@ the worked example of every piece (its `docs/PORT.md`, `port/`, `tools/port_inpu
 the plan, what this game needs from the stack, and the open questions. It will become the port's reference as the
 answers land.
 
-Nothing of the port exists yet. The facts below come from a survey of the `us` sources on 2026-10-08: the 155 C files
-that `mk/version/us.mk` lists. Counts are from grep and approximate.
+M0 (the skeleton) exists: `port/` configures and the host-compile probe runs ("The host-compile probe"). The facts
+below come from a survey of the `us` sources on 2026-10-08: the 155 C files that `mk/version/us.mk` lists. Counts
+are from grep and approximate.
 
 ## Plan
 The milestones follow dw2003recomp's (its `docs/PORT.md`):
@@ -25,16 +26,100 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 ## The contract, for this game
 | Contract input | This game (`us`) |
 |---|---|
-| `game.json` identity | `id` (the binary's and the settings' name: `dcb` is a candidate), the title, `launcher.about` crediting the decompilation (DECISIONS "Credit") |
+| `game.json` identity | `port/game/game.json`: `id` `dcb`, title "Digimon Digital Card Battle", `env_prefix` `DCB`, `launcher.about` crediting the decompilation (DECISIONS "Credit") |
 | Disc | SLUS-01328, "Digimon Digital Card Battle (USA)": SHA-1 `b3945b3e76c1fcc554a7614e2b4211d974990105`, 215661936 bytes, one MODE2/2352 track |
 | `video.rate` | 60 (NTSC) |
-| `memory.slots` | **One slot**, the overlay area at `0x801DDF38` (`OVERLAY_AREA`, `config/us/symbols_overlay_calls.txt`). The largest overlay is KAWSEG, `0x1EAF8` bytes (to `0x801FCA30`; OPENSEG reaches `0x801F8188`). Each overlay's zeroed data is inside its file, so file size = memory size. KAWSEG and OPENSEG run into the 32 KB the start-up reserves for the stack (`0x801F8000`-`0x80200000`) |
-| `memory.heap` | Open: see "Memory and pointers" |
-| `UNITS`, `MAIN_UNIT` | `MAIN_C_SRC` and `<OVERLAY>_C_SRC` of `mk/version/us.mk`, without `src/main/psyq/` (the shim replaces the libraries), `startup.s` and `libmath.s` (host replacements, below). `main()` is `src/main/main.c:54`: it starts the scheduler with `runMainTask` (`src/main/system/boot.c:76`) and spins on `rand()` |
-| `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below), so the adapter or the stack has to map names. Open |
+| `memory.slots` | **One slot**, `overlay`, the overlay area at `0x801DDF38` (`OVERLAY_AREA`, `config/us/symbols_overlay_calls.txt`), `0x1EAF8` bytes: the largest overlay, KAWSEG (to `0x801FCA30`; OPENSEG reaches `0x801F8188`). Each overlay's zeroed data is inside its file, so file size = memory size. KAWSEG and OPENSEG run into the 32 KB the start-up reserves for the stack (`0x801F8000`-`0x80200000`) |
+| `memory.heap` | **A placeholder** (`0x801FCA30`-`0x80200000`, the PS1 stack area, used by nothing): the contract requires a heap right after the last slot, and this game's heap lies before it, as its own `.bss` array. The decision (2026-10-08): psxstack makes `memory.heap` optional ([psxstack#26](https://github.com/gascarcella/psxstack/issues/26)); the game keeps `HEAP_ARENA` as game data. See "Memory and pointers" |
+| `UNITS`, `MAIN_UNIT` | `port/tools/port_inputs.py` writes them from `MAIN_C_SRC` and `<OVERLAY>_C_SRC` of `mk/version/us.mk`: 155 units, without `src/main/psyq/` (the shim replaces the libraries), `startup.s` and `libmath.s` (host replacements, below). `main()` is `src/main/main.c:54`: it starts the scheduler with `runMainTask` (`src/main/system/boot.c:76`) and spins on `rand()` |
+| `OVERLAYS` | ENDSEG, EVOSEG, KAWSEG, OPENSEG, SAISEG, SUBSEG, SUGSEG, all in slot 1. psxstack keys an overlay by a file ID; this game loads by name from `P.DRV` (below). Decided game-side (2026-10-08): the ID is the overlay's 1-based index in `us.mk`'s `OVERLAYS` list (`port_inputs.py`), and at M1 the adapter maps `"P:\\kawseg.bin"` to it in `loadFileToAddress`'s hook |
 | `EXE_SYMBOLS` | `config/us/`'s symbol files (the EXE's names, and `symbols_overlay_calls.txt` for the 84 overlay functions the EXE calls) |
-| `GTEMAC` | Not the same shape as dw2003's `gtemac.h`: `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). They need host forms over the software GTE. Open: psxstack's GTEMAC translation or a host `gte.h` under `PC_PORT` |
-| `INCLUDE_DIRS` | `include/`, the root, `external/psyq_headers/psyq_lib47/include`. Game code doesn't include the Psy-Q headers: `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). That bears on psxstack #7 |
+| `GTEMAC` | **Not passed.** `include/gte.h` has 40 `gte_*` macros, 33 of them `__asm__` over `include/gte_macros.inc`, used 270 times in 6 files (`tmd_sort.c` 230). psxstack's translator cannot take them: it rejects output operands (`gte_mfc2`'s `"=r"`), knows only `.word` commands (ours are the `.inc` mnemonics), keeps temporaries per macro (`gte_prefetchv3c` hands `$8`-`$13` to `gte_ldv3_prefetched`), and writes its override as `psyq/gtemac.h`, which never shadows `"gte.h"`. Decided (2026-10-08): M1 writes `port/include/gte.h`, a host-only header first on the include path, by hand over `psyq_gte_mtc2`/`mfc2`/`cmd`/`swc2_`; the probe stubs the macros with an override of its own meanwhile |
+| `INCLUDE_DIRS` | `port/include/`, `include/`, the root. Game code doesn't include the Psy-Q headers (`task.c` alone includes `<kernel.h>` for the BIOS TCB): `include/game.h` redeclares the types (`:69-151`) and the prototypes (`~:1485-1660`). There is no `include/psyq/`, so the shim cannot compile against this tree until psxstack owns its declarations (psxstack #7). `include/stdarg.h` (Psy-Q's `va_list`) shadows the host's for anything compiled with these directories: the game units never include it, but psxstack gives the runtime and the shim the same include list (`cmake/psxstack.cmake:151, 282`), which M1 must change there |
+
+## The host-compile probe
+### The baseline (M0, 2026-10-08, at 3802dee)
+`scripts/probe.sh` configures the port from the tracked sources alone (`port/CMakeLists.txt`,
+`port/tools/port_inputs.py`: 155 units, 7 overlays) and runs psxstack's inventory (`port/tools/port_inventory.py`:
+gcc 16.2.1, `-m64`, psxstack v0.2.1's gate flags, `-DVERSION_US -DSKIP_ASM`, every `gte_*` macro a no-op). The
+result is the baseline M1 drives to zero; CI's `probe` job runs it and uploads `build/port_inventory/summary.txt`.
+
+**35 of 155 units compile; 120 fail with 3,732 gating diagnostics:** 2,328 int-to-pointer-cast (1,678 inside
+`include/game.h`'s macros, 116 inside `include/dcb/frame_callback.h`'s), 1,309 pointer-to-int-cast (337 inside
+`game.h`'s macros), 37 implicit-function-declaration, 29 incompatible-pointer-types, 19 int-conversion, 9 other
+errors, 1 fatal. `link` over the 35 objects: 4 duplicate globals, 160 undefined (65 Psy-Q functions, 22 data globals,
+62 defined in failing units, 11 other).
+
+### The triage
+The 3,732 are 3,246 distinct sites (a site inside a header macro counts once per C line that expands it). Sorted by
+kind, with the fix each needs. "Typedef" = a pointer-width integer type (`s32` on the PS1, `intptr_t` under
+`PC_PORT`) at a declaration; "cast edit" = the same type written at the cast site (`(s32)&x` becomes `(s32p)&x`,
+byte-identical on the PS1); "macro" = psxstack's `PTR_TO_S32`/`PTR_TO_U32` or a `PC_PORT` block. Classified by
+regexes over the diagnostics and the source lines: approximate to a few percent.
+
+| Kind | Sites | Files | What fixes it | Examples |
+|---|---|---|---|---|
+| A1 `(T *)GLOBAL` inside a header macro: `CUR_SPRT` 894, `PLAYER_DATA` 391, `WP` 79, `DECK_CHOICE` 10 | 1,374 | 32 | **Typedef at 4 declarations** (`SPRITE_POOL_CURSOR`, `PLAYER_PROFILES`, `WINDOW_PRIM_CURSOR`, `DECK_CHOICE`: `extern s32` in `game.h`/`frame_callback.h`) | `card_render.c:261`, `card_db.c:265`, `window.c:294` |
+| A2 `(T *)GLOBAL` written out in the C: `PLAYER_PROFILES` 283, `CURRENT_FRAME_BUFFER` 10, `KAW_DUEL` 3, `SESSION_DATA`, `SORT_WORK`, `STAGE_PAK`, … | 309 | 44 | **Typedef at the same declarations** (about 12 globals) | `card_db.c:254`, `card_db.c:378` |
+| A3 pointer-to-int inside a header macro: `addPrim`/`setaddr` 241, `CARD_BYTE` 78 (an offsetof idiom), `SHATTER_QUAD`/`_TRI` 10 | 329 | 43 | **One macro edit each**: `setaddr` to `PTR_TO_U32` (the ordering-table tag, as dw2003), `CARD_BYTE` to an `offsetof` form under `PC_PORT`, the two SHATTER macros in `evo_cutscene.c` | `card_render.c:273`, `kaw_battle_sim.c:462`, `evo_cutscene.c:842` |
+| B1 `(s32)&x` at a call: the GTE wrappers (`RotTransPers3/4` 70, `SetRotMatrix` 19, `RotAverageNclip4` 13, `transformAndAdd*` 70) and others | 254 | 20 | **Cast edit per site**; the prototypes in `game.h` (`s32 RotTransPers4(s32, …)`) get the typedef too | `card_render.c:829`, `card_render.c:843` |
+| B2 `(T *)value`, an `s32` local or parameter: `waitFrames()`'s result 42, `freeHeapBlock()` 6, `loadFileTagged()` 5, `loadFile()` 4, `decompressToHeap()` 3, parameters `pak` 8, `text` 7, `tim` 4, `path` 4, … | 106 | 48 | **Typedef at ~8 return types and ~15 parameters** (`waitFrames` returns the resume value, a pointer; the loaders return buffers) | `card_db.c:231`, `card_render.c:38`, `card_render.c:104` |
+| B3 `(s32)ident`, a pointer, function or array name as an integer: `drawText` and its siblings 290, `addFrameCallback`/`removeFrameCallback` 96, `LoadImage` 18, assignments 54, `AddPrim` 8 | 506 | 77 | **Cast edit per site**; the callees' parameters (`drawText(s32 x, s32 y, s32 text, …)`, `addFrameCallback(s32)`) get the typedef | `battle_hud.c:145`, `battle_hud.c:147`, `duel_session.c:162` |
+| B4 `(s32)call()`, a pointer-returning call as an integer: `findPakChunk` 8, `allocHeapBlock` 2, `openDiscFile` | 13 | 7 | Cast edit per site | `player_data.c:176`, `player_data.c:210` |
+| B5 `(s32)"literal"` into `drawText` and co. 120, assignments and tables 50, `mountDriveTask` 2 | 173 | 32 | Cast edit per site (the 3 in `open_save.c:58-60` are static initializers: the typedef also makes them constant) | `battle_hud.c:245`, `scene3d.c:210`, `open_save.c:58` |
+| C2 `(T *)field`, a pointer read back from an `s32` struct field: `slots->slots` 14, `slot->value` 10, `Graphics.primSlots[]` 9, `obj->tmd[]` 4, `HeapBlock.addr` 2, `win->label` 2, `model->link`, `bg->tim`, … | 54 | 8 | **Per struct**: a field of the game's own in-memory structs gets the typedef, which widens the struct on the host (no raw-offset reader, see D); `HeapBlock.addr` keeps bit 31 as its flag, so `heap.c` gets `PC_PORT` macros for the flag and the address (one file, ~10 sites). Fields that mirror disc data (`obj->tmd`?) need a look each | `scroll_bg.c:73`, `scene3d.c:96`, `scene3d.c:136` |
+| D raw-offset access `*(s32 *)((s8 *)p + 0x24)` | 1 | 1 | A `PC_PORT` field access (`file->size`) | `loader.c:100` |
+| E implicit declaration, a game function without a prototype (36 sites, 31 names: `KAW_showBonusBanner`, `transformAndAddPolyG4/GT4`, `addFrameCallback`, …) | 36 | 14 | **A prototype each** in the right `include/dcb/*.h` (byte-identical; a candidate upstream PR) | `duel_session.c:162`, `sug_trail.c:318` |
+| E implicit declaration, Psy-Q: `MoveImage2` | 1 | 1 | psxstack #7 | `card_zones.c:354` |
+| F incompatible-pointer-types (`s32 *` paths into `loadFileTagged(s32 *path, …)`, `drawTextColored`'s arguments swapped against its prototype, …) and int-conversion (`PLAYER_PROFILES = allocHeapBlock(...)`) | 48 | 12 | The typedef at the parameter or global fixes most; a few are real prototype mismatches to check against the PS1 code | `player_data.c:213`, `battle_hud.c:300`, `player_data.c:23` |
+| G other errors: `OVERLAY_LOAD_ADDR` (`const s32 … = (s32)OVERLAY_AREA`: a non-constant initializer and a `const` against `game.h`'s `extern s32`), `evo_trays.c:144`'s initializer, `task.c:11`'s `<kernel.h>` (`struct TCB`: the BIOS thread blocks the scheduler glue reads), `sug_sphere.c:22-23` and `open_movie.c:377` conflicting prototypes | 10 | 6 | The typedef (then `(s32p)OVERLAY_AREA` is an address constant); `task.c`: a `PC_PORT` block (the fibers replace the scheduler, psxstack #25); the 3 prototypes: byte-identical fixes, candidates for upstream | `duel_util.c:149`, `task.c:69`, `sug_sphere.c:22` |
+| X unclassified: `DUEL->sprites = (void *)KAW_allocCardPolys()` 11; `(s32)((T *)TABLE + id * 0x13C))->name` 21 | 32 | 12 | Cast edits and typedefs as above | `duel_session.c:37`, `text.c:69` |
+| **Total** | **3,246** | | | |
+
+**What the typedef buys.** Kinds A1, A2, B2, C2, F and most of G follow from about 40 declaration lines in
+`include/` (4 globals for 1,683 sites; ~12 more globals; ~8 return types; ~20 parameters and fields): **about 1,900
+sites silenced by declarations**, in a diff upstream can read. Kinds B1, B3, B4, B5 and X are **about 950 explicit
+casts** that need the type written at the site whichever strategy is chosen (a mechanical `(s32)` to `(s32p)` where
+the operand is a pointer, reviewable file by file). Kind A3 is **3 macro edits for 329 sites**, and `setaddr` is the
+one place where psxstack's own macro (`PTR_TO_U32`, the tag window) is the right tool. What needs psxstack's
+`PTR_TO_S32` proper is small: `HeapBlock.addr` (the flag in bit 31) and whatever `Task.regs`/`Task.stack` keep once
+the fibers replace the context switch. Per-site `PTR_TO_S32`/`S32_TO_PTR` everywhere would be ~3,200 edits, ~1,700
+of them inside two header macros that one typedef covers.
+
+### Beyond the gate (`counts` and `link`)
+- **Busy-waits:** 9 empty-body loops, all in `cd_file.c` (`CdInit`, `CdControlB`, `CdRead` retries): `PLATFORM_WAIT()`
+  each. `open_movie.c`'s spins and `memcard.c`'s counter wait have non-empty bodies ("Busy-waits" above).
+- **Fixed addresses:** 13 scratchpad sites (`SORT_WORK` in `tmd_sort.h` and 12 casts of `0x1F800000` in `main/model`,
+  `main/gfx`, `evoseg/cutscene`, `main/system`) and 2 overlay-area casts in `kaw_effect.c` (the stale addresses). No
+  late-bound `func_8xxxxxxx` names, no `INCLUDE_ASM`.
+- **GTE:** 271 uses of 38 of the 40 `gte_*` macros, 230 in `tmd_sort.c` (`gte_lwc2` 69, `gte_swc2` 47, `gte_stopz_reg`
+  22, `gte_mfc2` 12). `port/include/gte.h` has to cover all 38.
+- **Psy-Q calls** (by library; the library of a name comes from the `src/main/psyq/<library>_<object>` file that
+  defines it, written to `build/port_inventory/psyq_symbols.txt` in the form the inventory parses): LIBGPU 50
+  functions (`DrawSync` 50 sites, `SetSemiTrans` 50, `AddPrim` 43, `GetTPage` 27, `SetDrawTPage` 25, `LoadImage` 22,
+  …), LIBSND 26, LIBGS 20, LIBCD 18, the pad and BIOS file calls 13, LIBCARD 5, LIBSPU 3, LIBAPI 3, LIBETC 2.
+- **The executable's game `.bss` is not C.** `config/us/main.yaml:187` keeps it as one splat `bss` segment, `game`
+  (`0x80077A08` to `0x801D83D8`, `0x1609D0` bytes under 140 labels in the generated `asm/us/main/data/game.bss.s`:
+  `GRAPHICS`, `DUEL_STATE`, `TASKS`, `HEAP_ARENA`, `FRAME_CALLBACKS`, `PAD_STATES`, …); the C only declares them
+  (`extern` in `game.h` and `include/dcb/*.h` for 116 of the 140; the other 24 in the units that use them). The
+  overlays' zeroed data is C (`<prefix>_bss.c`). On the host each needs a C definition: psxstack's asm-data stand-in
+  pattern (dw2003's `port/game/asmdata.c`), here generated at configure time from tracked files (the addresses and
+  sizes from `config/us/symbols.txt` within the segment's range, the types from the `extern` declarations), so that
+  every byte stays in the renamed sections the overlay manager and the save states snapshot. An M1 piece of the
+  generator, no stack change.
+- **Duplicate globals** (`link`): `D_801F5254`, `D_801F535C`, `D_801F5454` in `evo_bss.c` and `sai_bss.c`,
+  `D_801F540C` in `evo_bss.c` and `open_bss.c`: overlay data sharing an address and a splat name. psxstack links
+  every overlay statically, so they need distinct names (an upstream rename with the overlay prefix, as
+  CONTRIBUTING.md asks, or `PC_PORT` renames).
+
+### What got in the way in psxstack v0.2.1 (for its issues)
+- `tools/port_inventory.py:608-626` and `tools/port_gen.py:291` name the GTE override `psyq/gtemac.h`; a game whose
+  header is `gte.h` gets none. Worked around: the wrapper writes `build/port_inventory/include/gte.h` itself.
+- `tools/port_inventory.py:243-260` learns libraries only from `// LIBxxx.LIB/OBJ.OBJ` comments; hence the derived
+  `psyq_symbols.txt`.
+- `psyq/check.sh:33-50` hardcodes `tools/port_inventory.py`, `tools/venv/bin/python` and `port/game/game.json`.
+- `cmake/psxstack.cmake:151, 282` give the runtime and the shim the game's include directories, where this tree's
+  `include/stdarg.h` shadows the host's (M1 cannot build the adapter until that changes).
 
 ## What the game needs
 
@@ -106,8 +191,9 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
     in `tmd_sort.c`); others are in `camera.c`, `scene3d.c`, `render_loop.c` (clears 1 KB) and the cutscene and
     sprite code.
   - psxstack has no scratchpad region: its only scratchpad hook is `PORT_SCRATCHPAD_STACK_*`, for dw2003's stack
-    switch, which does nothing on the host. Here the game stores data there, so the host needs a 1 KB buffer behind
-    a macro: a small hook here, or a stack region.
+    switch, which does nothing on the host. Here the game stores data there. Decided game-side (2026-10-08): a
+    `SCRATCHPAD(type, ofs)` macro in `port.h` over a 1 KB buffer in the adapter; a stack region only if a third game
+    needs one.
   - Other fixed addresses: `task.c:68` reads the kernel's PCB pointer at `0x108`. There are no I/O register
     accesses in game code.
 
@@ -173,15 +259,23 @@ The game also uses libc's `sprintf` (345 calls), `rand` (87), `str*`, `memset`, 
 Psy-Q-specific behaviour (`rand`'s sequence, `sprintf`'s formats) needs a check against the emulator.
 
 ## Open questions
+Decided on 2026-10-08 (the choices are in "The contract, for this game" and above): the heap (`memory.heap` becomes
+optional in psxstack, [psxstack#26](https://github.com/gascarcella/psxstack/issues/26)), overlay identity and the
+scratchpad (game-side, no contract change), the GTE macros (a host `port/include/gte.h`), the probe's CI gate (it
+must run; the counts are the baseline until M1 drives them to zero), and the test runners (lifted into psxstack
+first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then consumed here, issue #3). Still open:
 1. Fibers in psxstack ([psxstack#25](https://github.com/gascarcella/psxstack/issues/25)): the API (create, switch, destroy), Windows (fibers) and Linux (`ucontext` or hand-written
    switches), AddressSanitizer annotations, save states holding every stack. When may a vblank preempt? Only at the
    pump's points: are they enough for `memcard.c`'s spin?
-2. The heap ([psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): in psxstack's arena, through the `HEAP_*` macros, with a contract change for a heap that isn't contiguous
-   with the slot?
-3. Overlay identity ([psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): psxstack keys overlays by file ID, and this game names them inside `P.DRV`.
-4. GTE: a host `gte.h` under `PC_PORT`, or psxstack's `GTEMAC` translation extended to this macro set.
-5. The stale KAWSEG addresses (0x801E6424, 0x801E651C): what happens on the PS1 when they run?
-6. Psy-Q declarations ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)): this game redeclares them in `include/game.h` and builds its libraries against
-   `jype0/psyq_headers` (Psy-Q 4.7). psxstack #7 decides where the shim's declarations come from.
-7. Would upstream take the hooks? They leave the PS1 build identical, and upstream's CONTRIBUTING.md forbids
-   `NON_MATCHING`, not `PC_PORT`. Ask juandav once the first hooks exist, through the owner.
+2. **The hooking strategy** for the thousands of int/pointer cast sites ("The host-compile probe"): dw2003's per-site
+   `PTR_TO_S32`/`S32_TO_PTR` macros, or a pointer-width integer typedef (`s32` on the PS1, `intptr_t` under `PC_PORT`)
+   at the declarations of the pointer-holding globals, parameters and locals and at the `(s32)&x` casts, with the
+   macros kept where an integer lives in a PS1-sized layout. Both leave the PS1 bytes unchanged; the typedef is the
+   smaller diff and changes more of upstream's declarations. Decided after the triage, with juandav's view (7).
+3. The stale KAWSEG addresses (0x801E6424, 0x801E651C): what happens on the PS1 when they run? With the emulator
+   (issue #3), before the adapter resolves them at M1.
+4. Psy-Q declarations ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)): this game has no recovered
+   `include/psyq/`, so the shim cannot compile here until psxstack owns its declarations. It blocks M1's link, not
+   M0.
+5. Would upstream take the hooks? They leave the PS1 build identical, and upstream's CONTRIBUTING.md forbids
+   `NON_MATCHING`, not `PC_PORT`. Ask juandav with the triage's numbers and the strategy of (2), through the owner.

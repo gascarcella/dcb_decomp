@@ -75,11 +75,11 @@ psxstack checkout vX.Y.Z`, commit the submodule). dw2003recomp bumps its own pin
 | `tools/` | upstream | Their build helpers (`try_match.py`, `hacks.py`, `check_names.py`, `rename.py`, `extract_drv.py`, `objdiff_generate.py`, `dl_deps.sh`, …) |
 | `external/` | upstream | Submodules: maspsx, m2c, decomp-permuter, psyq_headers |
 | `Makefile`, `Dockerfile`, `.github/workflows/build.yaml`, `docker.yaml` | upstream | The build and their CI (its build job runs only in ReGame-Labs; its `names` job runs here too) |
-| `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh` |
+| `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh`, `probe.sh` (the port's configure and host-compile probe) |
 | `docs/` | ours | `STATUS.md`, `PORT.md`, `DECISIONS.md`, `THIRD_PARTY.md` |
 | `psxstack/` | ours (submodule) | The stack at its pinned tag |
-| `port/` | ours (to come) | The port's game side, as in dw2003recomp: `CMakeLists.txt` (`psxstack_add_game()`), `game/` (adapter, `game.json`), `mods/` |
-| `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`) |
+| `port/` | ours | The port's game side, as in dw2003recomp: `CMakeLists.txt` (`psxstack_add_game()`), `game/` (the adapter, `game.json`), `tools/` (`port_inputs.py`: the unit and overlay lists from `mk/version/us.mk`; `port_inventory.py`: psxstack's host-compile probe configured for this tree), later `include/` (host-only headers such as `gte.h`) and `mods/`. Our tools live here, not in upstream's `tools/` |
+| `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`) and the port's disc-free `probe` job (`scripts/probe.sh`) |
 | `bin/`, `.venv/`, `disks/`, `build/`, `asm/`, `expected/`, `assets/` | untracked | The toolchain (`bin/cross`: binutils + cpp wrapper, `bin/python`, upstream's downloads), the venv, the disc files, build outputs |
 
 ## Commands
@@ -88,6 +88,9 @@ scripts/setup.sh            # main checkout, once: submodules, binutils (bin/cro
 scripts/setup.sh disc       # the whole disc image, disks/us/dcb_us.bin + .cue (for the emulator and the port), SHA-1 checked
 scripts/worktree_init.sh    # a fresh worktree: link bin/ .venv disks/, submodules at their pins (run first!)
 scripts/build.sh [--clean]  # make generate + make + make compare for VERSION (default us); every binary must say OK
+scripts/probe.sh            # the port: cmake configure (build/port), then the host-compile probe and link check over every us unit (no disc)
+.venv/bin/python port/tools/port_inventory.py probe|link|counts [--sites KIND]   # the probe alone; build/port_inventory/
+cmake -S port -B build/port -G Ninja [-DPSXSTACK_DIR=$PWD/../psxstack]           # the port's configure (M0: configures; the build links from M1)
 . .venv/bin/activate        # then upstream's commands work as their README says (the toolchain is in .venv/bin):
 make generate               #   splat: asm/us, build/us/generated (after config changes)
 make -j$(nproc) && make compare   #   build, check SHA-1s of the executable and every overlay
