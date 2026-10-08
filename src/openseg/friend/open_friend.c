@@ -216,7 +216,7 @@ void OPEN_closePlayerRecordWindows(void) {
 
 void OPEN_runBattleWithFriend(void) {
     Rect16 rect;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     u32 *arc;
     char *message;
     s32 i;

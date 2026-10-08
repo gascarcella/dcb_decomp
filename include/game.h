@@ -1398,10 +1398,12 @@ typedef struct {
     /* 0x2 */ s16 id;
     /* 0x4 */ struct CardSprite *sprite;
 } CardCursor;
+#ifndef PC_PORT /* PC_PORT: the Dialog itself (dcb/dialog.h, issue #23) */
 typedef struct {
     /* 0x00 */ u8 unk0[0xA5];
     /* 0xA5 */ s8 choice;
 } Window;
+#endif
 #if VERSION_JP
 /* jp's card sprite has no fade-in colours, number or depth */
 typedef struct CardSprite {
@@ -1511,7 +1513,9 @@ extern void *DUEL_STATE;
 extern u8 *DUEL_PLAYERS[];
 extern ScrollBackground SCROLL_BACKGROUND;
 extern s32 ATTACK_ICON_TIMER;
+#ifndef PC_PORT /* PC_PORT: a Dialog (dcb/dialog.h, issue #23) */
 extern s32 DUEL_DIALOG;
+#endif
 extern u8 *HUD_PANELS;
 extern u8 *CARD_ANIMS;
 extern MsgBar DUEL_MSG_BAR;

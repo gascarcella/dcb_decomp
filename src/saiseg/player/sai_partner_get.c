@@ -162,7 +162,7 @@ void SAI_runPartnerGet(s32 task) {
     Rect16 cursorRect;
     Rect16 rect;
     Rect16 view;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     u8 *file;
     s32 i;
 
@@ -231,7 +231,7 @@ void SAI_runPartnerGet(s32 task) {
         }
         initDialog(dialog, "Is this Partner OK?", 1);
         runDialog(dialog);
-        switch ((s8)dialog[0xA5]) {
+        switch ((s8)DIALOG_BUFFER_CHOICE(dialog)) {
         case 1:
             break;
         case 0:

@@ -317,7 +317,7 @@ void OPEN_runNameEntry(char *name, s32 parentTask) {
     Rect16 cursor;
     Rect16 rect;
     Rect16 view;
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
 
     strcpy(OPEN_NAME_ENTRY.name, name);
     OPEN_NAME_ENTRY.col = 0;
@@ -387,7 +387,7 @@ void OPEN_runNameEntry(char *name, s32 parentTask) {
         } else {
             initDialog(dialog, OPEN_STR_IS_THIS_NAME_OK, 1);
             runDialog(dialog);
-            switch ((s8)dialog[0xA5]) {
+            switch ((s8)DIALOG_BUFFER_CHOICE(dialog)) {
             case 1:
                 break;
             case 0:

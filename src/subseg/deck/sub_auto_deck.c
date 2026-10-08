@@ -249,7 +249,7 @@ void SUB_drawAutoDeckMenu(void) {
 }
 
 void SUB_runAutoDeckMenu(void) {
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     s32 result;
 
     playMenuSound(3);
@@ -270,7 +270,7 @@ void SUB_runAutoDeckMenu(void) {
             PLAYER_DATA(SUB_EDITOR.player).savedDecks[SUB_DECK_MENU.slot].inUse = 0;
             initDialog(dialog, "Do you want to choose from a Base Deck?", 1);
             runDialogForPad((s32 *)dialog, SUB_EDITOR.player);
-            result = (s8)dialog[0xA5];
+            result = (s8)DIALOG_BUFFER_CHOICE(dialog);
             if (result == 1 && SUB_chooseBaseDeck(&PLAYER_DATA(SUB_EDITOR.player).savedDecks[SUB_DECK_MENU.slot], SUB_EDITOR.player) >= 0) {
                 PLAYER_DATA(SUB_EDITOR.player).savedDecks[SUB_DECK_MENU.slot].inUse = result;
             }

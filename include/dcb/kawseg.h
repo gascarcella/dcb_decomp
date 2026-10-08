@@ -6,6 +6,9 @@
 #include "dcb/duel_launch.h"
 #include "dcb/battle_hud.h"
 #include "dcb/menu.h"
+#ifdef PC_PORT
+#include "dcb/dialog.h" /* DialogK (issue #23) */
+#endif
 
 /* the duel state (DUEL) as KAWSEG sees it */
 #define KAW_DUEL ((DuelK *)DUEL_STATE)
@@ -180,7 +183,11 @@ typedef struct {
     /* 0x004 */ ListWindow lists[2];
     /* 0x094 */ CursorHighlight highlights[2];
     /* 0x134 */ ListWindow frames[2];
+#ifndef PC_PORT
     /* 0x1C4 */ u8 dialog[0xB8];
+#else
+    Dialog dialog[1]; /* the u8[0xB8] buffer is a Dialog on the host (dcb/dialog.h, issue #23) */
+#endif
     /* 0x27C */ u16 deckIds[2][0xA2];
     /* 0x504 */ s32 deckListOpen[2];
     /* 0x50C */ s32 introState;
@@ -290,6 +297,7 @@ typedef struct {
     AttackSim sims[3];
 } DuelAi;
 
+#ifndef PC_PORT /* PC_PORT: the Dialog itself, yes/no/draw/result its unions' names (dcb/dialog.h, issue #23) */
 typedef struct {
     /* 0x00 */ u8 unk0[0x98];
     /* 0x98 */ char *yes;
@@ -299,6 +307,9 @@ typedef struct {
     /* 0xA5 */ s8 result;
     /* 0xA6 */ u8 pad;
 } DialogK;
+#else
+typedef Dialog DialogK;
+#endif
 
 typedef struct HudPrims {
     u8 data[0x5F0];

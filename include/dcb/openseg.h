@@ -2,6 +2,9 @@
 #define DCB_OPENSEG_H
 
 #include "game.h"
+#ifdef PC_PORT
+#include "dcb/dialog.h" /* OPEN_DIALOG's Window (issue #23) */
+#endif
 
 typedef struct {
     s32 step;

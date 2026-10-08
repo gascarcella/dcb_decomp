@@ -3,6 +3,9 @@
 
 #include "game.h"
 #include "dcb/script.h"
+#ifdef PC_PORT
+#include "dcb/dialog.h" /* EvoDialog (issue #23) */
+#endif
 
 typedef struct {
     s32 unk0;
@@ -265,10 +268,14 @@ typedef struct {
     u8 unkA[2];
 } EvoAbilityInfo;
 
+#ifndef PC_PORT /* PC_PORT: the Dialog itself (dcb/dialog.h, issue #23) */
 typedef struct {
     u8 pad0[0xA5];
     s8 choice;
 } EvoDialog;
+#else
+typedef Dialog EvoDialog;
+#endif
 
 typedef struct {
     u8 card;

@@ -88,7 +88,7 @@ void quitToTitleOrPlayEnding(s32 mode) {
 }
 #elif VERSION_US || VERSION_EU
 void quitToTitleOrPlayEnding(s32 mode) {
-    u8 dialog[0xB8];
+    DIALOG_BUFFER(dialog, 0xB8);
     Rect16 vramRect = { 0, 0, 480, 512 };
     s32 parentTask;
     s32 done;
@@ -117,7 +117,7 @@ void quitToTitleOrPlayEnding(s32 mode) {
                           "to continue.)",
                           1);
             runDialog(dialog);
-            switch ((s8)dialog[0xA5]) {
+            switch ((s8)DIALOG_BUFFER_CHOICE(dialog)) {
             case 1:
                 done = 1;
                 break;
