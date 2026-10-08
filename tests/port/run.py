@@ -4,11 +4,11 @@ the emulator reached. The test is psxstack's (tools/replay/port_test.py; GAME_CO
 this game's configuration of it (the disc, the scripts and expected files, the venv). The stack is the psxstack
 submodule, or $PSXSTACK_DIR when it names another checkout of it.
 
-State (M1, docs/STATUS.md): `boot` and `title` reach every checkpoint with the emulator's stages and overlay
-sequence, twice byte-identical, but the stable profile hashes differ: at boot the profile holds what the heap held
-before (resetPlayerData leaves most of it) and serials drawn from rand(), which no host layout reproduces (issue #24).
-`new_game` and `first_duel` stop at the registration's first dialog (issue #23). So this is not a CI gate yet;
-scripts/port_build.sh --boot is (the boot to OPENSEG).
+State (M1, docs/STATUS.md): `boot` and `title` pass and gate CI: every checkpoint at the emulator's stage and map,
+the overlay sequence, twice byte-identical; their checkpoints carry no profile image (`"image": false`, issue #24).
+`new_game` and `first_duel` run to their end (SAISEG, KAWSEG; issue #23) and pass their image-less checkpoints, but
+the `saiseg` and `first_duel` hashes differ: heap bytes the game never writes (partners 1-2, decks 1-2, padding) and
+one starter card drawn with rand() (psxstack#40). So those two are not gated yet.
 
 Usage: tests/port/run.py [SCRIPT ...] [--m32] [--sanitize] [--cd-speed instant|realistic] [--out DIR] [-j N]
 
@@ -34,6 +34,10 @@ SCRIPTS = ROOT / "tests/replay/scripts"
 EXPECTED = ROOT / "tests/replay/records"
 DISC = ROOT / "disks/us/dcb_us.cue"
 VENV_BIN = ROOT / ".venv/bin"
+# --sanitize: ASan's fake stacks off. The game keeps primitives in its tasks' stack frames (the dialogs' windows and
+# cursors) and links them into the ordering table, whose tags are offsets in the tag window (psxstack's docs/PORT.md);
+# a fake frame is outside it, a fatal error. The fibers' own stacks are inside (RUNTIME.md says the same of states).
+os.environ.setdefault("ASAN_OPTIONS", "detect_leaks=1:detect_stack_use_after_return=0")
 
 CFG = port_test.configure(root=ROOT, game_json=ROOT / "port/game/game.json", disc=DISC, scripts_dir=SCRIPTS,
                           expected_dir=EXPECTED, venv_bin=VENV_BIN,

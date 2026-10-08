@@ -71,9 +71,20 @@ runners).
   blockers on the way: the frame buffer read before the render loop runs, the card directories' size (the heap's PS1
   layout kept: `PLAYER_PROFILES` at 0x800C8964), `StCdIntrFlag`'s type. `tests/port/run.py boot` and `title` pass and
   are a CI gate (#24 decided: the checkpoints before the profile is defined are `"image": false`, the
-  `rand()`-drawn `cardCopySerials` are volatile, the four records re-recorded); `new_game` stops at the registration's first dialog (#23). Also open: UBSan's
-  alignment reports (#25), the movie's length (#26), the TMD readers (#22 item 4).
-- Next: #23 (the dialogs), then `new_game` and `first_duel` (#4).
+  `rand()`-drawn `cardCopySerials` are volatile, the four records re-recorded). Also open: UBSan's alignment reports
+  (#25), the movie's length (#26), the TMD readers (#22 item 4).
+- **The dialogs (#23):** every dialog object is one `Dialog` on the host (`ChoiceDialog`, `Window`, `DialogK`,
+  `EvoDialog`, `DUEL_DIALOG`, `SAI_DIALOG`, the `u8[0xB8]` stack buffers, `DeckScreen.dialog`), and `Model2220` is the
+  `Model` (`docs/PORT.md` "Memory and pointers"); two reads through null pointers the PS1 survives (`initDialog`'s
+  text 0, `unloadModelAnimations` after `unloadModel`) take OpenBIOS's zeros. **`tests/port/run.py new_game` and
+  `first_duel` run to their end**: SAISEG at 9109 and KAWSEG at 11560 (the emulator: 11681, 14211), every stage, map
+  and overlay load the emulator's, deterministic, the five image-less checkpoints pass; the sanitizer build too, with
+  no report the base did not have. Only the `saiseg` and `first_duel` hashes differ: bytes the game never writes
+  (partners 1-2, decks 1-2, the starter deck's name tail, `unk104` and `unk10E`, the padding `unk15DF`, `unk2435`,
+  `unk2771`, `rewardCards`/`rewardResults` before a duel, partner 0's last 3 bytes), and one starter card drawn with
+  `rand()` (`cardCollection` 28 against 137, psxstack#40). Every field the registration writes matches.
+- Next: those bytes as volatile ranges (and `rand()`, psxstack#40), so `new_game` can gate; then `first_duel`'s duel
+  (#4).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

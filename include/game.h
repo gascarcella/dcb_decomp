@@ -579,6 +579,7 @@ typedef struct {
     /* 0x0 */ s32 frameCount;
     /* 0x4 */ void *data;
 } AnimClip;
+#ifndef PC_PORT /* PC_PORT: the Model itself (below Model; issue #23) */
 typedef struct {
     /* 0x0000 */ u8 unk0[0x1F80];
     /* 0x1F80 */ s16 *bonepos[32];
@@ -591,6 +592,7 @@ typedef struct {
     /* 0x26DC */ u8 unk26DC[0x18];
     /* 0x26F4 */ void *pak;
 } Model2220;
+#endif
 /* One animated channel of a bone, eased between two keys (model_anim.c) */
 typedef struct {
     /* 0x0 */ s32 value;    /* fixed point: angle << 20, position/scale << 16 */
@@ -1199,6 +1201,12 @@ typedef struct {
     /* 0x26F8 */ u8 clut[0x200];
 #endif
 } Model;
+#ifdef PC_PORT
+/* A view of Model by its PS1 offsets (Model2220, above): on the host, where Model's fields before bonepos hold
+   pointers, the Model itself. Only bonepos is read through it (open_registration.c); its `scale` (Model.boneScale)
+   is not. */
+typedef Model Model2220;
+#endif
 typedef struct {
     s16 id;
     s16 sub;

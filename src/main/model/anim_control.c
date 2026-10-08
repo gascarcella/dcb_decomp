@@ -82,7 +82,14 @@ void unloadModelAnimations(s32 slot) {
     s32 key;
     s32 i;
 
+#ifdef PC_PORT
+    /* OPEN_unloadSceneModel, SUBSEG's shop and NISSEG's viewer call this after unloadModel cleared the slot: the
+       PS1 reads Model.id of a null Model, the halfword at address 6, which is 0 under OpenBIOS (PCSX-Redux, issue
+       #23) */
+    key = SCENE_3D->models[slot] != 0 ? ((Model *)SCENE_3D->models[slot])->id : 0;
+#else
     key = ((Model *)SCENE_3D->models[slot])->id;
+#endif
     freeHeapBlocksByTag(slot + ANIM_HEAP_TAG);
     key = (key << 8) | 0x10000000;
     for (i = 0; i < 0x20; i++) {
