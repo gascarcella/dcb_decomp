@@ -1601,7 +1601,7 @@ void GsInitCoordinate2(GsCOORDINATE2 *, GsCOORDINATE2 *);
 void *bzero(void *, s32);
 void StoreImage2(Rect16 *, u32 *);
 void GsMapModelingData(u32 *);
-void GsLinkObject4(u32, void *, s32);
+void GsLinkObject4(u32p, void *, s32);
 s32 PushMatrix();
 s32 PopMatrix();
 void GsGetLws(GsCOORDINATE2 *, MATRIX *, MATRIX *);

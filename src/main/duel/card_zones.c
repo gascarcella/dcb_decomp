@@ -343,7 +343,7 @@ s32 armorDigivolvePartner(s32 player, s32 partnerSlot) {
         return -1;
     }
     cardIndex = getActiveDigimonCard(player);
-    setCardSlotFromId(&PLAYER_CARDS(PLAYER(player))[cardIndex % 30], PLAYER_DATA(player).partners[partnerSlot].armorCardId);
+    setCardSlotFromId((u8 *)&PLAYER_CARDS(PLAYER(player))[cardIndex % 30], PLAYER_DATA(player).partners[partnerSlot].armorCardId);
     armorCard = &PLAYER_DATA(player).partners[partnerSlot].card[1];
     PLAYER_CARDS(PLAYER(player))[cardIndex % 30].card = (s8 *)armorCard;
     /* copy the armor's art over the card's art in VRAM */
@@ -385,7 +385,7 @@ s32 armorDevolvePartner(s32 player, s32 partnerSlot) {
         return -1;
     }
     cardIndex = getActiveDigimonCard(player);
-    setCardSlotFromId(&PLAYER_CARDS(PLAYER(player))[cardIndex % 30], PLAYER_DATA(player).partners[partnerSlot].cardId);
+    setCardSlotFromId((u8 *)&PLAYER_CARDS(PLAYER(player))[cardIndex % 30], PLAYER_DATA(player).partners[partnerSlot].cardId);
     baseCard = &PLAYER_DATA(player).partners[partnerSlot].card[0];
     PLAYER_CARDS(PLAYER(player))[cardIndex % 30].card = (s8 *)baseCard;
     /* copy the partner's art back over the card's art in VRAM */

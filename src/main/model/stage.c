@@ -128,7 +128,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id) {
     KeyFrame *key;
 
     sprintf(path, "F:\\%03d.PAK", id);
-    pak = loadFileTagged((s32 *)path, getCurrentTaskId(), slot + 0x1F4);
+    pak = loadFileTagged(path, getCurrentTaskId(), slot + 0x1F4);
     if (loadModel(slot, id, -1, pak) == 0) {
         return pak;
     }
@@ -160,7 +160,7 @@ s32 loadDigimonModelPak(s32 slot, s32 id, s8 format, s32 loadAllAnims) {
     } else {
         sprintf(path, "F:\\%03d.PAK", id);
     }
-    pak = loadFileTagged((s32 *)path, getCurrentTaskId(), slot + 0x1F4);
+    pak = loadFileTagged(path, getCurrentTaskId(), slot + 0x1F4);
     if (loadModel(slot, id, -1, pak, format) == 0) {
         return pak;
     }
@@ -404,7 +404,7 @@ void showArenaStage(s16 rotX) {
 
 void unloadArenaStage(void) {
     unloadModel(0x17);
-    freeHeapBlock(STAGE_PAK);
+    freeHeapBlock((void *)STAGE_PAK);
 }
 
 /* Every texAnimDelay frames, moves the stage's CLUT to the next frame of its

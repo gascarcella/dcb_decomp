@@ -20,7 +20,7 @@ void initPlayerData(void) {
     void *session;
 
     loadCardDatabase();
-    PLAYER_PROFILES = allocPermanentHeapBlock(sizeof(PlayerProfile) * 2);
+    PLAYER_PROFILES = (s32p)allocPermanentHeapBlock(sizeof(PlayerProfile) * 2);
     SESSION_DATA = session = allocPermanentHeapBlock(0x102C);
     ((SessionData *)SESSION_DATA)->areaSession = allocPermanentHeapBlock(0x1AC);
     resetPlayerData();
@@ -207,7 +207,7 @@ s32p loadSkill(s32 skillId, s32p pak) {
     char path[32];
     s32p skill;
 
-    skill = (s32)findPakChunk((Chunk *)pak, 2, skillId);
+    skill = (s32p)findPakChunk((Chunk *)pak, 2, skillId);
     if (skill == 0) {
         sprintf(path, "E:\\SKILL\\SKILL%d.MSD", skillId);
         skill = loadFileTagged(path, getCurrentTaskId(), 0x81);

@@ -206,7 +206,7 @@ s32 loadModel(s32 slot, s32 id, s32p vramSlot, s32p pak, s8 format) {
 #endif
     data = findPakChunk((Chunk *)pak, 0, id);
     if (data == 0) {
-        data = (u8 *)loadFileTagged((s32 *)path, getCurrentTaskId(), slot + 0x40);
+        data = (u8 *)loadFileTagged(path, getCurrentTaskId(), slot + 0x40);
         if (data == 0) {
             return 0;
         }
@@ -268,7 +268,7 @@ skip:
             }
             model->obj[i].tmd = 0;
             relocateOmdObjects((Tmd18 *)data);
-            linkOmdObject((s32)(data + 12), &model->obj[i], i);
+            linkOmdObject((s32p)(data + 12), &model->obj[i], i);
         }
 #if VERSION_US || VERSION_EU
     } else {
@@ -280,7 +280,7 @@ skip:
             }
             model->obj[i].tmd = 0;
             GsMapModelingData((u32 *)(data + 4));
-            GsLinkObject4((u32)(data + 12), &model->obj[i], 0);
+            GsLinkObject4((u32p)(data + 12), &model->obj[i], 0);
         }
     }
 #endif

@@ -105,7 +105,7 @@ void loadSoundEffectBank(s32 bankId) {
         /* written as a word here, read as a halfword by the SFX players */
         SFX_BASE_NOTE = SE_BANK_INFO[bankId][0xF];
         sprintf(name, "A:\\SE%d.PAK", bankId);
-        pak = (u8 *)loadFileTagged((s32 *)name, getCurrentTaskId(), -2);
+        pak = (u8 *)loadFileTagged(name, getCurrentTaskId(), -2);
         if (pak == 0) {
             bank->id = 0xFF;
         } else {
@@ -146,7 +146,7 @@ void loadMusicTrack(s32 slotIndex, s32 trackId, u8 volume) {
     slot->id = trackId;
     SOUND_STATE.vol[slotIndex] = volume;
     sprintf(name, "A:\\BGM\\BGM%02d.PAK", trackId);
-    pak = (u8 *)loadFileTagged((s32 *)name, getCurrentTaskId(), -2);
+    pak = (u8 *)loadFileTagged(name, getCurrentTaskId(), -2);
     if (pak == 0) {
         slot->id = 0xFF;
     } else {
