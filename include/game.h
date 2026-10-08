@@ -1542,10 +1542,17 @@ void MoveImage(Rect16 *rect, s32 x, s32 y);
 s32 MoveImage2(Rect16 *rect, s32 x, s32 y);
 void SsInit(void);
 void launchTaskScheduler(s32, s32, void (*)(), s32, s32, s32, s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+s32 EnterCriticalSection(void);
+void ExitCriticalSection(void);
+s32 OpenEvent(u32, s32, s32, s32 (*)());
+s32 EnableEvent(s32);
+#else
 s32 EnterCriticalSection();
 s32 ExitCriticalSection();
 long OpenEvent(unsigned long, long, long, long (*)());
 long EnableEvent(long);
+#endif
 s32 SetRCnt(u32, u16, s32);
 s32 StartRCnt(u32);
 extern int endTask(int);
@@ -1577,10 +1584,18 @@ u8 *CdIntToPos(s32, u8 *);
 s32 CdRead(s32, u8 *, s32);
 s32 CdReadSync(s32, u8 *);
 int toupper(int);
+#ifdef PC_PORT /* the stack's types (port_inventory.py decls): a pointer, 0 or -1; CdSync's result buffer */
+void *CdSearchFile(void *, char *);
+#else
 s32 CdSearchFile(void *, char *);
+#endif
 s32 CdPosToInt(void *);
+#ifdef PC_PORT
+int CdSync(int, u8 *);
+#else
 s32 CdSync(s32, s32);
 extern int CdSync(int, int);
+#endif
 void SetDrawTPage(void *, s32, s32, s32);
 #ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
 void SetTexWindow(void *, s16 *);
@@ -1688,15 +1703,24 @@ void SetGeomOffset(s32, s32);
 void SetGeomScreen(s32);
 void GsSetProjection(s32);
 s32 GsSetRefView2(GsRVIEW2 *);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void GsSetAmbient(s32, s32, s32);
+#else
 s32 GsSetAmbient(s32, s32, s32);
+#endif
 void GsSetLightMode(s32);
 void SetBackColor(s32, s32, s32);
 void GsInit3D(void);
 void SsSetMVol(s16, s16);
 void SsSetTableSize(s32 *, s16, s16);
 void SsSetTickMode(s32);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SsStart(void);
+void SsSetStereo(void);
+#else
 s32 SsStart();
 s32 SsSetStereo();
+#endif
 void SsVabClose(s16);
 void bcopy(void *, void *, s32);
 s16 SsSeqOpen(u8 *, s16);
@@ -1704,7 +1728,11 @@ void SsSeqClose(s16);
 s32 SpuClearReverbWorkArea(s32);
 void SsUtSetReverbDepth(s16, s16);
 s16 SsUtSetReverbType(s16);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SsUtReverbOff(void);
+#else
 s32 SsUtReverbOff();
+#endif
 void SsUtReverbOn(void);
 void SpuSetVoiceAttr(SpuVoiceAttr *);
 s16 SsVabOpenHeadSticky(u8 *, s16, s32);
@@ -1712,13 +1740,25 @@ s16 SsVabTransBody(u8 *, s16);
 s16 SsVabTransCompleted(s16);
 extern short SsUtKeyOnV(short voice, short vabId, short prog, short tone,
                         short note, short fine, short voll, short volr);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+s16 SsUtKeyOffV(s16);
+#else
 s32 SsUtKeyOffV(s16);
+#endif
 void SsUtAllKeyOff(s16);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void SsSeqStop(s16);
+#else
 s32 SsSeqStop(s16);
+#endif
 void SsSeqGetVol(s16, s16, s16 *, s16 *);
 void SsSeqSetVol(s16, s16, s16);
 void SsSeqPlay(s16, char, s16);
+#ifdef PC_PORT /* the stack's return types (port_inventory.py decls); the PS1 keeps Psy-Q's */
+void InitCARD(s32);
+#else
 s32 InitCARD(s32);
+#endif
 void StartCARD(void);
 void _bu_init(void);
 s32 TestEvent(s32);

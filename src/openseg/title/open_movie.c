@@ -145,11 +145,11 @@ Movie OPEN_MOVIES[3] = {
 s32 OPEN_MOVIE_HEIGHT = 0xB0;
 
 void OPEN_searchCdFile(void *file, char *name) {
-    s32 found;
+    s32p found;
 
     while (1) {
         CdSync(0, 0);
-        found = CdSearchFile(file, name);
+        found = (s32p)CdSearchFile(file, name);
         if (found == 0) continue;
         if (found != -1) break;
     }

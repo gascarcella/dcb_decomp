@@ -100,7 +100,12 @@ void startMemoryCardEvents(void) {
     EnableEvent(MEMORY_CARD_HW_EVENT_TIMEOUT);
     EnableEvent(MEMORY_CARD_HW_EVENT_NEW_CARD);
     for (i = 0; i < 2; i++) {
+#ifndef PC_PORT
         MEMORY_CARD_DIRECTORIES[i] = allocPermanentHeapBlock(0x260);
+#else
+        /* 0x260 is the PS1's CardDir; DirEntry.next is a host pointer */
+        MEMORY_CARD_DIRECTORIES[i] = allocPermanentHeapBlock(sizeof(CardDir));
+#endif
     }
     MEMORY_CARD_SAVE_HEADER = allocPermanentHeapBlock(0x200);
 }

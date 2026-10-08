@@ -536,7 +536,7 @@ void EVO_renderCutsceneModels(FrameBuffer *buffer, s32 bufferIndex) {
     s32 *scratch;
 
     if (SCENE_3D_ENABLED != 0) {
-        GsSetWorkBase((long)buffer->scenePackets);
+        GsSetWorkBase((GsWorkBase)buffer->scenePackets);
         colorMatrix = SCENE_LIGHT_COLORS;
         for (i = 0; i < 24; i++) {
             if (SCENE_3D->modelState[i] <= 0) {
@@ -1094,7 +1094,7 @@ void EVO_renderDissolvingObject(GsDOBJ4 *obj, s32 mode) {
             }
         }
     }
-    GsSetWorkBase((long)pk);
+    GsSetWorkBase((GsWorkBase)pk);
 }
 
 void EVO_initGsSortTable(void) {

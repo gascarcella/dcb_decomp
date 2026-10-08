@@ -334,7 +334,14 @@ extern EvoChoice EVO_TYPE_CHOICE;
 extern EvoCardInfo *EVO_CARD_LIST[];
 extern UiWindow EVO_SORT_WINDOW;
 
-long GsGetWorkBase(void);
-void GsSetWorkBase(long base);
+/* LIBGS's packet area: a long on the PS1, a pointer on the host (the stack's
+   PACKET *, psxstack/psyq/libgs.h; long is 32 bits on Win64) */
+#ifndef PC_PORT
+typedef long GsWorkBase;
+#else
+typedef u8 *GsWorkBase;
+#endif
+GsWorkBase GsGetWorkBase(void);
+void GsSetWorkBase(GsWorkBase base);
 
 #endif /* DCB_EVOSEG_H */

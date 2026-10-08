@@ -22,6 +22,11 @@
 #define R_RA 31
 #define R_EPC 32
 #define R_SR 35
+/* The root counter's handler as the stack's OpenEvent takes it (s32 (*)(): long
+ * is 64 bits on the host) */
+static s32 handleVsyncEvent(void) {
+    return (s32)handleVsyncPreemption();
+}
 #endif
 
 /* The scheduler runs with the kernel's TCB: switching tasks means copying a
@@ -127,7 +132,11 @@ s32 startTaskScheduler(s32 mode, s32 stackSize, s32p entry, s32p a0, s32p a1, s3
     mainTask->stack = stack;
     mainTask->regs[R_SP] = stack + (stackSize & ~7) - 0x20;
     /* preempt the running task at every vsync (root counter 3) */
+#ifndef PC_PORT
     vsyncEvent = OpenEvent(0xF2000003, 2, 0x1000, (long (*)())handleVsyncPreemption);
+#else
+    vsyncEvent = OpenEvent(0xF2000003, 2, 0x1000, handleVsyncEvent);
+#endif
     EnableEvent(vsyncEvent);
     SetRCnt(0xF2000003, 1, 0x1000);
     StartRCnt(0xF2000003);
