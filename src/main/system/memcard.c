@@ -131,6 +131,13 @@ s32 waitForMemoryCardEvent(s32 pollInterval) {
             }
             waitFrames(pollInterval);
         }
+#ifdef PC_PORT
+        if (pollInterval == 0) {
+            /* the card's events come from its interrupt, which the host runs
+               at the vsync tick */
+            PLATFORM_WAIT();
+        }
+#endif
     }
     return 2;
 }
@@ -159,6 +166,14 @@ s32 waitForMemoryCardEvent(s32 pollInterval) {
             }
             waitFrames(pollInterval);
         }
+#ifdef PC_PORT
+        if (pollInterval == 0) {
+            /* the card's events come from its interrupt, and the counter from
+               another task once the vblank preempts this one: the host runs
+               both at the vsync tick */
+            PLATFORM_WAIT();
+        }
+#endif
     } while (MEMORY_CARD_WAIT_COUNTER < 0x259);
     return 2;
 }
@@ -189,6 +204,12 @@ s32 waitForMemoryCardHwEvent(s32 pollInterval) {
         if (TestEvent(MEMORY_CARD_HW_EVENT_NEW_CARD) == 1) {
             return 3;
         }
+#ifdef PC_PORT
+        /* every poll spins: the card's events come from its interrupt, and
+           the counter from another task once the vblank preempts this one;
+           the host runs both at the vsync tick */
+        PLATFORM_WAIT();
+#endif
     } while (pollInterval == 0 || MEMORY_CARD_WAIT_COUNTER < 0x259);
     return 2;
 }
@@ -217,6 +238,14 @@ s32 waitForMemoryCardHwEvent(s32 pollInterval) {
             }
             waitFrames(pollInterval);
         }
+#ifdef PC_PORT
+        if (pollInterval == 0) {
+            /* the card's events come from its interrupt, and the counter from
+               another task once the vblank preempts this one: the host runs
+               both at the vsync tick */
+            PLATFORM_WAIT();
+        }
+#endif
     } while (MEMORY_CARD_WAIT_COUNTER < 0x259);
     return 2;
 }

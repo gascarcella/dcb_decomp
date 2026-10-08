@@ -247,6 +247,11 @@ void EVO_runFusedDigimonTask(s32 parentTask);
 void EVO_initGsSortTable(void);
 void EVO_drawFusionBanner(void);
 
+#ifdef PC_PORT
+/* the overlay's first word: every overlay has one under this name, and the
+   host links them all (port/game/game.c reads it for the stage probe) */
+#define D_801DDF38 EVO_D_801DDF38
+#endif
 const char D_801DDF38[] = "\t";
 
 void EVO_initCutsceneScene(s8 evolved) {

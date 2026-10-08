@@ -147,8 +147,10 @@ void runDuelMessageWindow(void) {
  */
 extern u8 OVERLAY_AREA[];
 #ifdef PC_PORT
-/* the host doesn't let the definition add a const to game.h's declaration */
-s32p OVERLAY_LOAD_ADDR = (s32p)OVERLAY_AREA;
+/* the host doesn't let the definition add a const to game.h's declaration;
+   the area is the base of the port's overlay slot (port/game/game.json),
+   which the adapter checks against OVERLAY_AREA's address */
+s32p OVERLAY_LOAD_ADDR = (s32p)SLOT_PTR(1, u8 *, PORT_SLOT1_BASE);
 #else
 const s32 OVERLAY_LOAD_ADDR = (s32)OVERLAY_AREA;
 #endif

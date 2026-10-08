@@ -33,6 +33,7 @@ void initDiscDrive(void) {
 
     ResetCallback();
     while (CdInit() == 0) {
+        PLATFORM_WAIT();
     }
     VSync(4);
     for (;;) {
@@ -81,8 +82,10 @@ FileEntry *findDirectoryEntryOnDisc(CdFile *file, char *name, s32 key) {
         entry = (FileEntry *)file->buf;
         do {
             while (CdControlB(2, file->loc, cdResult) == 0) {
+                PLATFORM_WAIT();
             }
             while (CdRead(2, (u8 *)entry, 0x80) == 0) {
+                PLATFORM_WAIT();
             }
             while ((readStatus = CdReadSync(1, 0)) > 0) {
                 waitFrames(1);
@@ -324,8 +327,10 @@ s32 readDiscFile(CdFile *file, s32 size, u8 *dst) {
         CdIntToPos(file->sector, file->loc);
         do {
             while (CdControlB(2, file->loc, cdResult) == 0) {
+                PLATFORM_WAIT();
             }
             while (CdRead(sectors, dst, 0x80) == 0) {
+                PLATFORM_WAIT();
             }
             while ((readStatus = CdReadSync(1, 0)) > 0) {
                 waitFrames(1);
@@ -344,6 +349,7 @@ s32 readDiscFile(CdFile *file, s32 size, u8 *dst) {
     CdIntToPos(file->sector, file->loc);
     do {
         while (CdControlB(2, file->loc, cdResult2) == 0) {
+            PLATFORM_WAIT();
         }
         do {
             file->cur = file->buf;
@@ -387,6 +393,7 @@ s32 readDiscFileByte(CdFile *file) {
         CdIntToPos(file->sector, file->loc);
         do {
             while (CdControlB(2, file->loc, cdResult) == 0) {
+                PLATFORM_WAIT();
             }
             do {
                 file->cur = file->buf;
@@ -427,6 +434,7 @@ s32 readDiscFileU16(CdFile *file) {
         CdIntToPos(file->sector, file->loc);
         do {
             while (CdControlB(2, file->loc, cdResult) == 0) {
+                PLATFORM_WAIT();
             }
             do {
                 file->cur = file->buf;
@@ -474,6 +482,7 @@ s32 readDiscFileU32(CdFile *file) {
         CdIntToPos(file->sector, file->loc);
         do {
             while (CdControlB(2, file->loc, cdResult) == 0) {
+                PLATFORM_WAIT();
             }
             do {
                 file->cur = file->buf;

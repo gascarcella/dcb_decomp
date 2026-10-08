@@ -26,6 +26,11 @@ extern u8 SUB_NAME_ENTRY_CHARS[];
 extern const char SUB_STR_NO_DECK_NAME[];
 
 /* not referenced by any code */
+#ifdef PC_PORT
+/* the overlay's first word: every overlay has one under this name, and the
+   host links them all (port/game/game.c reads it for the stage probe) */
+#define D_801DDF38 SUB_D_801DDF38
+#endif
 const s32 D_801DDF38 = 7;
 
 s32 SUB_moveNameEntryCursor(void) {

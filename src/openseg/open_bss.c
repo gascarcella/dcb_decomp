@@ -3,6 +3,12 @@
 #include "dcb/menu.h"
 #include "dcb/openseg.h"
 
+#ifdef PC_PORT
+/* the host links every overlay: names other overlays also give their bytes
+   take this one's prefix */
+#define D_801F540C OPEN_D_801F540C
+#endif
+
 /* The data the overlay starts with zeroed. The names that code uses inside
    OPEN_MEMCARD are in config/<version>/undefined_syms_openseg.txt. */
 DecEnv OPEN_DEC_ENV = { { 0 } };

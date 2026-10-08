@@ -104,7 +104,14 @@ void OPEN_runTitleScreen();
 void OPEN_runUserRegistration();
 void OPEN_runBattleWithFriend();
 s32 OPEN_loadFriendSaves(void);
+#ifdef PC_PORT
+/* the host has no symbol inside a struct: the field, which the adapter
+   (port/game/game.c) hands out */
+u8 *game_open_memcard_cancelled(void);
+#define OPEN_MEMCARD_CANCELLED (*game_open_memcard_cancelled())
+#else
 extern u8 OPEN_MEMCARD_CANCELLED; /* OPEN_MEMCARD.cancelled */
+#endif
 
 /* SAISEG: the world map and its areas */
 void SAI_runWorldMap();

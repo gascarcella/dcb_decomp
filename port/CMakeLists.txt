@@ -7,10 +7,10 @@
 #
 # psxstack is the submodule at ../psxstack (PSXSTACK_DIR; scripts/worktree_init.sh checks it out at the pin; a
 # checkout of the stack under development is -DPSXSTACK_DIR=$PWD/../psxstack). port/tools/port_inputs.py writes the
-# build inputs psxstack_add_game() takes (build/port/gen/inputs/: the units and the overlays, from mk/version/us.mk
-# and config/us/) at configure time, and port/tools/port_bss.py the executable's game .bss as C
-# (build/port/gen/bss_standins.c, a MAIN unit: docs/PORT.md). The PS1 build (the Makefile) is untouched: its C sees
-# none of this.
+# build inputs psxstack_add_game() takes (build/port/gen/inputs/: the units, the overlays and the volatile ranges, from
+# mk/version/us.mk, config/us/ and tests/replay/replay.py) and the adapter's overlay_ids.h at configure time, and
+# port/tools/port_bss.py the executable's game .bss as C (build/port/gen/bss_standins.c, a MAIN unit: docs/PORT.md).
+# The PS1 build (the Makefile) is untouched: its C sees none of this.
 cmake_minimum_required(VERSION 3.20)
 project(dcbport C)
 
@@ -41,7 +41,8 @@ string(STRIP "${out}" out)
 string(REPLACE "\n" "\n-- " out "${out}")   # a status prefix on each line (port_bss.py's, port_inputs.py's)
 message(STATUS "${out}")
 string(TOUPPER "${DCB_VERSION}" DCB_VERSION_UPPER)
-file(GLOB DCB_CONFIG_DEPS "${DCB_ROOT}/config/${DCB_VERSION}/symbols*.txt" "${DCB_ROOT}/config/${DCB_VERSION}/main.yaml")
+file(GLOB DCB_CONFIG_DEPS "${DCB_ROOT}/config/${DCB_VERSION}/symbols*.txt" "${DCB_ROOT}/config/${DCB_VERSION}/main.yaml"
+                          "${DCB_ROOT}/config/${DCB_VERSION}/undefined_syms*.txt")
 file(GLOB_RECURSE DCB_HEADER_DEPS "${DCB_ROOT}/include/*.h")
 file(GLOB DCB_ADAPTER_SRCS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/game/*.c")
 
@@ -54,14 +55,21 @@ psxstack_add_game(dcb
     MAIN_UNIT "${DCB_ROOT}/src/main/main.c"
     OVERLAYS "${DCB_INPUTS}/overlays.txt"
     EXE_SYMBOLS "${DCB_ROOT}/config/${DCB_VERSION}/symbols.txt"
+    VOLATILE "${DCB_INPUTS}/volatile.txt"
     INCLUDE_ASM_GUARD INCLUDE_ASM_H
     INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include" "${DCB_ROOT}/include" "${DCB_ROOT}"
     ADAPTER ${DCB_ADAPTER_SRCS}
     DEFINES VERSION_${DCB_VERSION_UPPER} SKIP_ASM
     CONFIGURE_DEPENDS "${DCB_ROOT}/port/tools/port_inputs.py" "${DCB_ROOT}/port/tools/port_bss.py"
-                      "${DCB_ROOT}/mk/version/${DCB_VERSION}.mk" ${DCB_CONFIG_DEPS} ${DCB_HEADER_DEPS})
+                      "${DCB_ROOT}/mk/version/${DCB_VERSION}.mk" "${DCB_ROOT}/tests/replay/replay.py" ${DCB_CONFIG_DEPS}
+                      ${DCB_HEADER_DEPS})
 
 # The adapter's port/game/tasks.c (startup.s's task glue) includes the game's headers for Task and the scheduler's
 # prototypes, and game.h declares libc's functions with the PS1's types (strlen, memset, bzero, ...): under the
 # adapter's -Werror those clash with the compiler's builtins. The units compile with -fno-builtin for the same reason.
-set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/game/tasks.c" APPEND PROPERTY COMPILE_OPTIONS -fno-builtin)
+# state.c (the probes) includes them too.
+set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/game/tasks.c" "${CMAKE_CURRENT_SOURCE_DIR}/game/state.c"
+             APPEND PROPERTY COMPILE_OPTIONS -fno-builtin)
+# The adapter's generated header (overlay_ids.h: the overlay IDs and the PS1 addresses it maps), quote-only as the
+# game's include directories are for it.
+set_property(SOURCE ${DCB_ADAPTER_SRCS} APPEND PROPERTY COMPILE_OPTIONS "-iquote" "${DCB_INPUTS}")

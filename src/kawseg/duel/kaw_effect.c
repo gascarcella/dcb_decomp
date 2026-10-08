@@ -83,6 +83,20 @@ extern u8 CLEAR_BG_ON_DRAW;
 
 /* SUGSEG's colour quad drawer: in KAWSEG this address is inside KAW_chooseSupportCard */
 void SUG_createFadeRect(Rect16 *rect, u8 *rgb, u8 *rgb2, u8 blend, s32 step, u8 mode);
+#ifdef PC_PORT
+/* Effect kind 0, the fade rect, is the only one that reaches the two stale
+   addresses (here and KAW_EFFECT_TICK_FUNCS[0]), and no script of
+   CBTL_EFF.ARC creates it (docs/PORT.md "Overlays"): on the PS1 they would run
+   the middle of KAW_chooseSupportCard. The host stops there instead of calling
+   SUGSEG's functions, which are linked in but not loaded. */
+static void KAW_staleCreateFadeRect(Rect16 *rect, u8 *rgb, u8 *rgb2, u8 blend, s32 step, u8 mode) {
+    PLATFORM_HALT();
+}
+static void KAW_staleTickFadeRect(u8 *obj) {
+    PLATFORM_HALT();
+}
+#define SUG_createFadeRect KAW_staleCreateFadeRect
+#endif
 
 void KAW_runEffectScriptTask(void *data, s32 task);
 void KAW_initEffectFromParams(EffectTemplate *template, u8 *fx, EffectTable *table);
@@ -96,7 +110,9 @@ void KAW_createEffectEntry(s32 index, s32 kind, s32p params, EffectTable *table)
 void (*KAW_EFFECT_TICK_FUNCS[4])(u8 *) = {
     /* SUGSEG's colour quad renderer, SUG_tickFadeRect: in KAWSEG this address
        is inside KAW_chooseSupportCard, and nothing here relocates it */
-#if VERSION_US
+#ifdef PC_PORT
+    KAW_staleTickFadeRect,
+#elif VERSION_US
     (void (*)(u8 *))0x801E651C,
 #elif VERSION_EU
     (void (*)(u8 *))0x801E8C60,

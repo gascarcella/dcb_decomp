@@ -18,6 +18,11 @@ extern char *STR_COLLECTOR_RANKS[8];
 extern char *STR_BATTLE_RANKS[8];
 
 /* not referenced by any code */
+#ifdef PC_PORT
+/* the overlay's first word: every overlay has one under this name, and the
+   host links them all (port/game/game.c reads it for the stage probe) */
+#define D_801DDF38 END_D_801DDF38
+#endif
 const char D_801DDF38[] = "\n";
 
 /* the epithets the ending can give */
