@@ -1,0 +1,63 @@
+# The fork's own CI (docs/DECISIONS.md "The PS1 build stays byte-identical"). Upstream's build.yaml builds only in
+# ReGame-Labs/dcb_decomp, whose disc repository forks can't read; its `names` job still runs here. This workflow
+# builds `us` from the owner's private data checkout (gascarcella/dcb-gamedata, read through a deploy key) and checks
+# every binary against the original, as upstream's build job does.
+name: fork
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    # Only this fork's own runs have the key; a pull request from another fork gets upstream's disc-free checks.
+    if: >-
+      github.repository == 'gascarcella/dcb_decomp' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    name: build (us)
+    env:
+      VERSION: us
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    # Only the two files the build reads, not the disc image.
+    - uses: actions/checkout@v5
+      with:
+        repository: gascarcella/dcb-gamedata
+        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
+        path: gamedata-checkout
+        sparse-checkout: gamedata/us/disc
+        persist-credentials: false
+
+    - run: |
+        mkdir -p disks/us
+        cp gamedata-checkout/gamedata/us/disc/SLUS_013.28 gamedata-checkout/gamedata/us/disc/P.DRV disks/us/
+        rm -rf gamedata-checkout
+
+    - run: |
+        sudo apt-get update
+        sudo apt-get install -y binutils-mipsel-linux-gnu gcc-mipsel-linux-gnu
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+        cache: pip
+
+    - run: pip install -r requirements.txt
+
+    - run: tools/dl_deps.sh
+
+    - run: |
+        make generate
+        make -j$(nproc)
+        make compare
+
+    # The shell scripts this fork adds parse.
+    - run: for f in scripts/*.sh; do bash -n "$f"; done
