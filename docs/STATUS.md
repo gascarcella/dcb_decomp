@@ -18,7 +18,10 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 Not started. `psxstack/` is the stack at v0.2.1 (the same pin as dw2003recomp). `docs/PORT.md` has the plan, what
-the game needs from the stack, and the open questions.
+the game needs from the stack, and the open questions. The work is tracked in issues: #2 (M0: the skeleton and the
+host-compile probe), #3 (the emulator oracle and the replays), #4 (M1: boot to the title), and in psxstack #25
+(fibers), #26 (contract gaps: heap, overlay identity, scratchpad), #27 (generic test runners), #7 (Psy-Q
+declarations) and #8 (the shim's inventory).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

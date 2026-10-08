@@ -173,15 +173,15 @@ The game also uses libc's `sprintf` (345 calls), `rand` (87), `str*`, `memset`, 
 Psy-Q-specific behaviour (`rand`'s sequence, `sprintf`'s formats) needs a check against the emulator.
 
 ## Open questions
-1. Fibers in psxstack: the API (create, switch, destroy), Windows (fibers) and Linux (`ucontext` or hand-written
+1. Fibers in psxstack ([psxstack#25](https://github.com/gascarcella/psxstack/issues/25)): the API (create, switch, destroy), Windows (fibers) and Linux (`ucontext` or hand-written
    switches), AddressSanitizer annotations, save states holding every stack. When may a vblank preempt? Only at the
    pump's points: are they enough for `memcard.c`'s spin?
-2. The heap: in psxstack's arena, through the `HEAP_*` macros, with a contract change for a heap that isn't contiguous
+2. The heap ([psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): in psxstack's arena, through the `HEAP_*` macros, with a contract change for a heap that isn't contiguous
    with the slot?
-3. Overlay identity: psxstack keys overlays by file ID, and this game names them inside `P.DRV`.
+3. Overlay identity ([psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): psxstack keys overlays by file ID, and this game names them inside `P.DRV`.
 4. GTE: a host `gte.h` under `PC_PORT`, or psxstack's `GTEMAC` translation extended to this macro set.
 5. The stale KAWSEG addresses (0x801E6424, 0x801E651C): what happens on the PS1 when they run?
-6. Psy-Q declarations: this game redeclares them in `include/game.h` and builds its libraries against
+6. Psy-Q declarations ([psxstack#7](https://github.com/gascarcella/psxstack/issues/7)): this game redeclares them in `include/game.h` and builds its libraries against
    `jype0/psyq_headers` (Psy-Q 4.7). psxstack #7 decides where the shim's declarations come from.
 7. Would upstream take the hooks? They leave the PS1 build identical, and upstream's CONTRIBUTING.md forbids
    `NON_MATCHING`, not `PC_PORT`. Ask juandav once the first hooks exist, through the owner.
