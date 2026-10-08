@@ -34,10 +34,6 @@ SCRIPTS = ROOT / "tests/replay/scripts"
 EXPECTED = ROOT / "tests/replay/records"
 DISC = ROOT / "disks/us/dcb_us.cue"
 VENV_BIN = ROOT / ".venv/bin"
-# --sanitize: ASan's fake stacks off. The game keeps primitives in its tasks' stack frames (the dialogs' windows and
-# cursors) and links them into the ordering table, whose tags are offsets in the tag window (psxstack's docs/PORT.md);
-# a fake frame is outside it, a fatal error. The fibers' own stacks are inside (RUNTIME.md says the same of states).
-os.environ.setdefault("ASAN_OPTIONS", "detect_leaks=1:detect_stack_use_after_return=0")
 
 CFG = port_test.configure(root=ROOT, game_json=ROOT / "port/game/game.json", disc=DISC, scripts_dir=SCRIPTS,
                           expected_dir=EXPECTED, venv_bin=VENV_BIN,

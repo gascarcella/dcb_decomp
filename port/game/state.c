@@ -148,9 +148,13 @@ int32_t game_state_map(void) {
     return p != NULL ? p->areaId : 0;
 }
 
-/* game_state_random_index: libc's rand() state on the PS1 (D_801DDC10). Not here: psxstack's shim has no LIBC2
- * rand, so the host's libc rand links in its place (another sequence and RAND_MAX) and its state is not the game's to
- * read. The weak default (0) stands until the shim has Psy-Q's rand and a way to read its state. */
+/* ---- The random index: LIBC2's rand() state, what the PS1 keeps in D_801DDC10 (0 at power-on, then each draw's).
+ * The shim's rand is the PS1's generator (psxstack v0.3.3), so the value is the same kind as the emulator's; the
+ * record keeps it but the test does not compare it: the idle loop in main() calls rand() as often as it spins between
+ * vsyncs on the PS1, a count the host does not reproduce (docs/PORT.md "Testing"). */
+int32_t game_state_random_index(void) {
+    return (int32_t)port_rand_seed();
+}
 
 /* ---- The checkpoint image: the first PlayerProfile at PLAYER_PROFILES in its PS1 layout, zeros before it exists */
 uint32_t game_state_image_size(void) {
