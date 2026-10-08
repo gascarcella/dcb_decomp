@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # The port's disc-free gate (CLAUDE.md "Commands"; docs/PORT.md "The host-compile probe"): the configure
 # (cmake -S port -B build/port: game.json, the build inputs from mk/version/us.mk, psxstack's generators), then
-# psxstack's host-compile probe and link check over every us unit (port/tools/port_inventory.py). The summaries
-# also go to build/port_inventory/summary.txt, which CI keeps as an artifact.
+# psxstack's host-compile probe and link check over every us unit (port/tools/port_inventory.py), the Psy-Q
+# declarations against the stack's (decls) and the shim's coverage of what the units call (psxstack/psyq/check.sh).
+# The summaries also go to build/port_inventory/summary.txt, which CI keeps as an artifact.
 #
 #   scripts/probe.sh [-j N]            # PSXSTACK_DIR=/path/to/a/psxstack/checkout overrides the submodule
 #
-# Exit 0 means everything RAN: the configure, the probe and the link check. The probe's error count is the
-# baseline docs/STATUS.md quotes, not a gate, until M1 drives it to zero (then this script gates on it).
+# Exit 0 means every unit compiles (0 diagnostics), no global is defined twice, game.h and evoseg.h declare no Psy-Q
+# function against the stack's form (decls: 0 MISMATCH) and the shim defines every Psy-Q function the units call
+# (check.sh: 0 missing). M1 drove the probe to zero, so it is a gate (it was the baseline before).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -48,7 +50,7 @@ set +e
 probe_rc=$?
 set -e
 [[ $probe_rc -le 1 ]] || { cat "$OUT/probe.txt"; echo "probe.sh: the probe could not run (exit $probe_rc)" >&2; exit 1; }
-{ echo "== probe (exit $probe_rc; 1 = units fail, the baseline)"; grep -E "^port inventory|^flags|files compile|^probe:" "$OUT/probe.txt"; echo; } >> "$SUMMARY"
+{ echo "== probe (exit $probe_rc; 1 = units fail)"; grep -E "^port inventory|^flags|files compile|^probe:" "$OUT/probe.txt"; echo; } >> "$SUMMARY"
 grep -E "files compile|^probe:" "$OUT/probe.txt"
 
 log "link: duplicate and undefined globals (port/tools/port_inventory.py link)"
@@ -60,4 +62,27 @@ set -e
 { echo "== link (exit $link_rc)"; cat "$OUT/link.txt"; } >> "$SUMMARY"
 grep -E "^objects|^globals defined|^undefined everywhere|^  [A-Za-z_-]|^link probe" "$OUT/link.txt" | grep -vE "^  (Psy-Q|asm-only|defined in|other|late-bound)" | head -20
 
-log "done: build/port_inventory/summary.txt (probe exit $probe_rc, link exit $link_rc; the counts are the baseline, not a gate)"
+log "decls: game.h and evoseg.h against the stack's Psy-Q declarations (port/tools/port_inventory.py decls)"
+set +e
+"$PY" port/tools/port_inventory.py decls > "$OUT/decls.txt" 2>&1
+decls_rc=$?
+set -e
+{ echo; echo "== decls (exit $decls_rc)"; grep -vE "^\s+(compatible|same)" "$OUT/decls.txt"; } >> "$SUMMARY"
+grep -E "^psyq_decls: [0-9]" "$OUT/decls.txt" || cat "$OUT/decls.txt"
+
+log "shim coverage: every Psy-Q function the units call (psxstack/psyq/check.sh)"
+set +e
+"${PSXSTACK_DIR:-$ROOT/psxstack}/psyq/check.sh" --game-root "$ROOT" --inventory port/tools/port_inventory.py \
+    --python "$PY" > "$OUT/check.txt" 2>&1
+check_rc=$?
+set -e
+{ echo; echo "== psyq/check.sh (exit $check_rc)"; grep -E "^(compile|coverage|link)" "$OUT/check.txt"; } >> "$SUMMARY"
+grep -E "^coverage" "$OUT/check.txt" || tail -20 "$OUT/check.txt"
+
+log "done: build/port_inventory/summary.txt (probe exit $probe_rc, link exit $link_rc, decls exit $decls_rc, check exit $check_rc)"
+rc=0
+[[ $probe_rc -eq 0 ]] || { echo "probe.sh: units fail to compile for the host (build/port_inventory/probe.txt)" >&2; rc=1; }
+[[ $link_rc -eq 0 ]] || { echo "probe.sh: the link check failed (build/port_inventory/link.txt)" >&2; rc=1; }
+[[ $decls_rc -eq 0 ]] || { echo "probe.sh: Psy-Q declarations mismatch the stack's (build/port_inventory/decls.txt)" >&2; rc=1; }
+[[ $check_rc -eq 0 ]] || { echo "probe.sh: the shim's coverage failed (build/port_inventory/check.txt)" >&2; rc=1; }
+exit $rc
