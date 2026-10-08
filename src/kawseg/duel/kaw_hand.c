@@ -554,7 +554,7 @@ void KAW_drawCard3D(Icon3D *icon, s32 z, RawPolyFT4 *pk) {
     PushMatrix();
     buildRotTransMatrix(&icon->pos, &icon->rot, &matrix);
     CompMatrix((MATRIX *)((u8 *)SCENE_3D + 0x78), &matrix, &matrix);
-    SetRotMatrix((s32)&matrix);
+    SetRotMatrix((MATRIX *)&matrix);
     SetTransMatrix(&matrix);
     vertices[0].vx = -20;
     vertices[0].vy = -24;
@@ -569,8 +569,8 @@ void KAW_drawCard3D(Icon3D *icon, s32 z, RawPolyFT4 *pk) {
     vertices[3].vy = 24;
     vertices[3].vz = 0;
     col = (u32 *)&icon->r0;
-    if (RotAverageNclip4((s32)&vertices[0], (s32)&vertices[1], (s32)&vertices[2], (s32)&vertices[3], (s32)&sxy[0], (s32)&sxy[1],
-                         (s32)&sxy[2], (s32)&sxy[3], &depthCue, &otz, &flag) <= 0) {
+    if (RotAverageNclip4((SVECTOR *)&vertices[0], (SVECTOR *)&vertices[1], (SVECTOR *)&vertices[2], (SVECTOR *)&vertices[3], (s32 *)&sxy[0], (s32 *)&sxy[1],
+                         (s32 *)&sxy[2], (s32 *)&sxy[3], &depthCue, &otz, &flag) <= 0) {
         otz = RotAverage4(&vertices[1], &vertices[0], &vertices[3], &vertices[2], &sxy[0], &sxy[1], &sxy[2], &sxy[3], &depthCue, &flag);
         tpage = 0x1C;
         clut = 0x7C32;

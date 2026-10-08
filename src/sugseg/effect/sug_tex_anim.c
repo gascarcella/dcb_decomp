@@ -57,7 +57,7 @@ void *SUG_loadTamFile(s32 key, s32 *path, s32 sub, Chunk *pak) {
     if (free >= 0) {
         data = findPakChunk(pak, 4, sub);
         if (data == NULL) {
-            data = (void *)loadFileTagged(path, getCurrentTaskId(), 0x82);
+            data = (void *)loadFileTagged((char *)path, getCurrentTaskId(), 0x82);
             if (data != NULL) {
                 SUG_TAM_CACHE[free].key = key;
                 SUG_TAM_CACHE[free].data = data;

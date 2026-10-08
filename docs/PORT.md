@@ -50,6 +50,10 @@ result is the baseline M1 drives to zero; CI's `probe` job runs it and uploads `
 errors, 1 fatal. `link` over the 35 objects: 4 duplicate globals, 160 undefined (65 Psy-Q functions, 22 data globals,
 62 defined in failing units, 11 other).
 
+**Now (M1 step 2, casts final pass):** 140 of 155 units compile; 15 fail with 49 diagnostics: 23 pointer-to-int-cast,
+22 int-to-pointer-cast, 2 incompatible-pointer-types, 1 int-conversion, 1 fatal (`kernel.h`). What is left is step 3: the
+script VMs' `regs[]`/`vars[]`, `EffectTemplate`, `ScriptRunner.unk0`, the heap, `tmd_sort.c`, `scene3d.c`, the loader.
+
 **After M1 step 1** (`include/port.h`, the declarations, the prototypes; 2026-10-08): **67 of 155 units compile; 88
 fail with 1,016 diagnostics:** 945 pointer-to-int-cast (the explicit casts: `drawText` and its siblings 445,
 `add`/`removeFrameCallback` 96, the GTE calls 138, `transformAndAdd*` 102, 111 assignments, 53 other calls), 29

@@ -45,12 +45,12 @@ void SUG_tickSpriteEffect(SpriteEffect *fx) {
             return;
         }
 #if VERSION_JP
-        tickEffectMotion((s32)fx, 1);
+        tickEffectMotion((s32p)fx, 1);
 #elif VERSION_US || VERSION_EU
         tickEffectMotion((s32p)fx, fx->sprite.unk8A);
 #endif
     } else {
-        SetRotMatrix((s32)&GsIDMATRIX);
+        SetRotMatrix((MATRIX *)&GsIDMATRIX);
         SetTransMatrix(&GsIDMATRIX);
     }
     SUG_drawSprite(&fx->sprite, fx->brightness);

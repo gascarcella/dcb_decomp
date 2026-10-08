@@ -247,7 +247,7 @@ void SUG_detachEffectToWorld(EffectSlots *slots, s32 id, EffectParams *cmd) {
             coord->flg = 0;
         }
         GsGetLw(((Model *)SCENE_3D->models[slots->modelSlots[cmd->source]])->obj[cmd->target].coord2, &m);
-        SetRotMatrix((s32)&m);
+        SetRotMatrix((MATRIX *)&m);
         SetTransMatrix(&m);
     } else {
         xform = (Xform *)slots->slots[id].value;
@@ -365,7 +365,7 @@ s32 SUG_loadEffectPak(s32 id) {
 #elif VERSION_US || VERSION_EU
     sprintf(path, "E:\\%d.PAK", id);
 #endif
-    file = loadFileTagged((s32 *)path, getCurrentTaskId(), 0x12C);
+    file = loadFileTagged((char *)path, getCurrentTaskId(), 0x12C);
     if (file != 0) {
         return file;
     }

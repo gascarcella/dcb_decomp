@@ -43,8 +43,8 @@ s32 SUG_tickFadeRect(ColorQuad *quad) {
         }
     }
     if (*(u32 *)&poly->r0 & 0xFFFFFF) {
-        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], (s32)poly);
-        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], (s32)tpage);
+        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], poly);
+        AddPrim((s32 *)&CURRENT_FRAME_BUFFER->ot[1], tpage);
     }
     if (fadedIn != 0 && (quad->mode == 1 || quad->mode == 3)) {
         quad->visible = 2;
