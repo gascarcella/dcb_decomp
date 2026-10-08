@@ -7,8 +7,16 @@
 #include "dcb/sai_sprite.h"
 #include "dcb/sai_world_map.h"
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SAI_CHOICE_MODE;
 extern s8 SAI_CHOICE_PHASE;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_CHOICE_MODE (SAI_AREA.choiceMode)   /* SAI_AREA + 0x82 */
+#define SAI_CHOICE_PHASE (SAI_AREA.choicePhase) /* SAI_AREA + 0x81 */
+#endif
 
 void SAI_openChoiceMenu(s8 mode) {
     s32 i;

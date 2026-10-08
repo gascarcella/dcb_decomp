@@ -9,7 +9,14 @@ typedef struct {
     u16 armorFlags;
 } SaisegSessionData;
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SAI_OPPONENT_COUNT;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_OPPONENT_COUNT (*(u8 *)&SAI_OPPONENTS.count) /* SAI_OPPONENTS + 0x128 */
+#endif
 
 void SAI_setPartnerObtainedFlag(s32 index) {
     s16 flagIds[6] = { 0x126, 0x12A, 0x12D, 0x133, 0x130, 0x136 };

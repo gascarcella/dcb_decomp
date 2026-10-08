@@ -25,16 +25,20 @@ extern DeckCardCounts *SUB_DECK_CARD_COUNTS;
 extern s16 SUB_COLLECTION_SHOW_INFO;
 extern UiWindow SUB_CARD_SORT_WINDOW;
 extern UiWindow SUB_DECK_SORT_WINDOW;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern UiWindow SUB_PICKER_WINDOW;
 extern UiWindow SUB_LIST_WINDOWS[3];
 extern UiWindow SUB_STATS_WINDOW;
 extern UiWindow SUB_GRID_WINDOW;
 extern UiWindow SUB_CARD_INFO_WINDOW;
 extern UiWindow SUB_CARD_DATA_WINDOW;
+#endif
 extern PlayerDeck SUB_ORIGINAL_DECK;
 extern u16 SUB_COLLECTION_COUNTS[8];
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SUB_CARD_LIST_MENU_ACTIVE;
 extern Rect16 SUB_CARD_SORT_MENU_RECT;
+#endif
 extern char SUB_LABEL_BUFFER[];
 extern s8 *SUB_COLLECTION_SELECTED_CARD;
 extern s8 SUB_DECK_IS_NEW;
@@ -46,12 +50,30 @@ extern s16 SUB_DECK_MENU_SLOT;
 extern s8 SUB_EDITOR_HIDDEN;
 extern u8 SUB_EDITOR_USE_DECK_COUNTS;
 extern s8 SUB_DECK_EDIT_MODE;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s32 SUB_PICKER_WINDOW_LABEL;
+#endif
 extern CursorHighlight SUB_CARD_LIST_CURSOR;
 extern CursorHighlight SUB_CARD_SORT_CURSOR;
 extern CursorHighlight SUB_DECK_SORT_CURSOR;
 extern u8 SUB_EDITOR_RUNNING;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s32 SUB_LIST_WINDOW_LABEL;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_subseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SUB_PICKER_WINDOW (SUB_WINDOWS[2])                    /* SUB_WINDOWS + 0x88 */
+#define SUB_LIST_WINDOWS (&SUB_WINDOWS[1])                    /* SUB_WINDOWS + 0x44 */
+#define SUB_STATS_WINDOW (SUB_WINDOWS[3])                     /* SUB_WINDOWS + 0xCC */
+#define SUB_GRID_WINDOW (SUB_WINDOWS[4])                      /* SUB_WINDOWS + 0x110 */
+#define SUB_CARD_INFO_WINDOW (SUB_WINDOWS[5])                 /* SUB_WINDOWS + 0x154 */
+#define SUB_CARD_DATA_WINDOW (SUB_WINDOWS[6])                 /* SUB_WINDOWS + 0x198 */
+#define SUB_CARD_LIST_MENU_ACTIVE (SUB_CARD_LIST_MENU.active) /* SUB_CARD_LIST_MENU + 0x26 */
+#define SUB_CARD_SORT_MENU_RECT (SUB_CARD_SORT_MENU.rect)     /* SUB_CARD_SORT_MENU + 0x8 */
+#define SUB_PICKER_WINDOW_LABEL (SUB_WINDOWS[2].label)        /* SUB_WINDOWS + 0xB4 */
+#define SUB_LIST_WINDOW_LABEL (SUB_WINDOWS[1].label)          /* SUB_WINDOWS + 0x70 */
+#endif
 
 extern void SUB_drawDeckEditTitle(UiWindow *window);
 extern void SUB_drawSortHint(UiWindow *window);

@@ -29,9 +29,18 @@
 #include "dcb/sai_world_map.h"
 #include "dcb/sai_data.h"
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SAI_MESSAGE_WINDOW_PALETTE;
 extern s8 SAI_ICON_MOTION;
 extern s32 SAI_EXIT_ARG;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_MESSAGE_WINDOW_PALETTE (SAI_MESSAGE_WINDOW.palette) /* SAI_MESSAGE_WINDOW + 0x38 */
+#define SAI_ICON_MOTION (SAI_WORLD_MAP.iconMotion)              /* SAI_WORLD_MAP + 0x402 */
+#define SAI_EXIT_ARG (*(s32 *)&SAI_AREA.exitArg)                /* SAI_AREA + 0xF0 */
+#endif
 
 void SAI_drawPanel(void);
 void SAI_drawAreaHud(void);

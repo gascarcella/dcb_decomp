@@ -11,9 +11,19 @@
 #include "dcb/sub_deck_screens.h"
 
 extern SprtPacket *SUB_SPRITE_CURSOR;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SUB_CARD_LIST_MENU_PAD;
 extern u8 SUB_CARD_SORT_MENU_PAD;
 extern u8 SUB_DECK_SORT_MENU_PAD;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_subseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#include "dcb/sub_sort.h"
+#define SUB_CARD_LIST_MENU_PAD (SUB_CARD_LIST_MENU.pad) /* SUB_CARD_LIST_MENU + 0x28 */
+#define SUB_CARD_SORT_MENU_PAD (SUB_CARD_SORT_MENU.pad) /* SUB_CARD_SORT_MENU + 0x28 */
+#define SUB_DECK_SORT_MENU_PAD (SUB_DECK_SORT_MENU.pad) /* SUB_DECK_SORT_MENU + 0x28 */
+#endif
 
 void SUB_loadCardMapTim(void) {
     char path[64];

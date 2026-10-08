@@ -34,9 +34,12 @@ enum MapState {
     MAP_MENU
 };
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern DrTPage SAI_MAP_PATH_TPAGES[2][20];
 extern s8 SAI_MAP_ANIM_REGION;
+#endif
 extern MapAnim *SAI_MAP_ANIMS;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SAI_MAP_ACTIVE;
 extern u8 SAI_MAP_OLD_MARKER_COUNT;
 extern s8 SAI_MAP_STATE;
@@ -44,16 +47,43 @@ extern u8 SAI_MAP_ALPHA;
 extern u8 SAI_MAP_OPEN_MENU;
 extern u8 SAI_MAP_MENU_TAB_STATE;
 extern s8 SAI_MAP_LABEL_REGION;
+#endif
 extern MenuTab SAI_MAP_MENU_TAB;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SAI_MAP_NODE;
 extern u8 SAI_MAP_NAME_SLIDE_DIR;
 extern s8 SAI_MAP_PORTRAIT_STATE;
 extern u8 SAI_MAP_ANIMATING;
+#endif
 extern void (*SAI_ICON_MOTION_FUNCS[])(void);
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SAI_MAP_MENU_CURSOR;
 extern s8 SAI_MAP_MENU_PHASE;
+#endif
 extern s16 SAI_MAP_FRAME_BRIGHTNESS;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s32 SAI_MAP_ICON_SLIDE;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_MAP_PATH_TPAGES (SAI_WORLD_MAP.pathTpages)              /* SAI_WORLD_MAP + 0x23C */
+#define SAI_MAP_ANIM_REGION (SAI_WORLD_MAP.animRegion)              /* SAI_WORLD_MAP + 0x40A */
+#define SAI_MAP_ACTIVE (*(u8 *)&SAI_WORLD_MAP.active)               /* SAI_WORLD_MAP + 0x407 */
+#define SAI_MAP_OLD_MARKER_COUNT (SAI_WORLD_MAP.oldMarkerCount)     /* SAI_WORLD_MAP + 0x3FC */
+#define SAI_MAP_STATE (SAI_WORLD_MAP.state)                         /* SAI_WORLD_MAP + 0x403 */
+#define SAI_MAP_ALPHA (SAI_WORLD_MAP.alpha)                         /* SAI_WORLD_MAP + 0x3FA */
+#define SAI_MAP_OPEN_MENU (*(u8 *)&SAI_WORLD_MAP.openMenu)          /* SAI_WORLD_MAP + 0x40B */
+#define SAI_MAP_MENU_TAB_STATE (*(u8 *)&SAI_MAP_MENU_TAB.state)     /* SAI_MAP_MENU_TAB + 0x4 */
+#define SAI_MAP_LABEL_REGION (SAI_WORLD_MAP.labelRegion)            /* SAI_WORLD_MAP + 0x380 */
+#define SAI_MAP_NODE (SAI_WORLD_MAP.nodeIndex)                      /* SAI_WORLD_MAP + 0x406 */
+#define SAI_MAP_NAME_SLIDE_DIR (*(u8 *)&SAI_WORLD_MAP.nameSlideDir) /* SAI_WORLD_MAP + 0x3FD */
+#define SAI_MAP_PORTRAIT_STATE (SAI_WORLD_MAP.portraitState)        /* SAI_WORLD_MAP + 0x3FE */
+#define SAI_MAP_ANIMATING (*(u8 *)&SAI_WORLD_MAP.animating)         /* SAI_WORLD_MAP + 0x409 */
+#define SAI_MAP_MENU_CURSOR (SAI_WORLD_MAP.menuCursor)              /* SAI_WORLD_MAP + 0x3FF */
+#define SAI_MAP_MENU_PHASE (SAI_WORLD_MAP.menuPhase)                /* SAI_WORLD_MAP + 0x400 */
+#define SAI_MAP_ICON_SLIDE (SAI_WORLD_MAP.iconSlide)                /* SAI_WORLD_MAP + 0x3D4 */
+#endif
 
 long ratan2(long y, long x);
 int csqrt(int a);

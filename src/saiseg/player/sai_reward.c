@@ -16,7 +16,14 @@
 #include "dcb/saiseg.h"
 
 extern u8 SAI_REWARD_FROM_SCRIPT;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SAI_PRIZE_PACK;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_PRIZE_PACK (SAI_AREA.prizePack) /* SAI_AREA + 0x11D */
+#endif
 extern RewardScreen *SAI_REWARD_SCREEN;
 
 void rollRewardCards(s32 player, s32 pack);

@@ -26,10 +26,20 @@ extern CardIdList *SUB_AUTO_DECK_POOLS;
 extern CursorHighlight SUB_AUTO_DECK_CURSOR;
 extern u8 SUB_AUTO_DECK_OPTIONS[6];
 extern s8 *SUB_AUTO_DECK_CARD;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SUB_AUTO_DECK_SPECIALTY;
 extern u8 SUB_AUTO_DECK_STYLE;
 extern u8 SUB_AUTO_DECK_OPTION_AMOUNT;
 extern u8 SUB_AUTO_DECK_RESULT;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_subseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SUB_AUTO_DECK_SPECIALTY (SUB_AUTO_DECK_OPTIONS[2])     /* SUB_AUTO_DECK_OPTIONS + 0x2 */
+#define SUB_AUTO_DECK_STYLE (SUB_AUTO_DECK_OPTIONS[3])         /* SUB_AUTO_DECK_OPTIONS + 0x3 */
+#define SUB_AUTO_DECK_OPTION_AMOUNT (SUB_AUTO_DECK_OPTIONS[4]) /* SUB_AUTO_DECK_OPTIONS + 0x4 */
+#define SUB_AUTO_DECK_RESULT (SUB_AUTO_DECK_OPTIONS[5])        /* SUB_AUTO_DECK_OPTIONS + 0x5 */
+#endif
 
 extern void SUB_buildAutoDeck(PlayerDeck *deck);
 

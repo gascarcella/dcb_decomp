@@ -30,8 +30,16 @@ typedef struct {
     /* 0x80 */ IconImage icon;
 } SaveHeader;
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern PlayerProfile *OPEN_MEMCARD_BUFFER;
 extern u8 OPEN_MEMCARD_MESSAGE_PORT;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_openseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define OPEN_MEMCARD_BUFFER (*(PlayerProfile **)&OPEN_MEMCARD.buffer) /* OPEN_MEMCARD + 0x528 */
+#define OPEN_MEMCARD_MESSAGE_PORT (OPEN_MEMCARD.messagePort)          /* OPEN_MEMCARD + 0x53D */
+#endif
 
 void StoreImage(Rect16 *rect, void *p);
 void OPEN_applyLoadedSave();

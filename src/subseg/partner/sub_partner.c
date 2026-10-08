@@ -39,8 +39,16 @@ extern Partner SUB_PREVIEW_PARTNER;
 extern s32 SUB_ARMOR_INDEX;
 extern CursorHighlight SUB_ABILITY_CURSOR;
 extern CursorHighlight SUB_EQUIPMENT_CURSOR;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s8 SUB_PARTNER_WINDOW_ANIM_DONE;
 extern s8 SUB_ARMOR_WINDOW_ANIM_DONE;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_subseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SUB_PARTNER_WINDOW_ANIM_DONE (SUB_PARTNER_WINDOW.animDone) /* SUB_PARTNER_WINDOW + 0x41 */
+#define SUB_ARMOR_WINDOW_ANIM_DONE (SUB_ARMOR_WINDOW.animDone)     /* SUB_ARMOR_WINDOW + 0x41 */
+#endif
 
 void SUB_drawPartnerTab(TabWindow *window);
 

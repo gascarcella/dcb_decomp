@@ -4,9 +4,18 @@
 #include "dcb/text.h"
 #include "dcb/sai_data.h"
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s16 SAI_PLAYER_DATA_ROW;
 extern u8 SAI_NEXT_ICON_BLINK;
 extern u8 SAI_TEXT_TYPING;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_saiseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+#define SAI_PLAYER_DATA_ROW (SAI_PLAYER_DATA_MENU.row) /* SAI_PLAYER_DATA_MENU + 0x14 */
+#define SAI_NEXT_ICON_BLINK (SAI_AREA.nextBlink)       /* SAI_AREA + 0x121 */
+#define SAI_TEXT_TYPING (SAI_AREA.typing)              /* SAI_AREA + 0x11F */
+#endif
 
 s32 SAI_typeTextLines(s16 x, s16 y, s32 z);
 

@@ -119,7 +119,9 @@ typedef struct {
     s16 pad;
 } CardIdList;
 
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern s16 SUB_EDITOR_PLAYER;
+#endif
 extern PlayerDeck *SUB_EDITED_DECK;
 extern CardImageCache SUB_CARD_IMAGE_CACHE;
 extern UiWindow SUB_WINDOWS[7];
@@ -130,7 +132,16 @@ extern DeckEditState SUB_DECK_EDIT;
 extern CollectionStats SUB_COLLECTION_STATS;
 extern DeckMenuState SUB_DECK_MENU;
 extern u8 *SUB_CARD_ARCHIVE;
+#ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SUB_AUTO_DECK_ENABLED;
+#endif
+#ifdef PC_PORT
+/* Names config/us/undefined_syms_subseg.txt gives to fields: on the host
+   each is its field (issue #20; the offsets checked at -m32) */
+extern u8 SUB_AUTO_DECK_OPTIONS[6];
+#define SUB_EDITOR_PLAYER (SUB_EDITOR.player)            /* SUB_EDITOR + 0x12 */
+#define SUB_AUTO_DECK_ENABLED (SUB_AUTO_DECK_OPTIONS[1]) /* SUB_AUTO_DECK_OPTIONS + 0x1 */
+#endif
 
 #if VERSION_JP
 /* jp's SUBSEG is a card shop (the USA SUBSEG above is the deck editor) */
