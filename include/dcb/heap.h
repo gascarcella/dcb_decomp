@@ -6,12 +6,14 @@
 /* One entry of the heap's block table. The table lists the arena's blocks in
    address order and ends at the first entry whose addr is 0. */
 typedef struct {
-    /* 0x0 */ s32p addr; /* the block's address; bit 31 set while it's in use (host: the top bit, heap.c) */
+    /* 0x0 */ s32p addr; /* the block's address; bit 31 set while it's in use (host: the PS1's, heap.c) */
     /* 0x4 */ s32 size;
     /* 0x8 */ s32 tag;  /* -1 free, -2 permanent, else the owning task's id */
 } HeapBlock;
 
-extern s32 HEAP_ARENA;
+#ifndef PC_PORT
+extern s32 HEAP_ARENA; /* host: heap.c's own, a larger arena (docs/PORT.md "Memory and pointers") */
+#endif
 extern HeapBlock HEAP_BLOCKS[0x400];
 
 void resetHeap(s32 initialize);

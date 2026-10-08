@@ -61,7 +61,7 @@
    "map": 0,
    "random_index": -986842144,
    "gamestate_sha1": "9ab25be7f4875f1686c47ccaa4789e90e97b1136",
-   "gamestate_sha1_stable": "2e64dfcdb55aaa813034fd62d9923096d6a8ed9b"
+   "gamestate_sha1_stable": "1acb33206e53d5bc0bd5211c3a7645aaefd89bcd"
   },
   {
    "name": "first_duel",
@@ -70,7 +70,7 @@
    "map": 0,
    "random_index": -1481151653,
    "gamestate_sha1": "c3fc28ade38a31a1c7e6f7b91b417146425b3ec6",
-   "gamestate_sha1_stable": "36c6b9f0aa08836964e13d0673ef8b3c741cf65d"
+   "gamestate_sha1_stable": "91d15a9bce58b239da87adb0fe542290b76f24cc"
   }
  ],
  "overlay_sequence": [

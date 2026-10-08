@@ -2,7 +2,8 @@
 
 _Last updated: 2026-10-08_
 
-The fork is set up, and the PC port links and replays the four scripts headless (M1 in progress); M2 (rendering) has started. Upstream's decompilation is complete: every function and all
+The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the four emulator scripts, twice
+identical, clean under ASan/UBSan; M2 (rendering) has started. Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
 ## The PS1 build
@@ -18,7 +19,7 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.2 (a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+v0.3.3 (LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
 runners).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
@@ -71,8 +72,8 @@ runners).
   blockers on the way: the frame buffer read before the render loop runs, the card directories' size (the heap's PS1
   layout kept: `PLAYER_PROFILES` at 0x800C8964), `StCdIntrFlag`'s type. `tests/port/run.py boot` and `title` pass and
   are a CI gate (#24 decided: the checkpoints before the profile is defined are `"image": false`, the
-  `rand()`-drawn `cardCopySerials` are volatile, the four records re-recorded). Also open: UBSan's alignment reports
-  (#25), the movie's length (#26), the TMD readers (#22 item 4).
+  `rand()`-drawn `cardCopySerials` are volatile, the four records re-recorded). Also open: the movie's length (#26),
+  the TMD readers (#22 item 4).
 - **The dialogs (#23):** every dialog object is one `Dialog` on the host (`ChoiceDialog`, `Window`, `DialogK`,
   `EvoDialog`, `DUEL_DIALOG`, `SAI_DIALOG`, the `u8[0xB8]` stack buffers, `DeckScreen.dialog`), and `Model2220` is the
   `Model` (`docs/PORT.md` "Memory and pointers"); two reads through null pointers the PS1 survives (`initDialog`'s
@@ -91,7 +92,18 @@ runners).
   `title_menu` (the software GPU against PCSX-Redux, psxstack#54: probably the emulator's known rounding and mode-2
   behaviour); `name_entered`, `starter_chosen`, `saiseg+120`, `saiseg+600` differ by animation phase, the port
   reaching them after other frame counts (#33).
-- Next: `first_duel`'s duel (#4); M2: align the phase-shifted dumps (#33), then the duel's VRAM.
+- **M1 closed (#25):** the pin is v0.3.3. The port's frames moved with the CD's 60 Hz rate (`openseg_loaded` 181,
+  `title` 7057, `title_menu` 7059, `name_entered` 7634, `starter_chosen` 8148, `saiseg` 10203, `first_duel` 12686;
+  the emulator: 827, 7866, 7868, 8541, 9102, 11681, 14211); with the PS1's `rand` the starter's five bonus cards fall
+  differently, so all ten of the Veemon deck's are in `VOLATILE_RANGES` (new_game and first_duel re-recorded: only
+  their stable hashes changed); `random_index` is `port_rand_seed()`, recorded, not compared. **The heap on the host**
+  keeps the PS1's block table (PS1 addresses: `PLAYER_PROFILES` still 0x800C8964) and spaces the blocks twice as wide,
+  so each starts 8-aligned, with the PS1's leftover bytes copied in (`docs/PORT.md` "Memory and pointers"). The
+  sanitizer build has no report on any script: the alignment reports are gone, `HUFFMAN_LEFT`/`RIGHT` are arrays on
+  the host, and `assignCardCopySerial`'s in-struct overrun is in `tests/port/ubsan.supp`. `tests/port/run.py
+  --sanitize` gates CI's `replay` job with the four scripts.
+- Next: `first_duel`'s duel (#4), the literal heap sizes (#31); M2: align the phase-shifted dumps (#33), then the
+  duel's VRAM.
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).
