@@ -300,8 +300,8 @@ void END_drawScrollHelp(UiWindow *window) {
     y = window->originY;
     z = window->z;
     x += 40;
-    drawText(x, y + 1, (s32)"*s0*b4: Scroll L1, R1: Fast Scroll", 7, z);
-    drawText(x, y + 15, (s32)"*s0L2: Previous R2: Next *b6: Quit", 7, z);
+    drawText(x, y + 1, (s32p)"*s0*b4: Scroll L1, R1: Fast Scroll", 7, z);
+    drawText(x, y + 15, (s32p)"*s0L2: Previous R2: Next *b6: Quit", 7, z);
 }
 
 #define PROFILE ((PlayerProfile *)PLAYER_PROFILES)
@@ -448,7 +448,7 @@ void END_runPlayerRecords(s32 parentTask, s32 mode) {
 
         base = END_SECTION_OFFSETS[0];
         if (scroll + base > -0x82 && scroll + base < 0xF0) {
-            drawText(0x76, scroll + base, (s32)"Cards you own.", 6, 0);
+            drawText(0x76, scroll + base, (s32p)"Cards you own.", 6, 0);
         }
         base += 40;
         for (cardId = 0; cardId < 0x12D; cardId++) {
@@ -466,37 +466,37 @@ void END_runPlayerRecords(s32 parentTask, s32 mode) {
                     default:
                         if (PROFILE->cardCollection[cardId] & 0x40) {
                             sprintf(buf, "*s0%3d*s1 *c6Win *c7*s0%3d*s1 *c6Loss", PROFILE->cardWins[cardId], PROFILE->cardLosses[cardId]);
-                            drawText(0xD8, scroll + base + cardId * 80, (s32)buf, 7, 0);
+                            drawText(0xD8, scroll + base + cardId * 80, (s32p)buf, 7, 0);
                             for (i = 0; i < 3; i++) {
                                 sprintf(buf, "Max *b%d Attack Power *s0%5d", i, (u16)PROFILE->maxAttackPowers[cardId][i]);
-                                drawText(0x42, scroll + base + cardId * 80 + 14 + i * 14, (s32)buf, 7, 0);
+                                drawText(0x42, scroll + base + cardId * 80 + 14 + i * 14, (s32p)buf, 7, 0);
                             }
                         }
                         strcpy(buf, ((DigimonCardData *)DIGIMON_CARDS)[cardId].name);
                         break;
                     }
                     if (PROFILE->cardCollection[cardId] & 0x40) {
-                        drawText(0x46, scroll + base + cardId * 80, (s32)buf, 6, 0);
-                        drawText(0xDE, scroll + base + cardId * 80 + 0x14, (s32)"Cards you own.", 6, 0);
+                        drawText(0x46, scroll + base + cardId * 80, (s32p)buf, 6, 0);
+                        drawText(0xDE, scroll + base + cardId * 80 + 0x14, (s32p)"Cards you own.", 6, 0);
                         sprintf(buf, "*s0%d*s1 *c6Cards", owned);
-                        drawText(0xF4, scroll + base + cardId * 80 + 0x22, (s32)buf, 7, 0);
+                        drawText(0xF4, scroll + base + cardId * 80 + 0x22, (s32p)buf, 7, 0);
                         if (PROFILE->cardCollection[cardId] & 8) {
-                            drawText(0xD6, scroll + base + cardId * 80 + 0x30, (s32)"Received by Trading.", 3, 0);
+                            drawText(0xD6, scroll + base + cardId * 80 + 0x30, (s32p)"Received by Trading.", 3, 0);
                         }
                         END_drawCardThumbnail(0x14, scroll + base + cardId * 80 + 0xF, type, cardId);
                     } else {
-                        drawText(0x46, scroll + base + cardId * 80, (s32)"?????????????", 6, 0);
+                        drawText(0x46, scroll + base + cardId * 80, (s32p)"?????????????", 6, 0);
                         END_drawUnknownCardThumbnail(0x14, scroll + base + cardId * 80 + 0xF);
                     }
                     sprintf(buf, "No.%d", cardId);
-                    drawText((0x28 - measureText(buf)) / 2 + 0x14, scroll + base + cardId * 80, (s32)buf, 7, 0);
+                    drawText((0x28 - measureText(buf)) / 2 + 0x14, scroll + base + cardId * 80, (s32p)buf, 7, 0);
                 }
             }
         }
 
         base = END_SECTION_OFFSETS[1];
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x5C, scroll + base, (s32)"Wins & Losses per Event Deck", 6, 0);
+            drawText(0x5C, scroll + base, (s32p)"Wins & Losses per Event Deck", 6, 0);
         }
         base = END_SECTION_OFFSETS[1] + 0x18;
         for (i = 0; i < deckCount; i++) {
@@ -504,16 +504,16 @@ void END_runPlayerRecords(s32 parentTask, s32 mode) {
                 if (scroll + base + i * 14 <= 240) {
                     idx = deckList[i];
                     sprintf(buf, "%s Deck", decks + idx * 0x6E + 0x3C);
-                    drawText(0x3C, scroll + base + i * 14, (s32)buf, 7, 0);
+                    drawText(0x3C, scroll + base + i * 14, (s32p)buf, 7, 0);
                     sprintf(buf, "*s0%3d*s1 *c6Win *c7*s0%3d*s1 *c6Loss", PROFILE->opponentDeckFlags[idx] & 0x3FFF, PROFILE->opponentDeckLosses[idx]);
-                    drawText(0xC2, scroll + base + i * 14, (s32)buf, 7, 0);
+                    drawText(0xC2, scroll + base + i * 14, (s32p)buf, 7, 0);
                 }
             }
         }
 
         base = END_SECTION_OFFSETS[2];
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x70, scroll + base, (s32)"Wins & Losses per Com", 6, 0);
+            drawText(0x70, scroll + base, (s32p)"Wins & Losses per Com", 6, 0);
         }
         base = END_SECTION_OFFSETS[2] + 0x18;
         for (i = 0; i < comCount; i++) {
@@ -524,23 +524,23 @@ void END_runPlayerRecords(s32 parentTask, s32 mode) {
                 continue;
             }
             idx = comList[i];
-            drawText(0x3C, scroll + base + i * 14, (s32)(decks + idx * 0x6E + 0x4F), 7, 0);
+            drawText(0x3C, scroll + base + i * 14, (s32p)(decks + idx * 0x6E + 0x4F), 7, 0);
             sprintf(buf, "*s0%3d*s1 *c6Win *c7*s0%3d*s1 *c6Loss", PROFILE->comWins[idx], PROFILE->comLosses[idx]);
-            drawText(0xC2, scroll + base + i * 14, (s32)buf, 7, 0);
+            drawText(0xC2, scroll + base + i * 14, (s32p)buf, 7, 0);
         }
 
         base = END_SECTION_OFFSETS[3];
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x78, scroll + base, (s32)"Number of \"Bonuses\"", 6, 0);
+            drawText(0x78, scroll + base, (s32p)"Number of \"Bonuses\"", 6, 0);
         }
         base = END_SECTION_OFFSETS[3] + 0x18;
         for (i = 0; i < 0x20; i++) {
             if (scroll + base + i * 14 >= -16) {
                 if (scroll + base + i * 14 <= 240) {
                     if (i != 0x1E) {
-                        drawText(0x3C, scroll + base + i * 14, (s32)END_BONUS_NAMES[i], 7, 0);
+                        drawText(0x3C, scroll + base + i * 14, (s32p)END_BONUS_NAMES[i], 7, 0);
                         sprintf(buf, "*s0%3d*s1 *c6Times", (u16)PROFILE->bonusCounts[i]);
-                        drawText(0xDC, scroll + base + i * 14, (s32)buf, 7, 0);
+                        drawText(0xDC, scroll + base + i * 14, (s32p)buf, 7, 0);
                     }
                 }
             }
@@ -548,47 +548,47 @@ void END_runPlayerRecords(s32 parentTask, s32 mode) {
 
         base = END_SECTION_OFFSETS[4];
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x80, scroll + base, (s32)"Trading Info.", 6, 0);
+            drawText(0x80, scroll + base, (s32p)"Trading Info.", 6, 0);
         }
         base = END_SECTION_OFFSETS[4] + 0x18;
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x50, scroll + base, (s32)"Cards given away.", 6, 0);
+            drawText(0x50, scroll + base, (s32p)"Cards given away.", 6, 0);
             sprintf(buf, "*s0%4d*s1 *c6Cards", (u16)PROFILE->cardsGivenAway);
-            drawText(0xB6, scroll + base, (s32)buf, 7, 0);
+            drawText(0xB6, scroll + base, (s32p)buf, 7, 0);
         }
         base = END_SECTION_OFFSETS[4] + 0x2C;
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x50, scroll + base, (s32)"Received Cards", 6, 0);
+            drawText(0x50, scroll + base, (s32p)"Received Cards", 6, 0);
             sprintf(buf, "*s0%4d*s1 *c6Cards", (u16)PROFILE->cardsReceived);
-            drawText(0xB6, scroll + base, (s32)buf, 7, 0);
+            drawText(0xB6, scroll + base, (s32p)buf, 7, 0);
         }
 
         base = END_SECTION_OFFSETS[5];
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x88, scroll + base, (s32)"Fusion Info.", 6, 0);
+            drawText(0x88, scroll + base, (s32p)"Fusion Info.", 6, 0);
         }
         base = END_SECTION_OFFSETS[5] + 0x18;
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x50, scroll + base, (s32)"Used Cards", 6, 0);
+            drawText(0x50, scroll + base, (s32p)"Used Cards", 6, 0);
             sprintf(buf, "*s0%4d*s1 *c6Cards", (u16)PROFILE->fusionCardsUsed);
-            drawText(0xBE, scroll + base, (s32)buf, 7, 0);
+            drawText(0xBE, scroll + base, (s32p)buf, 7, 0);
         }
         base = END_SECTION_OFFSETS[5] + 0x2C;
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x50, scroll + base, (s32)"Fused Cards", 6, 0);
+            drawText(0x50, scroll + base, (s32p)"Fused Cards", 6, 0);
             sprintf(buf, "*s0%4d*s1 *c6Cards", (u16)PROFILE->fusedCards);
-            drawText(0xBE, scroll + base, (s32)buf, 7, 0);
+            drawText(0xBE, scroll + base, (s32p)buf, 7, 0);
         }
         base = END_SECTION_OFFSETS[5] + 0x40;
         if (scroll + base > -0x10 && scroll + base < 0xF0) {
-            drawText(0x50, scroll + base, (s32)"Fusion Mutations", 6, 0);
+            drawText(0x50, scroll + base, (s32p)"Fusion Mutations", 6, 0);
             sprintf(buf, "*s0%4d*s1 *c6Times", (u16)PROFILE->fusionMutations);
-            drawText(0xBE, scroll + base, (s32)buf, 7, 0);
+            drawText(0xBE, scroll + base, (s32p)buf, 7, 0);
         }
 
         base = END_SECTION_OFFSETS[6];
         if (scroll + base > -0x3C && scroll + base < 0xF0) {
-            drawText(0x64, scroll + base, (s32)"Player's Attack Rate", 6, 0);
+            drawText(0x64, scroll + base, (s32p)"Player's Attack Rate", 6, 0);
             total = PROFILE->attackCounts[0] + PROFILE->attackCounts[1] + PROFILE->attackCounts[2];
             for (i = 0; i < 3; i++) {
                 if (total != 0) {
@@ -597,72 +597,72 @@ void END_runPlayerRecords(s32 parentTask, s32 mode) {
                     pct = 0;
                 }
                 sprintf(buf, "*s0*b%d%3d.%1d*w4*c6%%", i, pct / 10, pct % 10);
-                drawText(0x7E, scroll + base + 14 + i * 14, (s32)buf, 7, 0);
+                drawText(0x7E, scroll + base + 14 + i * 14, (s32p)buf, 7, 0);
             }
         }
 
         base = END_SECTION_OFFSETS[7];
         if (scroll + base > -0x14 && scroll + base < 0xF0) {
-            drawText(0x50, scroll + base, (s32)"Speciality Data of Each Card", 6, 0);
+            drawText(0x50, scroll + base, (s32p)"Speciality Data of Each Card", 6, 0);
         }
         for (i = 0; i < 5; i++) {
             if (scroll + base + 14 + i * 14 > -0x14 && scroll + base + 14 + i * 14 < 0xF0) {
                 sprintf(buf, "Rank *s0%s*s1 *c7%s Card", END_RANK_ORDINALS[i], END_SPECIALTY_ICONS[END_SPECIALTY_ORDER[i]]);
-                drawText(0x18, scroll + base + 14 + i * 14, (s32)buf, 6, 0);
+                drawText(0x18, scroll + base + 14 + i * 14, (s32p)buf, 6, 0);
                 sprintf(buf, "*s0%4d*s1 *c6Win *c7*s0%4d*s1 *c6Loss *c7*s0%4d*s1 *c6Cards",
                         END_SPECIALTY_WINS[END_SPECIALTY_ORDER[i]], END_SPECIALTY_LOSSES[END_SPECIALTY_ORDER[i]], END_SPECIALTY_CARDS[END_SPECIALTY_ORDER[i]]);
-                drawText(0x82, scroll + base + 14 + i * 14, (s32)buf, 7, 0);
+                drawText(0x82, scroll + base + 14 + i * 14, (s32p)buf, 7, 0);
             }
         }
         if (scroll + base + 14 + i * 14 > -0x14 && scroll + base + 14 + i * 14 < 0xF0) {
-            drawText(0x36, scroll + base + 14 + i * 14, (s32)"All Cards", 6, 0);
+            drawText(0x36, scroll + base + 14 + i * 14, (s32p)"All Cards", 6, 0);
             sprintf(buf, "*s0%4d*s1 *c6Win *c7*s0%4d*s1 *c6Loss *c7*s0%4d*s1 *c6Cards",
                     END_SPECIALTY_WINS[5], END_SPECIALTY_LOSSES[5], END_SPECIALTY_CARDS[5]);
-            drawText(0x82, scroll + base + 14 + i * 14, (s32)buf, 7, 0);
+            drawText(0x82, scroll + base + 14 + i * 14, (s32p)buf, 7, 0);
         }
 
         base = END_SECTION_OFFSETS[8];
         if (scroll + base > -0x50 && scroll + base < 0xF0) {
-            drawText(0x3C, scroll + base, (s32)"COM Battle Results", 6, 0);
+            drawText(0x3C, scroll + base, (s32p)"COM Battle Results", 6, 0);
             sprintf(buf, "*s0%3d*s1 *c6Win *c7*s0%3d*s1 *c6Loss", PROFILE->battleWins, PROFILE->battleLosses);
-            drawText(0xB6, scroll + base, (s32)buf, 7, 0);
+            drawText(0xB6, scroll + base, (s32p)buf, 7, 0);
         }
         if (scroll + base + 0x14 > -0x50 && scroll + base + 0x14 < 0xF0) {
-            drawText(0x3C, scroll + base + 0x14, (s32)"2P Battle Results", 6, 0);
+            drawText(0x3C, scroll + base + 0x14, (s32p)"2P Battle Results", 6, 0);
             sprintf(buf, "*s0%3d*s1 *c6Win *c7*s0%3d*s1 *c6Loss", PROFILE->versusWins, PROFILE->versusLosses);
-            drawText(0xB6, scroll + base + 0x14, (s32)buf, 7, 0);
+            drawText(0xB6, scroll + base + 0x14, (s32p)buf, 7, 0);
         }
         if (scroll + base + 0x28 > -0x50 && scroll + base + 0x28 < 0xF0) {
-            drawText(0x3C, scroll + base + 0x28, (s32)"Number of Saves", 6, 0);
+            drawText(0x3C, scroll + base + 0x28, (s32p)"Number of Saves", 6, 0);
             sprintf(buf, "*s0%3d*s1 *c6Times", PROFILE->saveCount);
-            drawText(0xB6, scroll + base + 0x28, (s32)buf, 7, 0);
+            drawText(0xB6, scroll + base + 0x28, (s32p)buf, 7, 0);
         }
 
         base = END_SECTION_OFFSETS[9];
         if (scroll + base > -0x3C && scroll + base < 0xF0) {
-            drawText(0x4A, scroll + base, (s32)"Battle Title", 6, 0);
-            drawText(0xAC, scroll + base, (s32)STR_TAMER_RANKS[PROFILE->tamerRank], 7, 0);
+            drawText(0x4A, scroll + base, (s32p)"Battle Title", 6, 0);
+            drawText(0xAC, scroll + base, (s32p)STR_TAMER_RANKS[PROFILE->tamerRank], 7, 0);
         }
         if (scroll + base + 0x14 > -0x3C && scroll + base + 0x14 < 0xF0) {
-            drawText(0x4A, scroll + base + 0x14, (s32)"Collector Title", 6, 0);
-            drawText(0xAC, scroll + base + 0x14, (s32)STR_COLLECTOR_RANKS[PROFILE->collectorRank], 7, 0);
+            drawText(0x4A, scroll + base + 0x14, (s32p)"Collector Title", 6, 0);
+            drawText(0xAC, scroll + base + 0x14, (s32p)STR_COLLECTOR_RANKS[PROFILE->collectorRank], 7, 0);
         }
         if (scroll + base + 0x28 > -0x3C && scroll + base + 0x28 < 0xF0) {
-            drawText(0x4A, scroll + base + 0x28, (s32)"2P Battle Title", 6, 0);
-            drawText(0xAC, scroll + base + 0x28, (s32)STR_BATTLE_RANKS[PROFILE->battleRank], 7, 0);
+            drawText(0x4A, scroll + base + 0x28, (s32p)"2P Battle Title", 6, 0);
+            drawText(0xAC, scroll + base + 0x28, (s32p)STR_BATTLE_RANKS[PROFILE->battleRank], 7, 0);
         }
 
         base = END_SECTION_OFFSETS[10];
         if (scroll + base > -0x3C && scroll + base < 0xF0) {
             sprintf(buf, "You're \"%s*c7\"!", END_EPITHETS[epithet]);
-            drawText((0x140 - measureText(buf)) / 2, scroll + base, (s32)buf, 7, 0);
+            drawText((0x140 - measureText(buf)) / 2, scroll + base, (s32p)buf, 7, 0);
         }
 
         if (mode == 1) {
             base = END_SECTION_OFFSETS[11];
             if (scroll + base > -0x3C && scroll + base < 0xF0) {
                 sprintf(buf, "Push *b2 Button to Quit", END_EPITHETS[epithet]);
-                drawText((0x140 - measureText(buf)) / 2, scroll + base, (s32)buf, 7, 0);
+                drawText((0x140 - measureText(buf)) / 2, scroll + base, (s32p)buf, 7, 0);
                 if (PAD_STATES[0]->pressed & PAD_CROSS) {
                     break;
                 }

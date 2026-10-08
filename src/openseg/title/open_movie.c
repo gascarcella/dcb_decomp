@@ -203,7 +203,7 @@ void OPEN_setSpuVolume(s32 volume) {
     SpuSetCommonAttr(&attr);
 }
 
-s32 OPEN_findMovieFile(s32 *name) {
+s32 OPEN_findMovieFile(char *name) {
     CdFileEntry file;
 
     OPEN_searchCdFile(&file, name);
@@ -308,7 +308,7 @@ void OPEN_initMovieStream(CdLocation *loc, void (*callback)()) {
     OPEN_MOVIE_IMAGE_BUFFER = allocTaskHeapBlock(0x5A00);
     OPEN_MOVIE_FRAME = 0;
     OPEN_MOVIE_ENDED = 0;
-    *callbacks++ = (s32)OPEN_showMovieFrame;
+    *callbacks++ = (s32p)OPEN_showMovieFrame;
     *callbacks = 0;
     DecDCTReset(0);
     DecDCToutCallback(callback);
@@ -369,7 +369,7 @@ s32 OPEN_decodeMovieFrame(DecEnv *env) {
         }
     }
     env->vlcid = env->vlcid == 0;
-    DecDCTvlc2(frame, env->vlcbuf[env->vlcid], OPEN_VLC_TABLE);
+    DecDCTvlc2(frame, (u32 *)env->vlcbuf[env->vlcid], OPEN_VLC_TABLE);
     StFreeRing(frame);
     return 0;
 }

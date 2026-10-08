@@ -295,7 +295,7 @@ void OPEN_runMemcardAccess(void) {
             OPEN_prepareSaveData(player);
             OPEN_buildSaveHeader(player, slot);
             writeSaveChecksum(0x2774, OPEN_MEMCARD.buffer);
-            if (startMemoryCardSave(port, 2, (s32)OPEN_MEMCARD.buffer, OPEN_SAVE_FILE_NAMES[slot], (McHeader *)MEMORY_CARD_SAVE_HEADER) == -1) {
+            if (startMemoryCardSave(port, 2, (s32p)OPEN_MEMCARD.buffer, OPEN_SAVE_FILE_NAMES[slot], (McHeader *)MEMORY_CARD_SAVE_HEADER) == -1) {
                 OPEN_MEMCARD.state = 5;
             } else if (OPEN_waitMemoryCardSave(player, port) == -1) {
                 OPEN_MEMCARD.state = 5;
@@ -308,7 +308,7 @@ void OPEN_runMemcardAccess(void) {
             OPEN_prepareSaveData(player);
             OPEN_buildSaveHeader(player, slot);
             writeSaveChecksum(0x2774, OPEN_MEMCARD.buffer);
-            if (startMemoryCardSave(port, 2, (s32)OPEN_MEMCARD.buffer, OPEN_SAVE_FILE_NAMES[slot], (McHeader *)MEMORY_CARD_SAVE_HEADER) == -1) {
+            if (startMemoryCardSave(port, 2, (s32p)OPEN_MEMCARD.buffer, OPEN_SAVE_FILE_NAMES[slot], (McHeader *)MEMORY_CARD_SAVE_HEADER) == -1) {
                 OPEN_MEMCARD.state = 20;
             } else {
                 status = OPEN_waitMemoryCardSave(player, port);
@@ -349,7 +349,7 @@ void OPEN_runMemcardAccess(void) {
             OPEN_MEMCARD.state = 1;
             break;
         case 9:
-            if (startMemoryCardLoad(port, (s32)OPEN_MEMCARD.buffer, OPEN_SAVE_FILE_NAMES[slot]) == -1) {
+            if (startMemoryCardLoad(port, (s32p)OPEN_MEMCARD.buffer, OPEN_SAVE_FILE_NAMES[slot]) == -1) {
                 OPEN_MEMCARD.state = 13;
                 break;
             }

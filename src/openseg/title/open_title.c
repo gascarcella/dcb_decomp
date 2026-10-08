@@ -300,7 +300,7 @@ void OPEN_runTitleScreen(s32 parentTask) {
     D_801F52C4 = 0;
     D_801F52C8 = 1;
     resetPlayerData();
-    addFrameCallback((s32)OPEN_drawTitleScreen);
+    addFrameCallback((s32p)OPEN_drawTitleScreen);
     idle = 0;
     OPEN_TITLE_LOGO_RISE = 0;
     do {
@@ -374,7 +374,7 @@ void OPEN_runTitleScreen(s32 parentTask) {
     } while (idle < 0xE11 && !done);
     spawnTask(0, -1, 0, 0x200, screenFadeTask, NULL, 2, 8, 0);
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawTitleScreen);
+    removeFrameCallback((s32p)OPEN_drawTitleScreen);
     stopScreenFade();
     waitFrames(10);
     if (idle >= 0xE11) {

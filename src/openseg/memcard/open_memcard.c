@@ -225,7 +225,7 @@ void OPEN_runMemcardScreen(s32 mode, s32 parentTask, s32 port) {
     OPEN_SAVE_PLACE_IMAGES = NULL;
     OPEN_loadMemcardTextures();
     OPEN_initMemcardScreen(port);
-    addFrameCallback((s32)OPEN_drawMemcardScreen);
+    addFrameCallback((s32p)OPEN_drawMemcardScreen);
     do {
         OPEN_resetMemcardScreen(port);
         spawnTask(0, -1, 4, 0x800, OPEN_runMemcardAccess, 0, 0, 0, 0);
@@ -243,7 +243,7 @@ void OPEN_runMemcardScreen(s32 mode, s32 parentTask, s32 port) {
     animateWindowTo(&OPEN_MEMCARD_MESSAGE_WINDOW, (Rect16 *)-1);
     playMenuSound(4);
     waitFrames(20);
-    removeFrameCallback((s32)OPEN_drawMemcardScreen);
+    removeFrameCallback((s32p)OPEN_drawMemcardScreen);
     switch (OPEN_MEMCARD_EXIT_ACTION) {
     case 0:
         break;
@@ -401,7 +401,7 @@ void OPEN_resetMemcardScreen(s32 port) {
     rect.h = 0x2A;
     openWindow(&OPEN_MEMCARD_MESSAGE_WINDOW, &rect, -1, (s16 *)-1, 8, 0x51, 0x80, 0xC);
     OPEN_MEMCARD_MESSAGE_WINDOW.labelPalette = 8;
-    OPEN_MEMCARD_MESSAGE_WINDOW.label = (s32)"MESSAGE";
+    OPEN_MEMCARD_MESSAGE_WINDOW.label = (s32p)"MESSAGE";
     playMenuSound(3);
 }
 
@@ -465,7 +465,7 @@ void OPEN_drawMemcardMessage(UiWindow *window) {
             *dst++ = *src++;
         }
         *dst = 0;
-        drawText(x + 2, y + 1, (s32)text, 7, z);
+        drawText(x + 2, y + 1, (s32p)text, 7, z);
     }
 }
 
@@ -536,13 +536,13 @@ void OPEN_openMemcardWindows(void) {
         openWindow(&OPEN_MEMCARD.slotWindows[i].window, &rect, -1, (s16 *)-1, 8, 0x21, 0x80, 0xC);
         switch (i) {
         case 0:
-            OPEN_MEMCARD.slotWindows[i].window.label = (s32)"FILE 1";
+            OPEN_MEMCARD.slotWindows[i].window.label = (s32p)"FILE 1";
             break;
         case 1:
-            OPEN_MEMCARD.slotWindows[i].window.label = (s32)"FILE 2";
+            OPEN_MEMCARD.slotWindows[i].window.label = (s32p)"FILE 2";
             break;
         case 2:
-            OPEN_MEMCARD.slotWindows[i].window.label = (s32)"FILE 3";
+            OPEN_MEMCARD.slotWindows[i].window.label = (s32p)"FILE 3";
             break;
         }
         animateWindowTo(&OPEN_MEMCARD.slotWindows[i].window, (Rect16 *)-1);
@@ -552,14 +552,14 @@ void OPEN_openMemcardWindows(void) {
     rect.w = 0x84;
     rect.h = 0x4E;
     openWindow(&OPEN_MEMCARD.infoWindow.window, &rect, -1, (s16 *)-1, 8, 0x21, 0x80, 0xC);
-    OPEN_MEMCARD.infoWindow.window.label = (s32)"INFO.";
+    OPEN_MEMCARD.infoWindow.window.label = (s32p)"INFO.";
     animateWindowTo(&OPEN_MEMCARD.infoWindow.window, (Rect16 *)-1);
     rect.x = 0xAC;
     rect.y = 0x3E;
     rect.w = 0x84;
     rect.h = 0xE;
     openWindow(&OPEN_OPERATION_WINDOW, &rect, -1, (s16 *)-1, 8, 0x21, 0x80, 0xC);
-    OPEN_OPERATION_WINDOW.label = (s32)"OPERATION";
+    OPEN_OPERATION_WINDOW.label = (s32p)"OPERATION";
     animateWindowTo(&OPEN_OPERATION_WINDOW, (Rect16 *)-1);
 }
 
@@ -653,10 +653,10 @@ void OPEN_drawSaveInfo(UiWindow *window) {
         if (save->size == 0x2774) {
             OPEN_drawSaveDetails(window->originX, window->originY, window->z);
         } else {
-            drawText(window->originX + 0x2C, window->originY + 0x20, (s32)"NO DATA", 7, window->z);
+            drawText(window->originX + 0x2C, window->originY + 0x20, (s32p)"NO DATA", 7, window->z);
         }
     } else {
-        drawText(window->originX + 0x2C, window->originY + 0x20, (s32)"NO DATA", 7, window->z);
+        drawText(window->originX + 0x2C, window->originY + 0x20, (s32p)"NO DATA", 7, window->z);
     }
 }
 
@@ -666,7 +666,7 @@ void OPEN_drawMemcardOperation(UiWindow *window) {
 
     sprintf(text, OPEN_TEXT_PLAYER_SLOT, OPEN_MEMCARD_CARD + 1, ((SessionData *)SESSION_DATA)->saveSlots[OPEN_MEMCARD_CARD][0] + 1);
     x = (0x84 - strlen(text) * 6) / 2;
-    drawText(window->originX + x, window->originY + 1, (s32)text, 7, window->z);
+    drawText(window->originX + x, window->originY + 1, (s32p)text, 7, window->z);
 }
 
 void OPEN_drawMemcardScreen(void) {
@@ -735,7 +735,7 @@ void OPEN_drawMemcardScreen(void) {
             }
         }
         sprintf(text, "*s0%3d*w3%%", OPEN_MEMCARD_PROGRESS);
-        drawText(0xE6, 0x82, (s32)text, 6, 0x1D);
+        drawText(0xE6, 0x82, (s32p)text, 6, 0x1D);
     }
 }
 
@@ -792,23 +792,23 @@ void OPEN_drawSaveDetails(s32 x, s32 y, s32 z) {
     save = &OPEN_MEMCARD.slots[OPEN_MEMCARD.card][slot];
     completion = save->progress * 1000 / 166;
     collection = save->seenCardCount * 1000 / 301;
-    drawText(x + 2, y + 1, (s32)"Game Completion", 6, z);
+    drawText(x + 2, y + 1, (s32p)"Game Completion", 6, z);
     sprintf(text, "%3d.%1d*w3*c6%%", completion / 10, completion % 10);
-    drawText(x + 0x5B, y + 1, (s32)text, 7, z);
-    drawText(x + 2, y + 14, (s32)"Card Collection", 6, z);
+    drawText(x + 0x5B, y + 1, (s32p)text, 7, z);
+    drawText(x + 2, y + 14, (s32p)"Card Collection", 6, z);
     sprintf(text, "%3d.%1d*w3*c6%%", collection / 10, collection % 10);
-    drawText(x + 0x5B, y + 14, (s32)text, 7, z);
+    drawText(x + 0x5B, y + 14, (s32p)text, 7, z);
     if (save->tradeUnlocked) {
         drawIcon(x + 0x68, y + 0x1A, 2, 11, z);
     }
     if (save->location < 16) {
-        drawText(x + 2, y + 0x1B, (s32)"Current Position", 6, z);
-        drawText(x + 13, y + 0x28, (s32)OPEN_SAVE_PLACE_NAMES[save->location], 7, z);
+        drawText(x + 2, y + 0x1B, (s32p)"Current Position", 6, z);
+        drawText(x + 13, y + 0x28, (s32p)OPEN_SAVE_PLACE_NAMES[save->location], 7, z);
         if (save->location >= 12) {
-            drawText(x + 13, y + 0x35, (s32)OPEN_AREA_ENTRANCE_NAMES[save->location - 12], 7, z);
+            drawText(x + 13, y + 0x35, (s32p)OPEN_AREA_ENTRANCE_NAMES[save->location - 12], 7, z);
         } else if (save->arena >= 2 && save->arena < 6) {
-            drawText(x + 2, y + 0x35, (s32)OPEN_STR_ARENA, 6, z);
-            drawText(x + 13, y + 0x42, (s32)OPEN_ARENA_NAMES[save->location * 4 + save->arena - 2], 7, z);
+            drawText(x + 2, y + 0x35, (s32p)OPEN_STR_ARENA, 6, z);
+            drawText(x + 13, y + 0x42, (s32p)OPEN_ARENA_NAMES[save->location * 4 + save->arena - 2], 7, z);
         }
         CUR_SPRT->sp.x0 = x;
         CUR_SPRT->sp.y0 = y;

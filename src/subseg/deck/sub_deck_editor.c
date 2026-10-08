@@ -114,7 +114,7 @@ void SUB_initPrimBuffers(s8 keepBuffers) {
 
     if (!keepBuffers) {
         for (i = 0; i < 2; i++) {
-            DB(i).primSlots[0] = (s32)(SUB_EDITOR.primBuffers[i] = allocHeapBlock(0xAF0, 0x3C));
+            DB(i).primSlots[0] = (s32p)(SUB_EDITOR.primBuffers[i] = allocHeapBlock(0xAF0, 0x3C));
         }
         p = allocHeapBlock(0x320, 0x3C);
         SUB_EDITOR.unk8 = p;

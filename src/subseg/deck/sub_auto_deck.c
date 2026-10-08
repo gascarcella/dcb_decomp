@@ -190,23 +190,23 @@ void SUB_drawAutoDeckOptions(UiWindow *window) {
             break;
         }
     }
-    drawText(x, y, (s32)"Auto Deck", 6, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[0].x, y, (s32)SUB_STR_DISABLE, SUB_AUTO_DECK_ENABLED ? 8 : 7, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[1].x, y, (s32)"Enable", SUB_AUTO_DECK_ENABLED ? 7 : 8, z);
-    drawText(x, y + 0x18, (s32)"Specialty", 6, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[2].x, y + 0x18, (s32)"Fire", (SUB_AUTO_DECK_OPTIONS[2] == 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[3].x, y + 0x18, (s32)"Ice", (SUB_AUTO_DECK_OPTIONS[2] == 1 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[4].x, y + 0x18, (s32)"Nature", (SUB_AUTO_DECK_OPTIONS[2] == 2 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[5].x, y + 0x18, (s32)"Darkness", (SUB_AUTO_DECK_OPTIONS[2] == 3 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[6].x, y + 0x18, (s32)"Rare", (SUB_AUTO_DECK_OPTIONS[2] == 4 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x, y + 0x30, (s32)SUB_STR_TYPE, 6, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[7].x, y + 0x30, (s32)"Offensive", (SUB_AUTO_DECK_OPTIONS[3] == 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[8].x, y + 0x30, (s32)"Defensive", (SUB_AUTO_DECK_OPTIONS[3] != 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x, y + 0x48, (s32)"Option Cards", 6, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[9].x, y + 0x48, (s32)"Many", (SUB_AUTO_DECK_OPTIONS[4] == 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[10].x, y + 0x48, (s32)"Few", (SUB_AUTO_DECK_OPTIONS[4] != 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[11].x, y + 0x60, (s32)"Create", 6, z);
-    drawText(x + SUB_AUTO_DECK_ITEMS[12].x, y + 0x60, (s32)"Cancel", 6, z);
+    drawText(x, y, (s32p)"Auto Deck", 6, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[0].x, y, (s32p)SUB_STR_DISABLE, SUB_AUTO_DECK_ENABLED ? 8 : 7, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[1].x, y, (s32p)"Enable", SUB_AUTO_DECK_ENABLED ? 7 : 8, z);
+    drawText(x, y + 0x18, (s32p)"Specialty", 6, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[2].x, y + 0x18, (s32p)"Fire", (SUB_AUTO_DECK_OPTIONS[2] == 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[3].x, y + 0x18, (s32p)"Ice", (SUB_AUTO_DECK_OPTIONS[2] == 1 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[4].x, y + 0x18, (s32p)"Nature", (SUB_AUTO_DECK_OPTIONS[2] == 2 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[5].x, y + 0x18, (s32p)"Darkness", (SUB_AUTO_DECK_OPTIONS[2] == 3 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[6].x, y + 0x18, (s32p)"Rare", (SUB_AUTO_DECK_OPTIONS[2] == 4 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x, y + 0x30, (s32p)SUB_STR_TYPE, 6, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[7].x, y + 0x30, (s32p)"Offensive", (SUB_AUTO_DECK_OPTIONS[3] == 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[8].x, y + 0x30, (s32p)"Defensive", (SUB_AUTO_DECK_OPTIONS[3] != 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x, y + 0x48, (s32p)"Option Cards", 6, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[9].x, y + 0x48, (s32p)"Many", (SUB_AUTO_DECK_OPTIONS[4] == 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[10].x, y + 0x48, (s32p)"Few", (SUB_AUTO_DECK_OPTIONS[4] != 0 && SUB_AUTO_DECK_OPTIONS[1]) ? 7 : 8, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[11].x, y + 0x60, (s32p)"Create", 6, z);
+    drawText(x + SUB_AUTO_DECK_ITEMS[12].x, y + 0x60, (s32p)"Cancel", 6, z);
     drawCursorHighlight(&SUB_AUTO_DECK_CURSOR, z);
 }
 
@@ -223,7 +223,7 @@ void SUB_openAutoDeckMenu(void) {
     rects[0].h = 0x6E;
     for (i = 0; i < 7; i++) {
         if (i != 1) {
-            SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32)labels[i], flags[i], styles[i]);
+            SUB_openCenteredWindow(&SUB_WINDOWS[i], rects[i], (s32p)labels[i], flags[i], styles[i]);
         }
     }
     rects[0].x = SUB_WINDOWS[0].originX + 0x54;
@@ -244,13 +244,13 @@ void SUB_runAutoDeckMenu(void) {
 
     playMenuSound(3);
     SUB_openAutoDeckMenu();
-    addFrameCallback((s32)SUB_drawAutoDeckMenu);
+    addFrameCallback((s32p)SUB_drawAutoDeckMenu);
     do {
         waitFrames(1);
     } while (SUB_AUTO_DECK_OPTIONS[5] == 0);
     animateWindowTo(SUB_WINDOWS, (Rect16 *)-1);
     waitFrames(20);
-    removeFrameCallback((s32)SUB_drawAutoDeckMenu);
+    removeFrameCallback((s32p)SUB_drawAutoDeckMenu);
     switch (SUB_AUTO_DECK_OPTIONS[5]) {
     case 1:
         if (SUB_AUTO_DECK_OPTIONS[1] == 1) {
