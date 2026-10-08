@@ -21,8 +21,7 @@
     "ram": { "base": "0x80000000", "size": "0x200000" },
     "slots": [
       { "name": "overlay", "base": "0x801DDF38", "size": "0x1EAF8" }
-    ],
-    "heap": { "start": "0x801FCA30", "end": "0x80200000" }
+    ]
   },
   "launcher": {
     "about": "Digimon Digital Card Battle (USA, SLUS-01328) on the PC port, built from juandav's decompilation (ReGame-Labs/dcb_decomp).",
