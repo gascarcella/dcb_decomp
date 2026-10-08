@@ -86,6 +86,9 @@ jobs:
 
     - run: scripts/probe.sh
 
+    # The host GTE macros (port/include/gte.h) against psxstack's software GTE: gcc only, no disc.
+    - run: scripts/gte_test.sh
+
     - uses: actions/upload-artifact@v4
       if: always()
       with:

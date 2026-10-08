@@ -36,6 +36,8 @@ v0.3.0 (the second game's stack work: optional heap, the stack's Psy-Q declarati
   scripts (`boot`, `title`, `new_game`, `first_duel`) with their records, each deterministic over two runs, on
   PCSX-Redux's interpreter core (its dynarec cannot run this game: `docs/PORT.md` "Testing"). CI's `replay` job runs
   them. `tests/port/run.py` is written for M1 and cannot run before the port links.
+- M1: `port/include/gte.h` has the 40 GTE macros on the shim's software GTE (the six units that use them compile
+  with it); `scripts/gte_test.sh` checks them (CI's `probe` job runs it).
 - Next: #4 (M1).
 
 ## Upstream
