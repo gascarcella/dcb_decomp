@@ -59,7 +59,9 @@ CORE_ARGS = ("-interpreter",)
 # from this file's source (one definition for the emulator's records and the port's).
 VOLATILE_RANGES = ((0x10, 0x12),   # profileId: drawn from rand() when the profile is created, and the seed's state
                                    # then depends on how many frames the boot took
-                   (0x24, 0x28))   # playTime: frames
+                   (0x24, 0x28),   # playTime: frames
+                   (0x15E0, 0x23FC))  # cardCopySerials[301][6]: assignCardCopySerial draws them from rand() at
+                                      # resetPlayerData, so they depend on the seed's state the same way
 
 CFG = emulator.configure(
     root=ROOT, game_json=ROOT / "port/game/game.json", redux_dir=ROOT / "bin/redux", iso=ROOT / "disks/us/dcb_us.cue",

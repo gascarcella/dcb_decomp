@@ -1,6 +1,6 @@
 {
  "script": "new_game",
- "script_sha1": "32334ad063ef857e678b0e402bd865c11330826c",
+ "script_sha1": "fea0ce273321df143707c81cd8582f0f4c8c0697",
  "emulator": {
   "name": "pcsx-redux",
   "version": "bf4c9ceb",
@@ -11,7 +11,7 @@
   "name": "openbios",
   "sha1": "8f1269a22179433c8b22b4c804f11c0a076450c5"
  },
- "tree_commit": "d61c873e93febc69a942333aaf95599bf581aad3",
+ "tree_commit": "0425d78655a3b6a993d183b2132ff7d6359ebbd5",
  "frames": 11681,
  "checkpoints": [
   {
@@ -20,8 +20,7 @@
    "stage": 8,
    "map": 0,
    "random_index": 2053034931,
-   "gamestate_sha1": "0ace2b305e0f7cd353b680c67a2d5a83cf83e305",
-   "gamestate_sha1_stable": "89a7f7b4fc11d17462ff33899f662844c3a46564"
+   "image": false
   },
   {
    "name": "title",
@@ -29,8 +28,7 @@
    "stage": 8,
    "map": 0,
    "random_index": 1806829430,
-   "gamestate_sha1": "cdf865b289caba140b1c65b49f88f1d62c1d2ca7",
-   "gamestate_sha1_stable": "42b4a247a92dd151f895466d59495e5eec6d5f29"
+   "image": false
   },
   {
    "name": "title_menu",
@@ -38,8 +36,7 @@
    "stage": 8,
    "map": 0,
    "random_index": -568466364,
-   "gamestate_sha1": "f8ab96efd347623b85d933f16af7ae2c70bcb216",
-   "gamestate_sha1_stable": "42b4a247a92dd151f895466d59495e5eec6d5f29"
+   "image": false
   },
   {
    "name": "name_entered",
@@ -47,8 +44,7 @@
    "stage": 8,
    "map": 0,
    "random_index": 166641947,
-   "gamestate_sha1": "f3249f3e7d1db1e392e2ac8ea1cfb0fc391c84a2",
-   "gamestate_sha1_stable": "ad876d1b6de1355766012b6a19406a190cff52a2"
+   "image": false
   },
   {
    "name": "starter_chosen",
@@ -56,8 +52,7 @@
    "stage": 8,
    "map": 0,
    "random_index": 1783161218,
-   "gamestate_sha1": "ecffc97a5a5dd4a483a420867324a8c7d35f8137",
-   "gamestate_sha1_stable": "de7048728da8140260f58b973fdc4195a5515561"
+   "image": false
   },
   {
    "name": "saiseg",
@@ -66,7 +61,7 @@
    "map": 0,
    "random_index": -986842144,
    "gamestate_sha1": "9ab25be7f4875f1686c47ccaa4789e90e97b1136",
-   "gamestate_sha1_stable": "bc8fc47b34a78f00e847c2ef6c7a95551936099f"
+   "gamestate_sha1_stable": "ef2d6fb78eff25a33ca7ca371979dc121d936da0"
   }
  ],
  "overlay_sequence": [

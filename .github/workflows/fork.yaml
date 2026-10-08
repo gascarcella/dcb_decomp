@@ -106,8 +106,9 @@ jobs:
   # pinned PCSX-Redux from the data checkout and must give the records of tests/replay/records/. Needs the disc
   # image (rebuilt from the data checkout's xz parts) and the emulator zip, both through the deploy key, so only the
   # fork's own runs have it, as the build job. The stack's runners are the submodule's tools/replay/. Then the port
-  # boots the same disc headless to OPENSEG (scripts/port_build.sh --boot; tests/port/run.py is not a gate yet:
-  # docs/PORT.md "Testing").
+  # boots the same disc headless to OPENSEG (scripts/port_build.sh --boot) and replays boot and title against the
+  # records (tests/port/run.py boot title). new_game and first_duel stay out of the gate until the registration's
+  # first dialog works on the port (issue #23).
   replay:
     if: >-
       github.repository == 'gascarcella/dcb_decomp' &&
@@ -147,3 +148,4 @@ jobs:
         .venv/bin/python tests/replay/replay.py check -j 2
 
     - run: scripts/port_build.sh --boot
+    - run: .venv/bin/python tests/port/run.py boot title

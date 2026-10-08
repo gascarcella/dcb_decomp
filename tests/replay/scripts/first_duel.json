@@ -18,7 +18,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "openseg_loaded"
+      "name": "openseg_loaded",
+      "image": false
     },
     {
       "type": "wait_mem",
@@ -30,7 +31,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "title"
+      "name": "title",
+      "image": false
     },
     {
       "type": "press",
@@ -50,7 +52,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "title_menu"
+      "name": "title_menu",
+      "image": false
     },
     {
       "type": "wait_frames",
@@ -153,7 +156,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "name_entered"
+      "name": "name_entered",
+      "image": false
     },
     {
       "type": "press",
@@ -216,7 +220,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "starter_chosen"
+      "name": "starter_chosen",
+      "image": false
     },
     {
       "type": "press",
