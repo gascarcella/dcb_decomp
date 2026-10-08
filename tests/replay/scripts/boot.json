@@ -18,7 +18,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "openseg_loaded"
+      "name": "openseg_loaded",
+      "image": false
     },
     {
       "type": "wait_mem",
@@ -30,7 +31,8 @@
     },
     {
       "type": "checkpoint",
-      "name": "title"
+      "name": "title",
+      "image": false
     }
   ]
 }

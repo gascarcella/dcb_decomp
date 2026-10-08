@@ -1,6 +1,6 @@
 {
  "script": "boot",
- "script_sha1": "a5bcfec8b1f01e47599848b616ef09362173efc9",
+ "script_sha1": "1bbbbb28f8461b404fa03cf08aeaff424fd5cc3b",
  "emulator": {
   "name": "pcsx-redux",
   "version": "bf4c9ceb",
@@ -11,7 +11,7 @@
   "name": "openbios",
   "sha1": "8f1269a22179433c8b22b4c804f11c0a076450c5"
  },
- "tree_commit": "d61c873e93febc69a942333aaf95599bf581aad3",
+ "tree_commit": "0425d78655a3b6a993d183b2132ff7d6359ebbd5",
  "frames": 7866,
  "checkpoints": [
   {
@@ -20,8 +20,7 @@
    "stage": 8,
    "map": 0,
    "random_index": 2053034931,
-   "gamestate_sha1": "0ace2b305e0f7cd353b680c67a2d5a83cf83e305",
-   "gamestate_sha1_stable": "89a7f7b4fc11d17462ff33899f662844c3a46564"
+   "image": false
   },
   {
    "name": "title",
@@ -29,8 +28,7 @@
    "stage": 8,
    "map": 0,
    "random_index": 1806829430,
-   "gamestate_sha1": "cdf865b289caba140b1c65b49f88f1d62c1d2ca7",
-   "gamestate_sha1_stable": "42b4a247a92dd151f895466d59495e5eec6d5f29"
+   "image": false
   }
  ],
  "overlay_sequence": [

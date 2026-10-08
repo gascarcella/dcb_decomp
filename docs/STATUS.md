@@ -18,8 +18,8 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.1 (v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
-runners; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45).
+v0.3.2 (a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+runners).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
 - **The baseline** (`scripts/probe.sh`, CI's `probe` job): 35 of 155 units compile; 120 fail with 3,732 gating
@@ -69,11 +69,11 @@ runners; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #
   job): `main()`, `runMainTask`, the CD, OPENSEG at frame 163 (stage 8), the opening movie, OPENSEG again at 5583 and
   the title's PRESS START at 6013 (the emulator: 827 and 7866); the sanitizer build too, with the same log. The
   blockers on the way: the frame buffer read before the render loop runs, the card directories' size (the heap's PS1
-  layout kept: `PLAYER_PROFILES` at 0x800C8964), `StCdIntrFlag`'s type. `tests/port/run.py boot` and `title` reach
-  every checkpoint with the emulator's stages and overlay sequence, deterministic, but the profile hashes cannot
-  match at boot (#24, a decision); `new_game` stops at the registration's first dialog (#23). Also open: UBSan's
+  layout kept: `PLAYER_PROFILES` at 0x800C8964), `StCdIntrFlag`'s type. `tests/port/run.py boot` and `title` pass and
+  are a CI gate (#24 decided: the checkpoints before the profile is defined are `"image": false`, the
+  `rand()`-drawn `cardCopySerials` are volatile, the four records re-recorded); `new_game` stops at the registration's first dialog (#23). Also open: UBSan's
   alignment reports (#25), the movie's length (#26), the TMD readers (#22 item 4).
-- Next: #23 (the dialogs), the decision on #24, then `new_game` and `first_duel` (#4).
+- Next: #23 (the dialogs), then `new_game` and `first_duel` (#4).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).
