@@ -68,8 +68,10 @@ psxstack_add_game(dcb
 # prototypes, and game.h declares libc's functions with the PS1's types (strlen, memset, bzero, ...): under the
 # adapter's -Werror those clash with the compiler's builtins. The units compile with -fno-builtin for the same reason.
 # state.c (the probes) includes them too, and libc_win32.c (the Windows build's bzero and bcopy) defines two of them.
+# The overlays' views (game/views_<overlay>.c) include them too.
+file(GLOB DCB_VIEW_SRCS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/game/views_*.c")
 set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/game/tasks.c" "${CMAKE_CURRENT_SOURCE_DIR}/game/state.c"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/game/libc_win32.c"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/game/libc_win32.c" ${DCB_VIEW_SRCS}
              APPEND PROPERTY COMPILE_OPTIONS -fno-builtin)
 # state.c includes the runtime's port_runtime.h (psxstack/types.h) and then the game's common.h, which defines the same
 # s8..u64 again, outside psxstack's PSXSTACK_TYPES_H guard (upstream's header). Identical typedefs are valid C11 and

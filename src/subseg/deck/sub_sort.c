@@ -658,7 +658,7 @@ void SUB_drawCardSortMenu(UiWindow *window) {
         SUB_CARD_LIST_MENU.row = 0;
         centerMenuOnCursor(&SUB_CARD_LIST_MENU);
         if (SUB_CARD_SORT_COMPARES[SUB_CARD_SORT_MENU.row] != NULL) {
-            sortArray((s8 *)SUB_CARD_LIST, 301, 4, SUB_CARD_SORT_COMPARES[SUB_CARD_SORT_MENU.row]);
+            sortArray((s8 *)SUB_CARD_LIST, 301, HOST_SIZEOF(4, void *), SUB_CARD_SORT_COMPARES[SUB_CARD_SORT_MENU.row]);
         } else {
             SUB_initCardList();
         }
@@ -1329,7 +1329,7 @@ void SUB_drawDeckSortMenu(UiWindow *window) {
         if (SUB_DECK_SORT_COMPARES[SUB_DECK_SORT_MENU.row] != NULL) {
             linkDeckCardData(SUB_EDITOR.player, SUB_EDITED_DECK);
             SUB_linkPartnerCards(SUB_EDITED_DECK->cards, SUB_EDITOR.player);
-            sortArray((s8 *)SUB_EDITED_DECK->cards, 30, 8, SUB_DECK_SORT_COMPARES[SUB_DECK_SORT_MENU.row]);
+            sortArray((s8 *)SUB_EDITED_DECK->cards, 30, HOST_SIZEOF(8, CardSlot), SUB_DECK_SORT_COMPARES[SUB_DECK_SORT_MENU.row]);
             if (SUB_DECK_SORT_MENU.row == 17) {
                 SUB_groupDuplicateCards(SUB_EDITED_DECK->cards);
                 linkDeckCardData(SUB_EDITOR.player, SUB_EDITED_DECK);

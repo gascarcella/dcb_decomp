@@ -41,6 +41,8 @@ typedef u32 u32p;
 #define GAME_S32_TO_PTR(type, v) ((type)(v))
 /* a heap block's size the PS1 code writes as its byte count, of an object whose host type is larger: ps1 */
 #define HOST_FITS(ps1, host) ps1
+/* an element's size the PS1 code writes as its byte count (sortArray's), of a type larger on the host: ps1 */
+#define HOST_SIZEOF(ps1, type) ps1
 /* a function the C declares void whose caller keeps its result through a function pointer (the effect scripts'
    constructors): on the PS1 the result is v0 as the function's last call left it */
 #define V0_RESULT void
@@ -83,6 +85,10 @@ void game_profile_from_ps1(void *profile, const u8 *in);
    host's bytes fit because heap.c spaces each block HEAP_HOST_SCALE (sizeof(void *) / 4) times its size; checked at
    compile time (issue #31) */
 #define HOST_FITS(ps1, host) (0 * sizeof(char[(host) <= (ps1) * (sizeof(void *) / 4) ? 1 : -1]) + (ps1))
+
+/* An element's size the PS1 code writes as its byte count, of a type that holds a pointer (sortArray's elements: a
+   pointer, a CardSlot): the host's sizeof, whose elements are wider */
+#define HOST_SIZEOF(ps1, type) ((s32)sizeof(type))
 
 /* A function the C declares void whose caller keeps its result through a function pointer (KAWSEG's and SUGSEG's
    effect-script constructors, *_create*FromParams): on the PS1 the result is v0 as the function's last call, the
