@@ -1,0 +1,162 @@
+# The release (docs/PORT.md "Releases"; DECISIONS "Releases: tagged drafts, published by hand"): one Linux x86_64
+# AppImage (scripts/package_appimage.sh) and one Windows x86_64 zip with its PDBs in a -debug zip
+# (scripts/package_windows.sh), each with the launcher, the game and the mods' manifests. Players bring their own disc;
+# no package holds game data. Adapted from dw2003recomp's .github/workflows/release.yml (docs/THIRD_PARTY.md).
+#
+# On a pushed tag vX.Y.Z (also vX.Y.Z-rc1):
+#   1. packages  built from the tag on ubuntu-24.04 (the AppImage's glibc floor: 2.39) with the tools at psxstack's
+#                pins (cached), each smoke-tested without a disc: the launcher's self-test inside the AppImage and,
+#                under Wine, in the unzipped Windows folder, each finding the bundled game and mods by itself. The
+#                programs' --version must be the tag. No data checkout: the checks that need the disc (the replays,
+#                the window, the Windows build under Wine with the disc) are fork.yaml's, which ran on the commit.
+#   2. release   a DRAFT GitHub release for the tag with the files and generated notes. Nothing is published: the
+#                owner downloads the files, tries them and presses Publish (gh release edit TAG --draft=false).
+# A manual run (gh workflow run release.yml --ref <branch>) and a pull request that changes the release path do 1 only:
+# the artifact is how a branch's packages are tried (version dev-<commit>).
+name: release
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+  workflow_dispatch:
+  # A pull request that changes the release path runs 1 (a workflow_dispatch reaches only workflows on main).
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - packaging/**
+      - scripts/package_appimage.sh
+      - scripts/package_windows.sh
+      - scripts/build_windows.sh
+      - scripts/setup.sh
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  packages:
+    runs-on: ubuntu-24.04
+    name: packages (AppImage, Windows zip)
+    timeout-minutes: 60
+    env:
+      WINEDEBUG: "-all"
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0   # git describe over the tags: a manual run's version
+        persist-credentials: false
+
+    # Only psxstack (public, at its pin): the port and the launcher build from it; upstream's submodules are the PS1
+    # build's.
+    - run: |
+        git submodule update --init psxstack
+        echo "psxstack at $(git -C psxstack describe --tags --always)"
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    # The desktop SDL's -dev packages (X11, Wayland, PipeWire, PulseAudio, ALSA, ...: the stack's setup lists them),
+    # and wine64 for the Windows package's test (no 32-bit multiarch).
+    - run: |
+        python3 -m venv .venv
+        .venv/bin/pip install cmake ninja
+        sudo apt-get update -q
+        sudo apt-get install -y -q --no-install-recommends wine wine64 $(psxstack/scripts/setup.sh --sdl3-desktop-apt)
+
+    # The tools' cache key: the stack's pins and the AppImage tools' (scripts/setup.sh's APPIMAGE* lines).
+    - id: pins
+      run: |
+        echo "hash=$({ psxstack/scripts/setup.sh --pins; grep '^APPIMAGE' scripts/setup.sh; } | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          bin/psxstack-tools/tools/sdl3-desktop
+          bin/psxstack-tools/tools/llvm-mingw
+          bin/psxstack-tools/tools/sdl3-windows
+          bin/psxstack-tools/tools/dxc
+          bin/psxstack-tools/tools/imgui
+          bin/appimage
+        key: release-tools-${{ runner.os }}-${{ steps.pins.outputs.hash }}
+
+    - run: scripts/setup.sh windows sdl3-desktop appimage
+
+    # The version: the tag on a tag push (GITHUB_REF), else git describe (dev-<commit>); both scripts check that the
+    # game says it (dcb --version).
+    - name: The AppImage, and its smoke test
+      run: scripts/package_appimage.sh --test
+
+    - name: The Windows zip, and its smoke test under Wine
+      run: |
+        mkdir -p build/wine-prefix
+        WINEPREFIX="$PWD/build/wine-prefix" wineboot --init
+        scripts/package_windows.sh --test
+
+    # What the packages hold, in the run's log (no disc image, no game file: the scripts also refuse unexpected files).
+    - name: The packages' contents
+      run: |
+        cd build/release
+        cat SHA256SUMS SHA256SUMS-windows
+        for z in *-windows-x86_64.zip *-windows-x86_64-debug.zip; do unzip -l "$z"; done
+        a=$(ls *.AppImage)
+        mkdir -p /tmp/appimage-list && (cd /tmp/appimage-list && "$OLDPWD/$a" --appimage-extract > /dev/null && find squashfs-root | sort)
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dcb-packages
+        path: |
+          build/release/*.AppImage
+          build/release/*.debug
+          build/release/SHA256SUMS
+          build/release/*-windows-x86_64.zip
+          build/release/*-windows-x86_64-debug.zip
+          build/release/SHA256SUMS-windows
+        if-no-files-found: error
+        retention-days: 30
+
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: release-logs
+        path: |
+          build/release/*.log
+          build/release/self-test.log
+          build/release/windows/build.log
+          build/release/windows/test/selftest.log
+          build/port-win.*.log
+          build/launcher-win.*.log
+        if-no-files-found: ignore
+
+  release:
+    needs: packages
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    name: draft release
+    permissions:
+      contents: write   # gh release create
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dcb-packages
+        path: dist
+
+    # The notes: keep them in step with docs/PORT.md "Releases".
+    - name: Create the draft release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ github.ref_name }}
+      run: |
+        cd dist
+        sha256sum -c SHA256SUMS
+        sha256sum -c SHA256SUMS-windows
+        gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+          --title "Digimon Digital Card Battle PC port $TAG" --generate-notes --notes "The launcher and the PC port of Digimon Digital Card Battle, built from juandav's decompilation (ReGame-Labs/dcb_decomp) on psxstack, for Linux and for Windows. A work in progress (docs/STATUS.md).
+        Bring your own disc image of Digimon Digital Card Battle (PS1, USA, SLUS-01328) as a .cue and .bin: the launcher checks its SHA-1. No game data is included.
+
+        **Linux x86_64**: \`dcb-*-linux-x86_64.AppImage\`: \`chmod +x\` it, then run it (the launcher). Needs glibc 2.39 or newer (Ubuntu 24.04, Fedora 40, Debian 13 or later).
+        **Windows x86_64**: \`dcb-*-windows-x86_64.zip\`: unzip, run \`dcb-launcher.exe\` (unsigned: SmartScreen's \"More info\", \"Run anyway\"). Windows 10 or newer. Tested on Linux under Wine only, not yet on real Windows: reports are welcome in the issues.
+        The .debug file and the -debug.zip are the programs' debug info for crash reports (not needed to play)." \
+          ./*.AppImage ./*.debug ./*-windows-x86_64.zip ./*-windows-x86_64-debug.zip SHA256SUMS SHA256SUMS-windows

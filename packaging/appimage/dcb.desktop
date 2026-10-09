@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Digimon Digital Card Battle (PC port)
+GenericName=Game launcher
+Comment=PC port of Digimon Digital Card Battle (PS1, USA) from its decompilation; plays your own disc image
+Exec=dcb-launcher
+Icon=dcb
+Terminal=false
+Categories=Game;CardGame;
