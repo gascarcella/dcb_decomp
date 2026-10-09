@@ -154,6 +154,11 @@ jobs:
     # M4: saves both ways: the port and the emulator each save new_game to a new card, the cards' formats, then each
     # loads the other's card (tests/saves/continue.json). The cards are made here and never uploaded (game data).
     - run: .venv/bin/python tests/saves/run.py
+    # M3: LIBSND, LIBSPU and the SPU core replayed on the emulator's timeline must give the committed SPU write trace
+    # (tests/sound/traces/first_duel_play.trace.gz) exactly to its known first difference, also under ASan/UBSan; the known exceptions are in
+    # tests/port/sound_known.json. Then the port's own runs above against it (informational: the game's timing differs).
+    - run: .venv/bin/python tests/port/sound.py --sanitize
+    - run: .venv/bin/python tests/port/sound.py port
 
   # The desktop build (docs/PORT.md "Running it"): the window build (-DPSXSTACK_SDL=ON) and the launcher, with SDL3, DXC
   # and Dear ImGui from scripts/setup.sh sdl (psxstack's own setup at the submodule's pins, in bin/psxstack-tools/),

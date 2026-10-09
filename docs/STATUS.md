@@ -3,7 +3,8 @@
 _Last updated: 2026-10-09_
 
 The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the five emulator scripts (the tutorial duel to its end among them), twice
-identical, clean under ASan/UBSan; **M4 (saves) is complete**: saves move both ways between the port and the emulator; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"). Upstream's decompilation is complete: every function and all
+identical, clean under ASan/UBSan; **M4 (saves) is complete**: saves move both ways between the port and the emulator; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"); M3
+(sound) has started: the stack's LIBSND and SPU give the emulator's SPU writes exactly on its timeline. Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
 ## The PS1 build
@@ -122,7 +123,7 @@ runners).
   fully (301 of 301; psxstack v0.3.4 reads the game's rate, #57). On this desktop (Wayland,
   NVIDIA) the `new_game` script ran in a real window with each renderer (`--renderer gpu`: Vulkan) to SAISEG, 60.00
   vsyncs a second, both logs equal to the headless run's; the pictures (the movie, the title, the registration) are
-  right, the GPU renderer's equal to the software one's. The SPU's output is not silent (not yet compared: M3). CI's
+  right, the GPU renderer's equal to the software one's. The SPU's output is not silent (compared since: M3 below). CI's
   `desktop` job runs both scripts, its tools cached on the stack's pins. The game crashes without a disc (#39), so the
   input self-test needs it. Ready for a play-test by hand.
 - **The release path** (docs/PORT.md "Running it" Windows, "Releases"): `scripts/build_windows.sh` cross-builds the game
@@ -161,8 +162,24 @@ runners).
   the port the emulator's (`tests/saves/continue.json`: Continue, File 1, SAISEG), each `loaded` profile the other
   side's saved one byte for byte but the play time. The sanitizer build saves the same card and loads with no report
   (by hand). The launcher keeps the cards in `~/.local/share/dcb/` (docs/PORT.md "Saves").
+- **M3 (sound) started: the SPU write traces** (docs/PORT.md "Sound"; `tests/sound/`, `tests/port/sound.py`, CI's
+  `replay` job). PCSX-Redux's SPU write trace (`tests/sound/spu_trace.py`, a Lua tracer adapted from dw2003recomp's:
+  every SPU and DMA4 store at its vsync, the game's LIBSND and LIBSPU calls with their data's SHA-1, LIBSND's ticks
+  with the CPU's cycle count) of each of the five scripts, twice identical; the committed one is `first_duel_play`'s
+  (1.3 MB gzipped), of which the other four are prefixes. **LIBSND, LIBSPU and the SPU replayed on the emulator's
+  timeline give it exactly for `boot`, `title`, `new_game` and `first_duel`** (127,652 stores and DMA blocks), at -m32
+  and under ASan/UBSan; `first_duel_play` exactly through vsync 19,620 (183,089 events: into SUGSEG's first polygon
+  battle), then a known one-sample voice-allocation margin of the emulator's SPU timing
+  (`tests/port/sound_known.json`). Nothing game-side needed a fix; the replay models the PS1's skipped flush when the
+  vblank interrupts `SsUtKeyOnV`. Known too: five VAB bodies' last DMA block reads past its PAK into the RAM after it
+  (its SHA-1 not compared). The port's own runs: the same LIBSND calls per function as the emulator's, the music's
+  key-ons tick for tick after each `SsSeqPlay` until the game's timing differs; the title music's PCM equals our SPU's
+  rendering of the emulator's writes sample for sample (35.4 s), and against PCSX-Redux's own audio (an SDL disk
+  capture, host-paced) the same level and envelope. The port's trace cannot be replayed on its own timeline yet
+  (psxstack#63).
 - Next: the rest of the duel (#4) and the card-art cache's timing (#45, with the CD's per-read latency: psxstack#62);
-  M2: the stretched quads' row or column (psxstack#54).
+  M2: the stretched quads' row or column (psxstack#54); M3: the port's own SPU trace replayed on its timeline
+  (psxstack#63).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

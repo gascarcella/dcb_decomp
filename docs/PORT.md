@@ -74,8 +74,8 @@ not yet on real Windows.
 
 **State at M2** (2026-10-08): the window and the launcher work on this desktop (Wayland, both renderers; the GPU
 renderer on Vulkan gives the software renderer's picture at internal scale 1). A window run's log is the headless
-run's byte for byte. Known unfinished: **sound** is M3: the SPU plays the game's sequences through the stack's LIBSND
-and SPU (the output is not silent), but nothing has compared it with the emulator's; the opening movie (about two minutes, unskippable as on the PS1) plays every frame at the emulator's pace (#26: "Busy-waits"); the duel
+run's byte for byte. Known unfinished: **sound** (M3, started): LIBSND and the SPU give the emulator's SPU writes
+exactly on its timeline ("Sound"); the opening movie (about two minutes, unskippable as on the PS1) plays every frame at the emulator's pace (#26: "Busy-waits"); the duel
 has been run only through its tutorial's first round (#37).
 **Saves** (M4, "Saves" below) move both ways: a card the port writes loads in PCSX-Redux and the other way round.
 
@@ -618,6 +618,69 @@ them in the settings directory, `~/.local/share/dcb/card1.mcd` and `card2.mcd` (
 PCSX-Redux card (its `-memcard1` file, or a `.mcd` from its memory card manager) can be copied there, and a port card
 loaded in the emulator, as they are.
 
+## Sound
+**What plays through what.** The game's sound code is two files of the executable (`src/main/system/sound.c`,
+`sound_play.c`); every overlay goes through them. All of it reaches the SPU through the stack's LIBSND
+(`psyq/libsnd*.c`), its three LIBSPU calls (`psyq/libspu.c`) and its SPU core (`runtime/spu*.c`); the port's audio
+output (`runtime/audio.c`) renders 735 samples a vsync (44,100 / 60) before the vblank handler, headless too, into
+`--wav` and, in the window build, the audio device. Nothing is game-side but the calls:
+- **Start-up** (`main`, `initSound`): `SsInit`, `SsSetTableSize(table, 32, 1)` (32 sequences of one track each),
+  `SsSetTickMode(1)` and `SsStart` (SS_TICK60: LIBSND ticks itself on the vblank interrupt, after the game's handler;
+  `SsSetTickMode(4)` on eu), reverb type 1 at depth 100, stereo, the main volume at 0 until the effects are loaded,
+  then 127.
+- **Effects:** `SE1.PAK`'s VAB (chunks 7 and 8) at SPU 0x1010 (`loadSoundEffectBank`), played with `SsUtKeyOnV` on
+  voices 18 to 21 in turn (`playSoundEffect`), note `SE_BANK_INFO[bank][15]`.
+- **Music:** one SEQ per track, `BGM/BGM<nn>.PAK` (chunks 6, 7, 8), its VAB at 0x49E90 (slot 0) or 0x64190 (slot 1)
+  (`loadMusicTrack`); `changeMusicTask` fades the playing one (`SsSeqGetVol`/`SsSeqSetVol` by 2 a frame), stops,
+  closes, loads (every voice's release rate set to 0 first with `SpuSetVoiceAttr`: `setInstantVoiceRelease`), plays
+  (`SsSeqPlay(seq, SSPLAY_PLAY, 0)`, endless). Seen in the scripts: BGM102 (the title), BGM110 (the registration),
+  BGM112 (SAISEG's area), BGM129.
+- **The opening movie's XA** goes through the CD input (`psyq/xa.c`, `libcd.c`); OPENSEG sets the CD volume and mix
+  with `SpuSetCommonAttr`, `SsSetSerialAttr` and `SsSetSerialVol`.
+- The options' Stereo/Mono (`SsSetStereo`/`SsSetMono`) in OPENSEG, KAWSEG and the memory card screen.
+
+**Checked (M3)**, against PCSX-Redux's SPU write traces (`tests/sound/`; from dw2003recomp's, docs/THIRD_PARTY.md):
+`tests/sound/spu_trace.lua`, loaded before the replay runner, puts write breakpoints on the SPU's and DMA4's registers
+and exec breakpoints on LIBSND's and LIBSPU's public functions, so the trace has every store and DMA block (address,
+length, SHA-1) at its vsync, the game's calls with their arguments (the data a call points at by its SHA-1, a struct
+by its bytes) and LIBSND's ticks with the CPU's cycle count. **The gate:** `tests/port/sound.py` replays the game's
+calls through the stack's LIBSND, LIBSPU and SPU at the emulator's vsyncs and ticks (`tests/port/sound_replay.c`; the
+data from the disc image by SHA-1, `tests/sound/disc.py`), rendering the samples the emulator made between two ticks
+(one per 768 CPU cycles; 735 a vsync for a trace without cycles), and requires the emulator's trace. A tick that came
+while `SsUtKeyOnV` held LIBSND's lock (the vblank interrupted the call: twice in the duel) flushes nothing, on the PS1
+and in the replay. **Now: identical for `boot`, `title`, `new_game` and `first_duel`** (127,652 stores and DMA blocks
+over vsyncs 432 to 14,210, including the movie's `SpuSetCommonAttr` and four `setInstantVoiceRelease`), at 730 to 736
+samples a vsync too (700 and 740 change which voice LIBSND frees: the allocator reads the envelopes), in the -m32 and
+ASan/UBSan builds too. **`first_duel_play`** (the committed trace, 1.3 MB gzipped; the other four are its prefixes,
+checked when recorded; 309,654 events over 30,582 vsyncs): exact for its first 183,089 events, through vsync 19,620
+(the duel's first round into SUGSEG's polygon battle); then a known difference (`tests/port/sound_known.json`): a
+one-shot note on voice 1 reaches its sample's end one sample before the flush in our SPU and after it in PCSX-Redux,
+so LIBSND gives the next note voice 1 here and voice 2 there, a one-sample margin of where the emulator's SPU stands
+within the vsync, not LIBSND or the game. Not compared either: the SHA-1 of five VAB bodies' last DMA block, which
+reads past its PAK into the RAM after it.
+
+**The port's own runs** (`sound.py port`, informational: the game calls LIBSND at other frames, the CD and loader
+timing and the movie, #26): the same calls per function in the same order with the same arguments as the emulator's
+(244 in `first_duel`); their merged order first differs at call 147 (a menu sound before or after a track's load);
+after each `SsSeqPlay` the music's key-ons agree tick for tick until the game's timing changes what plays (the title
+music's 71 through +425 vsyncs, the registration's 178 through +3,175, SAISEG's area music's 31 through +367, all the
+emulator played: the game faded it out from +318 there, from +353 in the port). The check dw2003recomp also has, the
+port's trace against LIBSND's replay of the port's own calls on the port's timeline, needs the port's trace to log
+LIBSPU's calls, the tick and the data the calls point at
+([psxstack#63](https://github.com/gascarcella/psxstack/issues/63)).
+
+**The audio** (`sound.py wav`, informational): the port's `--wav` is 735 frames a vsync exactly; the title music in
+the port's PCM equals, sample for sample, our SPU's rendering of the emulator's register writes, from the music's
+start to the script's end (35.4 s in a run left at the title: a boot variant with 1,800 more frames, traced for the
+purpose); elsewhere what sounded before (the reverb's history, notes faded out at another moment) makes the PCM
+differ, with seconds at correlation 1.000. Against what PCSX-Redux itself played (its SDL3 audio through SDL's `disk`
+driver at speed 1: host-paced, with gaps, not a golden): the title music's 0.1 s windows located by cross-correlation
+(`tests/sound/capture.py`, `capture_compare.c`): the first 3 s's 10 ms envelope correlates 0.974, the windows 0.74 on
+average over the first 12 s, the capture's level over ours 0.9 to 1.1, then less as the capture's pacing drifts (the
+emulator ran faster than real time); over those 12 s both have the same RMS (7,612 and 7,626 of 32,768) and both reach
+full scale (428 and 420 samples): the title music saturates the mix on the emulator too. Not traced yet: the duel's
+sounds, the 60 Hz tick against eu's 50 Hz, `SsUtKeyOffV`, `SsUtReverbOff`.
+
 ## Testing
 The oracle is the game in PCSX-Redux (dw2003recomp's DECISIONS "The port is checked against the emulator"); the
 runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configured here. The stack is the submodule
@@ -638,6 +701,7 @@ runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configure
 | The packages | The AppImage and the Windows zip build, hold only the expected files, say the version, and their launcher's self-test passes inside them with the bundled game and mods (without the disc on the release run; with it locally) | `scripts/package_appimage.sh --test`, `scripts/package_windows.sh --test` (`release.yml`; `scripts/release_local.sh`) |
 | Saves both ways (M4) | The port and the emulator each run `new_game` with a new card in slot 1 (the save to File 1; `saiseg` with the record's stable hash); both cards pass the format checks (File 1, the Sony header, the profile's size 0x2774, both checksums, its card pointers 4-byte heap addresses) and are equal byte for byte but the masked ranges ("Saves"); then each loads the other's card with `tests/saves/continue.json` (the title's Continue, File 1, into SAISEG): the `loaded` profile is the other side's saved one byte for byte but the play time, and the two loads' cross-core views are equal. The cards are made by the run (`build/saves-test/`), never committed | `tests/saves/run.py` (CI `replay`, about 55 s), `tests/saves/cards.py` |
 | The port's VRAM and pictures against the emulator's (M2) | At every checkpoint of the five scripts and at a few more moments (the name entry before typing, the starter list, `title+120`, SAISEG's first area `saiseg_area` and its first message `saiseg_message`), a `vram` step dumps the whole VRAM on both sides (psxstack's `vram` step: `PCSX.GPU.getVRAM()` in the emulator, `DCB_PORT_CHECKPOINT_DIR` in the port), keyed by the dump's name, never by a frame; the emulator's prelude `tests/port/vram.lua` adds the displayed picture (`PCSX.GPU.takeScreenShot()`) and the game's cadence (its frame-buffer index and `vblanksPerFrame` over the last 60 vsyncs); the port is run twice, the second time with `--screenshot` at the frames the first run's record gives. **The dumps are aligned on the game's own state, not on frame counts** (#33): the port reaches the checkpoints after other frame counts (the CD and loader timing, the movie, #26), and the screen's animations follow the frames. So before a dump `vram.py`'s variant of the script (`ALIGN`, `EXTRA_DUMPS`, `END_DUMPS`; the committed scripts and records are unchanged) waits on the counter that drives what is on screen: the scrolling background's `SCROLL_BACKGROUND.scrollPos` (30 per rendered frame, wrapping every 256 frames; hidden it stays 0, and SAISEG's area starts it again from 0 with its corner icon) reaching a position both sides pass through, after the page's text is typed out where something else still moves (the registration's `OPEN_INTRO_TEXT.blink`), and SAISEG's message arrow (`SAI_AREA.nextBlink`); the port's adapter maps those addresses (`port/game/state.c`). A dump aligned this way can come an odd number of frames later on one side, whose two display buffers are then the other way round: each side's displayed buffer is the one its picture matches, and the port's are exchanged before the whole-VRAM check. Three checks per dump, each a gate unless `tests/port/vram_known.json` lists it: the whole VRAM, the textures and CLUTs (the VRAM right of the display buffers, which start at x 0), the displayed picture. The emulator is never CPU-bound at these dumps (its frame-buffer index flips every vsync, `vblanksPerFrame` 1; the movie's `openseg_loaded` excepted, where the render loop is not running), so all three can be compared everywhere. **Now:** the textures are equal at every dump; the whole VRAM and the picture at `openseg_loaded`, `title+120`, `saiseg` and `first_duel`. Known: the software GPU against PCSX-Redux's ([psxstack#54](https://github.com/gascarcella/psxstack/issues/54)): `title` (2 pixels' mask bit), `title_menu` (one column of a mode-2 modulated sprite), and the registration's and SAISEG's screens (51 to 165 pixels: one row or column of a stretched textured quad, whose texture span is a texel short of its screen span); `starter_chosen` also shows the player's model in another pose: its looping idle animation starts with the page, so waiting for the background moves it to another phase (aligned on the page instead, the model agrees and the background does not). **The duel** (`first_duel_play`'s 16 dumps): the picture is equal at 11 of them, the polygon battle's 3D scene included (`duel_battle1_3d`); known: the card-art cache's slots in the textures from the first turn on (VRAM x 640..763, y 256..447: the art loader skips the cursor's moves while the CD reads, so the cards it holds follow the CD timing, #45) and the hand view's art panel (`duel_hand`), the three dumps taken as SUGSEG becomes resident (the field's zoom-out at another phase, #46), and one pixel of a Gouraud mode-2 quad at `duel_digivolve` ([psxstack#60](https://github.com/gascarcella/psxstack/issues/60)) | `tests/port/vram.py` (CI `replay`, about 135 s at `-j 4`; the differences as PNGs in `build/port-vram/<script>/`, `--keep` keeps the dumps) |
+| The port's sound against the emulator's (M3) | LIBSND, LIBSPU and the SPU core replayed on the emulator's timeline give PCSX-Redux's SPU write trace exactly: every store and DMA block in order at its vsync (boot, title, new_game and first_duel exactly; the committed `tests/sound/traces/first_duel_play.trace.gz`, 1.3 MB, of which the others are prefixes, exactly to its known first difference at vsync 19,621 in SUGSEG); the known exceptions in `tests/port/sound_known.json`. Informational: the port's own runs make the same calls, and the music's key-ons agree after each `SsSeqPlay` until the game's timing differs; the `--wav` output's structure and its PCM against the replay's rendering ("Sound") | `tests/port/sound.py --sanitize` (CI `replay`, ~20 s), `tests/port/sound.py port` (after `run.py`), `tests/port/sound.py wav`; the traces: `tests/sound/spu_trace.py run|record|diff` (~7 min for `first_duel_play` on the interpreter) |
 
 **The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG
 4, KAWSEG 5, SAISEG 6, SUBSEG 7, OPENSEG 8, EVOSEG 9, ENDSEG 10; 0 before a load); `map` the profile's `areaId`;
