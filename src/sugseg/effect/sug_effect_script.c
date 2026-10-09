@@ -840,6 +840,12 @@ void SUG_getEffectWorldPos(void *xform, EffectParams *params) {
 }
 
 void SUG_initEffectFromParams(EffectTemplate *template, EffectParams *cmd, EffectSlots *ctx) {
+#ifdef PC_PORT
+    /* PC_PORT: every caller's template is a stack local, and the effect is copied whole from it (fields the script
+       never sets included: what the stack held on the PS1). The host starts it from zeros, so a run is the same in
+       every build (the sanitizer's drew SUGSEG's sprite effects elsewhere) */
+    __builtin_memset(template, 0, sizeof(EffectTemplate));
+#endif
     SUG_setEffectParams((EffectInit *)template, cmd, ctx);
     /* jp's effects don't keep what they hang from, and can't hang from a
        model effect's bone */
@@ -864,7 +870,7 @@ void SUG_initEffectFromParams(EffectTemplate *template, EffectParams *cmd, Effec
     }
 }
 
-void SUG_createFadeRectFromParams(EffectParams *params) {
+V0_RESULT SUG_createFadeRectFromParams(EffectParams *params) {
     Rect16 rect;
     Color from;
     Color to;
@@ -879,10 +885,10 @@ void SUG_createFadeRectFromParams(EffectParams *params) {
     to.r = params->r1;
     to.g = params->g1;
     to.b = params->b1;
-    SUG_createFadeRect(&rect, &from, &to, params->abr, params->rate, params->variant);
+    V0_RETURN SUG_createFadeRect(&rect, &from, &to, params->abr, params->rate, params->variant);
 }
 
-void SUG_createScrollTextureFromParams(EffectParams *params, EffectSlots *ctx) {
+V0_RESULT SUG_createScrollTextureFromParams(EffectParams *params, EffectSlots *ctx) {
     Rect16 rect;
 
     /* the texture sits in the VRAM rows of the first model */
@@ -890,7 +896,7 @@ void SUG_createScrollTextureFromParams(EffectParams *params, EffectSlots *ctx) {
     rect.y = params->texY + ctx->modelSlots[0] * 256;
     rect.w = params->texW;
     rect.h = params->texH;
-    SUG_createScrollTexture(&rect, params->texDepth, params->variant, params->rate);
+    V0_RETURN SUG_createScrollTexture(&rect, params->texDepth, params->variant, params->rate);
 }
 
 /* the VRAM row of an effect's CLUT: jp leaves it in the upper rows, the
@@ -905,7 +911,7 @@ void SUG_createScrollTextureFromParams(EffectParams *params, EffectSlots *ctx) {
    depends on this form */
 #define U16_SHL(v, n) ((u32)((v) << 16) >> (16 - (n)))
 
-void SUG_createSphereFromParams(EffectParams *cmd, EffectSlots *ctx) {
+V0_RESULT SUG_createSphereFromParams(EffectParams *cmd, EffectSlots *ctx) {
     u8 color[3];
     Rect16 uv;
     EffectTemplate template;
@@ -936,12 +942,12 @@ void SUG_createSphereFromParams(EffectParams *cmd, EffectSlots *ctx) {
     uv.w = cmd->texW;
     uv.h = cmd->texH;
     tpage = GetTPage(cmd->texDepth, cmd->abr, cmd->texX, (ctx->modelSlots[0] << 8) + cmd->texY);
-    SUG_createSphereEffect(cmd->brightness, color, cmd->pulse, cmd->pulseMode, &template, cmd->segments, cmd->slices, cmd->radius, cmd->semiTrans, cmd->abr,
+    V0_RETURN SUG_createSphereEffect(cmd->brightness, color, cmd->pulse, cmd->pulseMode, &template, cmd->segments, cmd->slices, cmd->radius, cmd->semiTrans, cmd->abr,
                   cmd->primKind, cmd->count, cmd->texAnimId, &uv, tpage, GetClut(cmd->clutX, EFFECT_CLUT_Y(cmd, ctx)),
                   cmd->cull, cmd->otz.w, ctx->pak);
 }
 
-void SUG_createTrailFromParams(EffectParams *cmd, EffectSlots *ctx) {
+V0_RESULT SUG_createTrailFromParams(EffectParams *cmd, EffectSlots *ctx) {
     Bytes4 c0;
     Bytes4 c1;
     Bytes4 c2;
@@ -990,18 +996,18 @@ void SUG_createTrailFromParams(EffectParams *cmd, EffectSlots *ctx) {
     uv.h = cmd->texH;
 #if VERSION_JP
     tpage = GetTPage(cmd->texDepth, cmd->abr, cmd->texX, cmd->texY);
-    SUG_createTrailEffect(cmd->brightness, &c0, &c1, &c2, &c3, &template, cmd->edgeX0, cmd->edgeX1, cmd->count, cmd->rows, cmd->variant,
+    V0_RETURN SUG_createTrailEffect(cmd->brightness, &c0, &c1, &c2, &c3, &template, cmd->edgeX0, cmd->edgeX1, cmd->count, cmd->rows, cmd->variant,
                   cmd->pulseMode, cmd->semiTrans, cmd->abr, cmd->primKind, cmd->texAnimId, &uv, tpage,
                   GetClut(cmd->clutX, cmd->clutY), cmd->otz.w);
 #elif VERSION_US || VERSION_EU
     tpage = GetTPage(cmd->texDepth, cmd->abr, cmd->texX, (ctx->modelSlots[0] << 8) + cmd->texY);
-    SUG_createTrailEffect(cmd->brightness, &c0, &c1, &c2, &c3, &template, cmd->edgeX0, cmd->edgeX1, cmd->count, cmd->rows, cmd->variant,
+    V0_RETURN SUG_createTrailEffect(cmd->brightness, &c0, &c1, &c2, &c3, &template, cmd->edgeX0, cmd->edgeX1, cmd->count, cmd->rows, cmd->variant,
                   cmd->pulseMode, cmd->semiTrans, cmd->abr, cmd->primKind, cmd->texAnimId, &uv, tpage,
                   GetClut(cmd->clutX, EFFECT_CLUT_Y(cmd, ctx)), cmd->otz.w, ctx->pak);
 #endif
 }
 
-void SUG_createRingFromParams(EffectParams *cmd, EffectSlots *ctx) {
+V0_RESULT SUG_createRingFromParams(EffectParams *cmd, EffectSlots *ctx) {
     Bytes4 inner;
     Bytes4 mid;
     Bytes4 outer;
@@ -1040,7 +1046,7 @@ void SUG_createRingFromParams(EffectParams *cmd, EffectSlots *ctx) {
     uv.w = cmd->texW;
     uv.h = cmd->texH;
     tpage = GetTPage(cmd->texDepth, cmd->abr, cmd->texX, (ctx->modelSlots[0] << 8) + cmd->texY);
-    createRingEffect(cmd->brightness, &inner, &mid, &outer, &template, cmd->count, cmd->semiTrans, cmd->abr, cmd->primKind, cmd->innerRadius,
+    V0_RETURN createRingEffect(cmd->brightness, &inner, &mid, &outer, &template, cmd->count, cmd->semiTrans, cmd->abr, cmd->primKind, cmd->innerRadius,
                      cmd->outerRadius, cmd->midPercent, cmd->innerZ, cmd->outerZ, (Bytes8 *)&uv, tpage,
                      GetClut(cmd->clutX, EFFECT_CLUT_Y(cmd, ctx)), cmd->texAnimId, cmd->flags, cmd->cull, cmd->otz.w,
                      ctx->pak);
@@ -1053,7 +1059,7 @@ EffectTemplate *SUG_createEffectObjectFromParams(EffectParams *cmd, EffectSlots 
     return cloneEffectObject(&template);
 }
 
-void SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
+V0_RESULT SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
     EffectTemplate buf;
     EffectTemplate *template;
     Entry16 *entry;
@@ -1072,15 +1078,15 @@ void SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
 #endif
 #if VERSION_JP
     /* jp's model effects animate all their bones and take one CLUT bank */
-    SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32)entry,
+    V0_RETURN SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32)entry,
                   params->flags, ctx->pak);
 #elif VERSION_US || VERSION_EU
-    SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32p)entry,
+    V0_RETURN SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32p)entry,
                   params->flags, params->allBones, ctx->pak, ctx->modelSlots[2]);
 #endif
 }
 
-void SUG_createSpriteEffectFromParams(EffectParams *params, EffectSlots *ctx) {
+V0_RESULT SUG_createSpriteEffectFromParams(EffectParams *params, EffectSlots *ctx) {
     EffectTemplate buf;
     EffectTemplate *template;
     SVECTOR unused; /* unused, but it is in the original stack frame */
@@ -1092,14 +1098,14 @@ void SUG_createSpriteEffectFromParams(EffectParams *params, EffectSlots *ctx) {
     }
 #if VERSION_JP
     /* jp's sprite effects can't be flipped or placed at their origin */
-    SUG_createSpriteEffect(params->brightness, template, params->id, params->otz.w, ctx->pak);
+    V0_RETURN SUG_createSpriteEffect(params->brightness, template, params->id, params->otz.w, ctx->pak);
 #elif VERSION_US || VERSION_EU
-    SUG_createSpriteEffect(params->brightness, template, params->id, params->flipX, params->flipY,
+    V0_RETURN SUG_createSpriteEffect(params->brightness, template, params->id, params->flipX, params->flipY,
                   params->unk724, params->useOrigin, params->otz.w, ctx->pak);
 #endif
 }
 
-void SUG_createStreaksFromParams(EffectParams *cmd, void *ctx) {
+V0_RESULT SUG_createStreaksFromParams(EffectParams *cmd, void *ctx) {
     EffectTemplate template;
     u8 from[3];
     u8 to[3];
@@ -1113,15 +1119,15 @@ void SUG_createStreaksFromParams(EffectParams *cmd, void *ctx) {
     SUG_initEffectFromParams(&template, cmd, ctx);
 #if VERSION_JP
     /* jp's streaks keep one length */
-    createStreakParticles(from, to, &template, cmd->spreadX, cmd->spreadY, cmd->length, cmd->frames, cmd->speedRange,
+    V0_RETURN createStreakParticles(from, to, &template, cmd->spreadX, cmd->spreadY, cmd->length, cmd->frames, cmd->speedRange,
                           cmd->reverse, cmd->streakCount, cmd->zOffset, cmd->spin, cmd->pattern, cmd->kind, cmd->semiTrans, cmd->flags, cmd->otz.w);
 #elif VERSION_US || VERSION_EU
-    createStreakParticles(from, to, &template, cmd->spreadX, cmd->spreadY, cmd->length, cmd->endLength, cmd->frames, cmd->speedRange,
+    V0_RETURN createStreakParticles(from, to, &template, cmd->spreadX, cmd->spreadY, cmd->length, cmd->endLength, cmd->frames, cmd->speedRange,
                           cmd->reverse, cmd->streakCount, cmd->zOffset, cmd->spin, cmd->pattern, cmd->kind, cmd->semiTrans, cmd->flags, cmd->otz.w);
 #endif
 }
 
-void SUG_createLightMotionFromParams(EffectParams *params) {
+V0_RESULT SUG_createLightMotionFromParams(EffectParams *params) {
     VECTOR a;
     VECTOR b;
     VECTOR c;
@@ -1139,7 +1145,7 @@ void SUG_createLightMotionFromParams(EffectParams *params) {
     d.vx = params->scale2[0];
     d.vy = params->scale2[1];
     d.vz = params->scale2[2];
-    SUG_createLightMotion(&a, &b, &c, &d, params->rot[0], params->rot[1], params->rot[2]);
+    V0_RETURN SUG_createLightMotion(&a, &b, &c, &d, params->rot[0], params->rot[1], params->rot[2]);
 }
 
 SlotCreate SUG_EFFECT_CREATE_FUNCS[18] = {

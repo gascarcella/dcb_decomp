@@ -20,7 +20,13 @@ void initPlayerData(void) {
     void *session;
 
     loadCardDatabase();
+#ifdef PC_PORT
+    /* the PS1's size (us: two profiles of 0x2774 bytes), which the host's fit: every later block keeps its PS1
+       address (the duel state's, which first_duel_play.json waits on) */
+    PLAYER_PROFILES = (s32p)allocPermanentHeapBlock(HOST_FITS(0x2774 * 2, sizeof(PlayerProfile) * 2));
+#else
     PLAYER_PROFILES = (s32p)allocPermanentHeapBlock(sizeof(PlayerProfile) * 2);
+#endif
     SESSION_DATA = session = allocPermanentHeapBlock(HOST_FITS(0x102C, sizeof(SessionData)));
     ((SessionData *)SESSION_DATA)->areaSession = allocPermanentHeapBlock(0x1AC); /* PC_PORT: bytes (pointer-free) */
     resetPlayerData();

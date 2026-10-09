@@ -31,5 +31,74 @@
  "saiseg_message": {
   "vram": "165 pixels per buffer: the same columns and rows as saiseg_area (psxstack#54, 3)",
   "frame": "the same pixels (psxstack#54, 3)"
+ },
+ "duel_turn1": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_hand": {
+  "vram": "the card-art cache and the info panel's art (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)",
+  "frame": "the hand view's info panel: MoriShellmon's art still loading in the emulator, up in the port (the art loader's CD timing, #45)"
+ },
+ "duel_support": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_battle1_3d": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_battle1_end": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_round2": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_battle2_end": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_round3": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_player_digivolve": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_battle3_end": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_result": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_end": {
+  "vram": "the card-art cache only (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)"
+ },
+ "duel_battle1": {
+  "vram": "the field's zoom-out at another phase (#46) and the card-art cache (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)",
+  "frame": "SUGSEG resident while KAWSEG's field zooms out to the battle's cards: the stage changes when the overlay's CD read ends, at another point of the animation on each side (#46)"
+ },
+ "duel_battle2": {
+  "vram": "the field's zoom-out at another phase (#46) and the card-art cache (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)",
+  "frame": "SUGSEG resident while KAWSEG's field zooms out to the battle's cards: the stage changes when the overlay's CD read ends, at another point of the animation on each side (#46)"
+ },
+ "duel_battle3": {
+  "vram": "the field's zoom-out at another phase (#46) and the card-art cache (#45)",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)",
+  "frame": "SUGSEG resident while KAWSEG's field zooms out to the battle's cards: the stage changes when the overlay's CD read ends, at another point of the animation on each side (#46)"
+ },
+ "duel_digivolve": {
+  "vram": "the card-art cache (#45) and the picture's pixel",
+  "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)",
+  "frame": "1 pixel (192, 207), one step of blue inside a Gouraud-shaded mode-2 (B-F) quad of the digivolution's swirl: the software GPU against PCSX-Redux (psxstack#60)"
  }
 }

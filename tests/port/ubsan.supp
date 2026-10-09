@@ -13,3 +13,13 @@ bounds:assignCardCopySerial
 # Player.hand[4] on, so hand[4..8] are topCards[0..4], the s8/u8 bytes right after it (Player 0x1B9-0x1C1, pointer-free:
 # the same layout on the host). Reached in the duel (issue #30), not by the four gated scripts.
 bounds:KAW_tickCardCursor
+#
+# runDuelTurnLoop (src/main/duel/duel.c), step 30: the support card under the cursor, read as
+# PLAYER(ME)->hand[DUEL->cursorSlot] with cursorSlot 4 when the player picks the Online Deck's top card: hand[4] is
+# topCards[0], the same bytes as KAW_tickCardCursor's (the value is not used for slot 4). Reached by first_duel_play.
+bounds:runDuelTurnLoop
+#
+# SUG_tickHudSlides (src/sugseg/battle/sug_hud.c): state 2 compares the slide with target[state], so target[2] is
+# trail[0] (HudSlide: float, then s16s, pointer-free: the same layout on the host). Reached in every polygon battle's
+# HUD, first by first_duel_play.
+bounds:SUG_tickHudSlides

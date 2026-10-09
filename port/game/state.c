@@ -16,6 +16,7 @@
 #include "common.h"
 #include "game.h"
 #include "dcb/openseg.h"
+#include "dcb/dialog.h"
 #include "dcb/saiseg.h"
 #include "overlay_ids.h"
 
@@ -61,6 +62,24 @@ _Static_assert(PS1_OPEN_MEMCARD_STATE - PS1_OPEN_MEMCARD == 0x535, "OPEN_MEMCARD
 _Static_assert(offsetof(MemcardScreen, state) == 0x535, "MemcardScreen.state: not at its PS1 offset");
 #endif
 extern s32 OPEN_TITLE_STATE; /* src/openseg/open_bss.c (only open_title.c declares it) */
+extern UiWindow KAW_TUTORIAL_WINDOW; /* src/kawseg/kaw_bss.c (only kaw_tutorial.c declares it) */
+extern s32 KAW_RESULT_SCREEN_STATE;  /* src/kawseg/kaw_bss.c (dcb/overlay_calls.h declares it too) */
+
+/* The duel's words first_duel_play.json waits on, by their PS1 offsets: in the duel state (Duel, the heap block
+   DUEL_STATE points to), in a window (UiWindow: KAW_TUTORIAL_WINDOW, the tutorial's message box) and in a dialog
+   (Dialog: DUEL_DIALOG, the duel's Yes/No box). Each holds a pointer before these fields on the host, so they are
+   mapped one by one (game_views below); at -m32 every field is at its PS1 offset. */
+#if __SIZEOF_POINTER__ == 4
+_Static_assert(offsetof(Duel, state) == 0x810 && offsetof(Duel, turnPlayer) == 0x817 && offsetof(Duel, step) == 0x818 &&
+                   offsetof(Duel, cursorPlayer) == 0x81B && offsetof(Duel, cursorSlot) == 0x81C &&
+                   offsetof(Duel, tutorialBusy) == 0x820 && offsetof(Duel, awaitingInput) == 0x822 &&
+                   offsetof(Duel, quit) == 0x824 && sizeof(Duel) == 0x86C,
+               "Duel: a mapped field is not at its PS1 offset");
+_Static_assert(offsetof(UiWindow, cur.w) == 0x18 && offsetof(UiWindow, animDone) == 0x41,
+               "UiWindow: a mapped field is not at its PS1 offset");
+_Static_assert(offsetof(Dialog, choice) == 0xA5 && offsetof(Dialog, closed) == 0xB4 && sizeof(Dialog) == 0xB8,
+               "Dialog: a mapped field is not at its PS1 offset");
+#endif
 
 /* tests/port/vram.py's alignment waits (docs/PORT.md "Testing"): the scrolling background's state after its tim
    pointer (mode .. texWindowH, pointer-free: scrollPos at +0x70), and SAISEG's area state from imageHidden to
@@ -229,6 +248,11 @@ const PortRange *game_state_volatile(void) {
 
 /* ---- PS1 addresses the replay scripts read (wait_mem). The overlay slot is the arena's, which the runtime maps.
  * Mapped here:
+ * - the duel's words (game_views): the duel state's fields, while DUEL_STATE points into the heap (its PS1 address
+ *   is the block's, the same as the emulator's: first_duel_play.json names it), the tutorial window's (KAWSEG
+ *   current) and the duel dialog's;
+ * - PAD_INPUT_ENABLED and KAWSEG's KAW_RESULT_SCREEN_STATE (pointer-free words, whose names the generated tables do
+ *   not list: a .bss stand-in, an overlay's);
  * - PLAYER_PROFILES (an s32p, 8 bytes on the host): read only, as the PS1 address of the heap block it points to
  *   (the scripts compare it with 0x800C8964: the host's block table holds the PS1's addresses);
  * - OPENSEG's objects, while OPENSEG is the current overlay (on the PS1 the slot holds another file's bytes
@@ -249,12 +273,73 @@ static const GameField game_fields[] = {
     { PS1_OPEN_MEMCARD_STATE, sizeof(OPEN_MEMCARD.state), &OPEN_MEMCARD.state, GAME_OVERLAY_OPENSEG },
     { PS1_SCROLL_BACKGROUND + GAME_SCROLL_TAIL, 0x80 - GAME_SCROLL_TAIL, &SCROLL_BACKGROUND.mode, 0 },
     { PS1_SAI_AREA + GAME_SAI_AREA_BYTES, 0x122 - GAME_SAI_AREA_BYTES, &SAI_AREA.imageHidden, GAME_OVERLAY_SAISEG },
+    { PS1_PAD_INPUT_ENABLED, sizeof(PAD_INPUT_ENABLED), &PAD_INPUT_ENABLED, 0 },
+    { PS1_KAW_RESULT_SCREEN_STATE, sizeof(KAW_RESULT_SCREEN_STATE), &KAW_RESULT_SCREEN_STATE, GAME_OVERLAY_KAWSEG },
 };
 #define GAME_FIELD_COUNT ((int)(sizeof(game_fields) / sizeof(game_fields[0])))
 
+/* A field of an object whose host layout is not the PS1's: its PS1 offset and size, its host offset. */
+typedef struct GameViewField {
+    uint32_t ofs;
+    uint32_t size;
+    size_t host;
+} GameViewField;
+#define GAME_VIEW_FIELD(ofs, type, field) { ofs, sizeof(((type *)0)->field), offsetof(type, field) }
+
+static const GameViewField game_duel_fields[] = {
+    GAME_VIEW_FIELD(0x810, Duel, state),        GAME_VIEW_FIELD(0x817, Duel, turnPlayer),
+    GAME_VIEW_FIELD(0x818, Duel, step),         GAME_VIEW_FIELD(0x81B, Duel, cursorPlayer),
+    GAME_VIEW_FIELD(0x81C, Duel, cursorSlot),   GAME_VIEW_FIELD(0x820, Duel, tutorialBusy),
+    GAME_VIEW_FIELD(0x822, Duel, awaitingInput), GAME_VIEW_FIELD(0x824, Duel, quit),
+};
+static const GameViewField game_window_fields[] = {
+    GAME_VIEW_FIELD(0x18, UiWindow, cur.w), GAME_VIEW_FIELD(0x41, UiWindow, animDone),
+};
+static const GameViewField game_dialog_fields[] = {
+    GAME_VIEW_FIELD(0x18, Dialog, win.cur.w), GAME_VIEW_FIELD(0x41, Dialog, win.animDone),
+    GAME_VIEW_FIELD(0xA5, Dialog, choice),    GAME_VIEW_FIELD(0xB4, Dialog, closed),
+};
+#define GAME_COUNT(a) ((int)(sizeof(a) / sizeof((a)[0])))
+
+/* The host bytes of the field at `ofs` (`size` bytes) of an object at PS1 `base` and host `host`, or NULL. */
+static u8 *game_view_field(uint32_t addr, uint32_t size, uint32_t base, void *host, const GameViewField *fields,
+                           int count) {
+    int i;
+    for (i = 0; i < count; i++) {
+        if (addr >= base + fields[i].ofs && addr - base - fields[i].ofs + size <= fields[i].size) {
+            return (u8 *)host + fields[i].host + (addr - base - fields[i].ofs);
+        }
+    }
+    return NULL;
+}
+
+/* The duel's words (above): NULL when `addr` is none of them or its object is not there. */
+static u8 *game_views(uint32_t addr, uint32_t size) {
+    const PortOverlay *o = port_overlay_current(GAME_OVERLAY_TIER);
+    u8 *p;
+    if ((p = game_view_field(addr, size, PS1_DUEL_DIALOG, &DUEL_DIALOG, game_dialog_fields,
+                             GAME_COUNT(game_dialog_fields))) != NULL) {
+        return p;
+    }
+    if (o != NULL && o->file == GAME_OVERLAY_KAWSEG &&
+        (p = game_view_field(addr, size, PS1_KAW_TUTORIAL_WINDOW, &KAW_TUTORIAL_WINDOW, game_window_fields,
+                             GAME_COUNT(game_window_fields))) != NULL) {
+        return p;
+    }
+    if (DUEL_STATE != NULL && game_heap_owns(DUEL_STATE)) {
+        return game_view_field(addr, size, game_heap_ps1(DUEL_STATE), DUEL_STATE, game_duel_fields,
+                               GAME_COUNT(game_duel_fields));
+    }
+    return NULL;
+}
+
 /* The host bytes of PS1 address `addr` for a `size`-byte access, or NULL outside a mapped range. */
 static u8 *game_state_map_addr(uint32_t addr, uint32_t size) {
+    u8 *view;
     int i;
+    if ((view = game_views(addr, size)) != NULL) {
+        return view;
+    }
     for (i = 0; i < GAME_FIELD_COUNT; i++) {
         const GameField *f = &game_fields[i];
         if (addr >= f->addr && addr - f->addr + size <= f->size) {

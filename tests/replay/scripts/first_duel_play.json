@@ -1,0 +1,4953 @@
+{
+  "name": "first_duel_play",
+  "description": "first_duel, then the tutorial duel against Betamon played to its end: every press waits for the duel's state that takes it (the tutorial's message window, the duel's step and awaitingInput, the duel dialog, the cursor), so the presses land in the same game state on the emulator and the port whatever their frame counts. Checkpoints at the duel's phases, the three polygon battles (SUGSEG), the digivolutions, the result screen and back in SAISEG. The duel state is the heap block at 0x800D97B0 (Duel: step +0x818, awaitingInput +0x822, cursorSlot +0x81C, state +0x810); the tutorial window KAW_TUTORIAL_WINDOW (UiWindow.animDone +0x41), the dialog DUEL_DIALOG (closed +0xB4, win.animDone +0x41).",
+  "max_frames": 40000,
+  "default_timeout": 6000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x8006E050",
+      "size": 4,
+      "value": "0x800C8964",
+      "comment": "PLAYER_PROFILES allocated by initPlayerData, at the address probes.lua hashes"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 8,
+      "comment": "OPENSEG loaded (its first word, the overlay id 8): the opening movie's overlay"
+    },
+    {
+      "type": "checkpoint",
+      "name": "openseg_loaded",
+      "image": false
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F51A0",
+      "size": 4,
+      "value": 6,
+      "timeout": 8000,
+      "comment": "OPEN_TITLE_STATE 6: the logo's animation is over and 'PRESS START' blinks (open_title.c states 6-7)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title",
+      "image": false
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "START"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F51A0",
+        "size": 4,
+        "value": 8
+      },
+      "timeout": 600,
+      "comment": "START opens the menu (OPEN_TITLE_STATE 8)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "title_menu",
+      "image": false
+    },
+    {
+      "type": "wait_frames",
+      "frames": 60,
+      "comment": "the menu's fade-in (state 8 ignores the pad while the fade runs)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor from Continue (choice 1) to New Game (0)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "confirm New Game: OPEN_runUserRegistration"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 12,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4F28",
+        "size": 4,
+        "value": 1
+      },
+      "timeout": 1500,
+      "comment": "through the greeting, the sound and polygon-battle dialogs (their default is the first option) to the name entry (OPEN_INTRO_TEXT.step 1)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 40
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the letter under the cursor (A) as the name's first character"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "START"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "jump to the side menu's OK"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "OK: 'Is this name OK?' opens, its cursor on No (initDialog's default)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4F28",
+        "size": 4,
+        "value": 2
+      },
+      "timeout": 600,
+      "comment": "Yes: the name is accepted (step 2)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "name_entered",
+      "image": false
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 20,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4F2C",
+        "size": 4,
+        "value": 6
+      },
+      "timeout": 1500,
+      "comment": "the partner pages (2-4), the starter select (step 3) and its prompt (page 5): the first press once that text is shown puts the deck list under the pad (page 6: Veemon under the cursor)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "choose the deck under the cursor: 'Is this deck OK?' opens, its cursor on No (initDialog's default)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4F28",
+      "size": 4,
+      "value": 4,
+      "timeout": 900,
+      "comment": "the starter deck is given and the registration goes on (step 4)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "starter_chosen",
+      "image": false
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 12,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F80BD",
+        "size": 1,
+        "value": 3
+      },
+      "timeout": 3000,
+      "comment": "through the rest of the registration (its Yes/No dialogs default to Yes; the longer 'tell me about the game' path) to the save screen's file select (OPEN_MEMCARD.state 3: the fresh card read, 15 free blocks)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "File 1: 'Creating a Digital Card Battle File. Is this OK?' opens, its cursor on No"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "Yes: the save is written (state 4, then 25)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F80BD",
+      "size": 1,
+      "value": 12,
+      "timeout": 1500,
+      "comment": "'Save complete' (state 12) waits for a press"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 60,
+      "comment": "the message settles"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 20,
+      "until": {
+        "type": "wait_stage",
+        "stage": 6
+      },
+      "timeout": 3000,
+      "comment": "close the save screen (state 12 waits for CROSS), then the last page ('Enjoy Digital Card Battle!', kind 11 ends the registration on a press once its text is shown); runTitleMenu loads SAISEG (overlay id 6) and starts SAI_runArea: Beginner City"
+    },
+    {
+      "type": "checkpoint",
+      "name": "saiseg"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 12,
+      "until": {
+        "type": "wait_stage",
+        "stage": 5
+      },
+      "timeout": 12000,
+      "comment": "through the first area's script until KAWSEG loads"
+    },
+    {
+      "type": "checkpoint",
+      "name": "first_duel"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Let's decide who gets 1st Turn. Choose a Card with the directional buttons and press the *b2 button.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x8008983C",
+      "size": 4,
+      "value": 1,
+      "comment": "the message closed: the card choice takes the pad (KAW_MATCH_SCREEN.chosen 1)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the card under the cursor: who goes first"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"It looks like I go first!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"It looks like I get 1st Turn!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"In this Phase, Cards are automatically drawn from the Deck until your Hand is full.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Next, I pick a Digimon to battle with. It will go into the Battle Slot.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"It's best to start with *e3 Cards. Starting off with Level *e4 or *e5 Cards causes Digimon to malfunction.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Betamon is now ready to battle.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Next is the Digivolve Phase. I have to collect enough DP to digivolve.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"To collect DP (Digivolve Points), place a Digimon Card in the DP Slot.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"This number is DP  (Digivolve Pts.).\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"DP are gained every time you insert a Card. For example, this is 10 DP.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"As soon as there are enough DP, I can digivolve my Digimon. But there aren't enough DP yet.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"See, in order to digivolve to Frigimon, I need 30 DP. I have 10 DP now, so I need 20 more to digivolve.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"I'll show you how to digivolve on my  next turn.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"The Battle Phase is the last part of a Turn. This is skipped if there is no Opponent Digimon in the Battle Slot.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"When the Battle Phase is finished, it's your Turn.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now it's your Turn to Draw Cards.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"If you don't like your Hand after seeing your Cards, you can discard them with *b1.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"But you have to discard your whole Hand; you can't use those Cards anymore, so be careful.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Press *b3 to check your Hand.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 5
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 5 waits for the pad: the hand drawn"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_turn1",
+      "comment": "the player's first turn: the hand drawn, the Preparation Phase waits for a button"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "SQUARE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 7
+      },
+      "timeout": 900,
+      "comment": "view the hand (step 7)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"I think you should keep this Hand. Look, you have a Level *e3 Card!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 7 (the hand view) waits for TRIANGLE"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_hand",
+      "comment": "the hand view, the cursor on the Level III card"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 4
+      },
+      "timeout": 900,
+      "comment": "back (step 4, then 5)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 5
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FD2",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "keep the hand (step 8)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now, pick your Digimon to battle with.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"You should use this Card, because it's a Level *e3 Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Press *b2 to use that Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 9: the Digimon to place, the cursor on Agumon"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 10
+      },
+      "timeout": 900,
+      "comment": "place it (step 10)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"Is it OK to end the Preparation Phase?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, your Digivolve Phase is next. You have to collect DP to digivolve. Which Card would be best?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"This is a good one.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"You can collect 30 DP with this. Choose the MoriShellmon Card and press *b2 to place it in the DP Slot.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 13
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 13: a card for the DP slot, the cursor on MoriShellmon"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FD2",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "into the DP slot"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Like I told you before, if you have enough DP, you can digivolve your Digimon now.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"But you don't have a Level *e4 Digimon Card of the same Color as Agumon, so you can't digivolve even with enough DP.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now the Digivolve Phase is done.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"Is it OK to end the Digivolve Phase?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Finally, it's the Battle Phase!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, since this is your Turn, you get to attack my Digimon first, then I'll attack your Digimon.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"We both choose an Attack by pressing one of the Attack Buttons (*b0, *b1, *b2). We do this at the same time.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Pay attention to this Attack Power.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"*b0 is usually the most powerful one. It's like a Finishing Technique.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"*b1 has less Attack Power than *b0, but it's harder to block. You should use this when you're in trouble.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"*b2 has the lowest Attack Power, but *b2 often comes with a Special Effect.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"For example, <*b0 to 0> means the Opponent's *b0 Attack Power is reduced to 0.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Check out the Special Effect Descriptions by pressing the START button, then *b2 in the menu.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"At this point, nobody knows which Attack the other player has chosen. Isn't this exciting?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, go ahead and choose an Attack. What? You can't decide?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"This is just a Practice Battle, so go ahead and choose *b0.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 25: the attack"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CIRCLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 26
+      },
+      "timeout": 900,
+      "comment": "the CIRCLE attack; step 26 once both have chosen (240 frames on)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"OK, we have both chosen our Attacks. Now, let's choose a Support Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Let's make use of Digimon Cards and Option Cards to support the Battle Card. I know you've been wondering about them.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Because you get to attack first, I choose my Support Card before you.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"I think I'll go with this Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, it's your turn to choose.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Here, Digimon Cards display their Support Effects. If you use this Card, you can boost your Attack Power by +200.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"This Attack Option Card can only be used as a Support Card. This Card recovers your HP by +300.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"You can use either Card for Support, but remember, you can only use each Card once.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Remember, Digimon Cards can be used to digivolve later, or to add to your DP.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"By the way, you can check your Opponent's Hand and his Support Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"The player attacking first picks his Support Card after seeing what Card the Opponent has used. A big advantage.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now, choose the Recovery Floppy Card, and press *b2 to use it.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 30
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 30: the support card, the cursor on Recovery Floppy"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 31
+      },
+      "timeout": 900,
+      "comment": "use it: the dialog (step 31)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"Do you want to use this Support Card?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_support",
+      "comment": "the support card chosen"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now, press *b2 and see what happens.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_stage",
+      "stage": 4,
+      "timeout": 6000,
+      "comment": "the first polygon battle: SUGSEG (overlay id 4)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle1"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC0",
+      "size": 1,
+      "value": 3,
+      "timeout": 3000,
+      "comment": "the battle proper (the duel state 3): the 3D scene"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle1_3d"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 5,
+      "timeout": 6000,
+      "comment": "back in KAWSEG"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle1_end"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"OK, the first battle is over and it's my Turn again.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_round2",
+      "comment": "the second turn, Betamon's"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Whoever reduces the Opponent Digimon's HP to 0 wins the Round. The first one to win 3 Rounds wins the Match!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"By the way, the Support Cards you used once can't be used again.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Let me see this Hand. It looks pretty good.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Since my Digimon is already in the Battle Slot, I don't have to do anything here. This Phase is done.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now it's the Digivolve Phase. Let's rock!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"First, collect enough DP. By the way, this can be skipped with *b0, but don't worry about that for now.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"OK, time to digivolve!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Pick a Digimon to digivolve. There are 2 different Level *e4 Cards to choose from. I can become either.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"But you can only digivolve one Level at a time. Like Level *e3 to *e4 and *e4 to *e5.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Of course, you can only digivolve to a Digimon of the same color (Speciality). OK, let's pick this one.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"All right! Digivolving complete! Also, the old HP are now replaced with the new Digimon's HP!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_digivolve",
+      "comment": "Frigimon on the field"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"After digivolving, all DP in DP slot will be deleted.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now the Digivolve Phase is over.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"It's time to battle again. Since you attacked first last time, this time I go first.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"You can't skip the Battle Phase, so get ready to rumble!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Press a button (*b0, *b1, *b2) to choose an Attack, just like last time.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Since this is just practice, I'll let you know what I've chosen. I picked *b0.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, now you know which Attack to choose, right?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x8008983C",
+      "size": 4,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 25: the attack"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 26
+      },
+      "timeout": 900,
+      "comment": "the CROSS attack, the one the tutorial asks for"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"That's right. That's the one. Normally, you have to guess what your Opponent will choose and pick your Attack.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now we have both chosen our Attacks. Next, we have to choose Support Cards again.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"The player who attacks second gets to choose a Support Card first. So, A, this time you choose first.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Well, you only have this Card left. This is just Practice, so use it.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Choose the Drimogemon Card and press *b2.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 27
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 27: the support card, the cursor on Drimogemon"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 28
+      },
+      "timeout": 900,
+      "comment": "use it: the dialog (step 28)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"Do you want to use this Support Card?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now it's my turn, but... I'll pass this time. I won't use a Support Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Well, we're all set. Press *b2 and let's see what happens.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_stage",
+      "stage": 4,
+      "timeout": 6000,
+      "comment": "the second polygon battle"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle2"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 5,
+      "timeout": 6000,
+      "comment": "back in KAWSEG"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle2_end"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, it's your Turn again.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Wow, your draw wasn't very good.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Press *b3 and see what you got.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 5
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "the third turn, the player's: step 5"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_round3"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "SQUARE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 7
+      },
+      "timeout": 900,
+      "comment": "view the hand"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"What you want is a Level *e4 Digimon Card in Red. Why don't you try discarding your whole Hand? Go ahead and press *b1.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 7 waits for TRIANGLE"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 4
+      },
+      "timeout": 900,
+      "comment": "back to step 5"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 5
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "redraw: the dialog"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"This will discard all Cards. Is this OK?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"All right! This looks much better.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"OK, this is a good Hand. Press *b2!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 5
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FD2",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "keep the new hand"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Since you already have a Digimon in the Battle Slot, this Phase is over.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"Is it OK to end the Preparation Phase?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, it's your turn to digivolve. Be sure to get enough DP to digivolve.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Well, this one only needs 30 Points, so you have enough DP already. So, press *b0 to skip this step.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 13
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 13: the DP slot"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CIRCLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FD2",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "skip it (enough DP)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Look, the OK means that you can digivolve to this Digimon.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now choose a Digimon to digivolve to! Birdramon is the only Level *e4 Card. So choose it and press *b2.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 21
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 21: the Digimon to digivolve into, the cursor on Birdramon"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FCC",
+        "size": 1,
+        "value": 255
+      },
+      "timeout": 900,
+      "comment": "digivolve (the card select closes)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Now our Levels are equal. Level *e4 is really strong!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_player_digivolve",
+      "comment": "Birdramon on the field"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"This completes the Digivolve Phase.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"It's time for the third battle. This time, I'll show you a really cool trick!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Choose an Attack. You know how to do that by now, right?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Since this is just practice, let's both  try using *b0 and really battle it out!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, you use *b0, too.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 25
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x8008983C",
+      "size": 4,
+      "value": 1,
+      "comment": "step 25: the attack, once the tutorial gives the pad back"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CIRCLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FC8",
+        "size": 1,
+        "value": 26
+      },
+      "timeout": 900,
+      "comment": "the CIRCLE attack"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Things are getting interesting. Now, choose a Support Card.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"I attack second, so I have first pick.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Look!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"I can take a Face-Down Card from here and use it as a Support Card. It's an All-or-Nothing Gamble.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"You see, no one can tell what this Card is!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"If this Card turns out to be no good, I get no Support Power. It's a big gamble!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"But if you don't have any Cards left, or if you don't want to use any Cards in  your Hand, this comes in handy.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Look, A, you don't want to use any Cards in your Hand, do you? Try this method.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FC8",
+      "size": 1,
+      "value": 30
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x800D9FD2",
+      "size": 1,
+      "value": 1,
+      "comment": "step 30: the support card"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FCC",
+        "size": 1,
+        "value": 5
+      },
+      "timeout": 900,
+      "comment": "the cursor to the Offline Deck (slot 5)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x800D9FCC",
+        "size": 1,
+        "value": 4
+      },
+      "timeout": 900,
+      "comment": "to the Online Deck's top (slot 4)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "use it: the dialog"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D832C",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801D82B9",
+      "size": 1,
+      "value": 1,
+      "comment": "the dialog \"Do you want to use this Support Card?\" is open"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801D832C",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "Yes"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Everything is set. Let's see what happens.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_stage",
+      "stage": 4,
+      "timeout": 6000,
+      "comment": "the third polygon battle"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle3"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 5,
+      "timeout": 6000,
+      "comment": "back in KAWSEG"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_battle3_end"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Oh no!! My All-or-Nothing Gamble didn't pay off!!\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"A, you won the First Round.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"And that's how Digital Card Battle is played.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"In the actual game, the Match continues,  and you will use your own Deck.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 2,
+      "comment": "tutorial: \"Well, that's it for my Battle Lesson.\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC451",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801FC734",
+      "size": 4,
+      "value": 1,
+      "timeout": 3000,
+      "comment": "the result screen is up (KAW_runResultScreen)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_result"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801FC734",
+        "size": 4,
+        "value": 0
+      },
+      "timeout": 900,
+      "comment": "close it (after its first 100 frames)"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 6,
+      "timeout": 6000,
+      "comment": "the duel is over: SAISEG again"
+    },
+    {
+      "type": "checkpoint",
+      "name": "duel_end"
+    }
+  ]
+}

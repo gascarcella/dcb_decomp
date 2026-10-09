@@ -540,7 +540,7 @@ void KAW_createFadeRectFromParams(u8 *fx) {
     SUG_createFadeRect(&rect, rgb, rgb2, *(s32 *)(fx + 0x6C), *(s16 *)(fx + 0x70), *(s32 *)(fx + 0x110));
 }
 
-void KAW_createRingFromParams(u8 *fx, EffectTable *table) {
+V0_RESULT KAW_createRingFromParams(u8 *fx, EffectTable *table) {
     Bytes4 inner;
     Bytes4 mid;
     Bytes4 outer;
@@ -556,20 +556,20 @@ void KAW_createRingFromParams(u8 *fx, EffectTable *table) {
     outer.b[0] = *(s32 *)(fx + 0xAC);
     outer.b[1] = *(s32 *)(fx + 0xB0);
     outer.b[2] = *(s32 *)(fx + 0xB4);
-    createRingEffect(*(s32 *)(fx + 0xDC), &inner, &mid, &outer, &template, *(s32 *)(fx + 0x54), *(s32 *)(fx + 0x68),
+    V0_RETURN createRingEffect(*(s32 *)(fx + 0xDC), &inner, &mid, &outer, &template, *(s32 *)(fx + 0x54), *(s32 *)(fx + 0x68),
                      *(s32 *)(fx + 0x6C), *(s32 *)(fx + 0x118), *(s32 *)(fx + 0xF4), *(s32 *)(fx + 0xF8), *(s32 *)(fx + 0x104),
                      *(s32 *)(fx + 0xFC), *(s32 *)(fx + 0x100), NULL, 0, 0, 0, *(s32 *)(fx + 0x114), *(s32 *)(fx + 0x120),
                      *(s32 *)(fx + 0x124), 0);
 }
 
-void KAW_createEffectObjectFromParams(u8 *fx, EffectTable *table) {
+V0_RESULT KAW_createEffectObjectFromParams(u8 *fx, EffectTable *table) {
     EffectTemplate template;
 
     KAW_initEffectFromParams(&template, fx, table);
-    cloneEffectObject(&template);
+    V0_RETURN cloneEffectObject(&template);
 }
 
-void KAW_createStreaksFromParams(u8 *fx, EffectTable *table) {
+V0_RESULT KAW_createStreaksFromParams(u8 *fx, EffectTable *table) {
     EffectTemplate template;
     u8 startColor[3];
     u8 endColor[3];
@@ -581,7 +581,7 @@ void KAW_createStreaksFromParams(u8 *fx, EffectTable *table) {
     endColor[1] = *(s32 *)(fx + 0xA4);
     endColor[2] = *(s32 *)(fx + 0xA8);
     KAW_initEffectFromParams(&template, fx, table);
-    createStreakParticles(startColor, endColor, &template, *(s32 *)(fx + 0x2DC), *(s32 *)(fx + 0x2D8), *(s32 *)(fx + 0x2E0),
+    V0_RETURN createStreakParticles(startColor, endColor, &template, *(s32 *)(fx + 0x2DC), *(s32 *)(fx + 0x2D8), *(s32 *)(fx + 0x2E0),
                           *(s32 *)(fx + 0x2F4), *(s32 *)(fx + 0x2E4), *(s32 *)(fx + 0x2E8), *(s32 *)(fx + 0x2EC), *(s32 *)(fx + 0x2F0),
                           *(s32 *)(fx + 0x13C), *(s32 *)(fx + 0x140), *(s32 *)(fx + 0x138), *(s32 *)(fx + 0x144), *(s16 *)(fx + 0x68),
                           *(s32 *)(fx + 0x114), *(s32 *)(fx + 0x124));
