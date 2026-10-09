@@ -62,6 +62,12 @@ binutils 2.42 into `bin/cross` (the version Ubuntu 24.04 ships, the same as upst
 activating the venv, which upstream already asks for, is the only step. Worktrees link the main checkout's `bin/`,
 `.venv` and `disks/` (`scripts/worktree_init.sh`). A system toolchain, where one exists, is used instead of building.
 
+The window's and the launcher's tools (SDL3, DXC, Dear ImGui; 2026-10-08) are the stack's pins, built by the stack's
+own `scripts/setup.sh` rather than a copy of its steps here (dw2003recomp keeps a copy and must hold its pins equal by
+hand): `scripts/setup.sh sdl` checks the stack out at the submodule's commit in `bin/psxstack-tools/`, because the
+stack's setup installs into its own checkout's `tools/`, which for a submodule would be inside `.git/`. A pin bump
+in the stack rebuilds them; CI caches them on `psxstack/scripts/setup.sh --pins`.
+
 ## psxstack is a submodule pinned by tag; changes to it are psxstack pull requests
 _Decided: 2026-10-08_
 
