@@ -1,8 +1,8 @@
 /* The game-state probes (psxstack/game.h, the adapter interface): what tests/replay/probes.lua reads from the
  * emulator's RAM, read from the host's objects: the stage, the map, the checkpoint image (the player's profile in its
- * PS1 layout), the volatile ranges, and the PS1 addresses the replay scripts wait on. Also the accessor the
- * executable's OPEN_MEMCARD_CANCELLED reads through (include/dcb/overlay_calls.h). Adapted from dw2003recomp's
- * port/game/state.c (docs/THIRD_PARTY.md).
+ * PS1 layout, which is also what a save on the memory card holds: game_profile_to_ps1/_from_ps1), the volatile
+ * ranges, and the PS1 addresses the replay scripts wait on. Also the accessor the executable's OPEN_MEMCARD_CANCELLED
+ * reads through (include/dcb/overlay_calls.h). Adapted from dw2003recomp's port/game/state.c (docs/THIRD_PARTY.md).
  *
  * This unit includes the game's headers, which redeclare a few libc functions with the PS1's types (game.h: strlen,
  * memset, bzero, ...): it is compiled with -fno-builtin, as the game's units are (port/CMakeLists.txt), includes no
@@ -121,11 +121,40 @@ static uint32_t game_heap_ps1(const void *p) {
     return (uint32_t)GAME_PTR_TO_S32(p);
 }
 
-/* A pointer field of the profile as the image holds it: a pointer into the heap (or NULL) as its PS1 address; any
- * other value is not a pointer the game made but the bytes the heap block held before (resetPlayerData leaves the
- * partners' and the decks' card pointers as it finds them, and the boot's checkpoints come before a profile exists):
- * its low 32 bits, the word the PS1 would read there if its bytes were the same. */
+/* The two profiles' block (PLAYER_PROFILES: player 0's, then player 1's) holds pointers into itself: a saved deck's
+ * slot holding a partner's card points to that partner (card_db.c's deck check: CardSlot.card = &partners[slot]). Its
+ * host layout is not the PS1's past partners[0], so such a pointer is mapped by field: a byte of partners[k].card[]
+ * (pointer-free) at its PS1 offset. Returns 1 and the PS1 address when p is in the block. */
+#define GAME_PROFILES 2
+static int game_profile_ptr_ps1(const void *p, uint32_t *out) {
+    const u8 *base = (const u8 *)PLAYER_PROFILES;
+    size_t off, in, r;
+    if (base == NULL || (const u8 *)p < base || (const u8 *)p >= base + GAME_PROFILES * sizeof(PlayerProfile)) {
+        return 0;
+    }
+    off = (size_t)((const u8 *)p - base);
+    in = off % sizeof(PlayerProfile);
+    r = (in - offsetof(PlayerProfile, partners)) % sizeof(Partner);
+    if (in < offsetof(PlayerProfile, partners) || in >= offsetof(PlayerProfile, bonusCounts) ||
+        r >= offsetof(Partner, baseCard)) {
+        port_fatal("state: a pointer into player %d's profile at host offset 0x%X is not in a partner's cards",
+                   (int)(off / sizeof(PlayerProfile)), (unsigned)in);
+    }
+    *out = game_heap_ps1(base) + (uint32_t)(off / sizeof(PlayerProfile)) * GAME_PROFILE_SIZE + 0x80 +
+           (uint32_t)((in - offsetof(PlayerProfile, partners)) / sizeof(Partner)) * GAME_PARTNER_SIZE + (uint32_t)r;
+    return 1;
+}
+
+/* A pointer field of the profile as the image holds it: a pointer into the heap (or NULL) as its PS1 address (into
+ * the profiles' block by field, above); any other value is not a pointer the game made but the bytes the heap block
+ * held before (resetPlayerData leaves the partners' and the decks' card pointers as it finds them, and the boot's
+ * checkpoints come before a profile exists): its low 32 bits, the word the PS1 would read there if its bytes were the
+ * same. */
 static uint32_t game_image_ptr(const void *p) {
+    uint32_t v;
+    if (game_profile_ptr_ps1(p, &v)) {
+        return v;
+    }
     if (p == NULL || game_heap_owns(p)) {
         return game_heap_ps1(p);
     }
@@ -192,11 +221,10 @@ int32_t game_state_random_index(void) {
     return (int32_t)port_rand_seed();
 }
 
-/* ---- The checkpoint image: the first PlayerProfile at PLAYER_PROFILES in its PS1 layout, zeros before it exists */
-uint32_t game_state_image_size(void) {
-    return GAME_PROFILE_SIZE;
-}
-
+/* ---- The profile in its PS1 layout: what the checkpoint image and a save on the memory card hold (the game writes
+ * the profile to the card as it is in memory: open_save.c's OPEN_prepareSaveData copies it into the card buffer, and
+ * OPEN_applyLoadedSave copies the buffer back). The host's PlayerProfile is 0x2A78 bytes with its pointers 8 bytes
+ * wide; the card holds the PS1's 0x2774, so a save moves between the port and the emulator (docs/PORT.md "Saves"). */
 static void game_image_partner(u8 *out, const Partner *p) {
     game_copy(out, p->card, sizeof(p->card));
     game_put32(out + 0x278, game_image_ptr(p->baseCard));
@@ -215,15 +243,9 @@ static void game_image_deck(u8 *out, const PlayerDeck *d) {
     game_copy(out + 0x104, &d->unk104, GAME_SPAN(PlayerDeck, unk104, unk10E));
 }
 
-void game_state_image(uint8_t *out) {
-    const PlayerProfile *p = (const PlayerProfile *)PLAYER_PROFILES;
+void game_profile_to_ps1(u8 *out, const void *profile) {
+    const PlayerProfile *p = profile;
     int i;
-    if (p == NULL) {
-        for (i = 0; i < GAME_PROFILE_SIZE; i++) {
-            out[i] = 0;
-        }
-        return;
-    }
     game_copy(out, p, offsetof(PlayerProfile, partners));
     if (p->profileSize == (s16)sizeof(PlayerProfile)) {
         /* resetPlayerData stores sizeof(PlayerProfile): the PS1's is the image's */
@@ -236,6 +258,88 @@ void game_state_image(uint8_t *out) {
     }
     game_copy(out + 0x848, p->bonusCounts, GAME_SPAN(PlayerProfile, bonusCounts, unk2435));
     game_copy(out + 0x2768, p->rewardCards, GAME_SPAN(PlayerProfile, rewardCards, unk2771));
+}
+
+static uint32_t game_get32(const u8 *in) {
+    return (uint32_t)in[0] | (uint32_t)in[1] << 8 | (uint32_t)in[2] << 16 | (uint32_t)in[3] << 24;
+}
+
+/* A pointer field from its PS1 word (game_image_ptr's inverse): a heap address becomes the host pointer to the same
+ * byte (the host's block table holds the PS1's addresses, so a card pointer saved by the emulator points into the
+ * same card database here; one into the profiles' block, a partner's cards, by field), 0 NULL; any other word, and
+ * an address in the profiles' block outside the partners' cards, is not a pointer the game made (the stale bytes of
+ * the partners and decks the game has not set up, as the PS1's heap held them) and is kept as it is, so it is saved
+ * back the same. */
+static void *game_ps1_ptr(uint32_t v) {
+    uint32_t base, off, in, r;
+    if (v == 0) {
+        return NULL;
+    }
+    if (!game_heap_holds((s32)v)) {
+        return (void *)(uintptr_t)v;
+    }
+    base = game_heap_ps1((const void *)PLAYER_PROFILES);
+    off = v - base;
+    if (PLAYER_PROFILES != 0 && off < GAME_PROFILES * GAME_PROFILE_SIZE) {
+        in = off % GAME_PROFILE_SIZE;
+        r = (in - 0x80) % GAME_PARTNER_SIZE;
+        if (in < 0x80 || in >= 0x848 || r >= 0x278) {
+            return (void *)(uintptr_t)v;
+        }
+        return (u8 *)&((PlayerProfile *)PLAYER_PROFILES)[off / GAME_PROFILE_SIZE].partners[(in - 0x80) /
+                                                                                         GAME_PARTNER_SIZE] + r;
+    }
+    return GAME_S32_TO_PTR(void *, (s32)v);
+}
+
+static void game_unpack_partner(Partner *p, const u8 *in) {
+    game_copy((u8 *)p->card, in, sizeof(p->card));
+    p->baseCard = game_ps1_ptr(game_get32(in + 0x278));
+    p->armorCard = game_ps1_ptr(game_get32(in + 0x27C));
+    game_copy((u8 *)&p->hpBonus, in + 0x280, GAME_SPAN(Partner, hpBonus, unk295));
+}
+
+static void game_unpack_deck(PlayerDeck *d, const u8 *in) {
+    int i;
+    game_copy((u8 *)d, in, GAME_SPAN(PlayerDeck, inUse, name));
+    for (i = 0; i < (int)(sizeof(d->cards) / sizeof(d->cards[0])); i++) {
+        const u8 *o = in + 0x14 + GAME_CARD_SLOT_SIZE * i;
+        game_copy((u8 *)&d->cards[i], o, GAME_SPAN(CardSlot, type, id));
+        d->cards[i].card = game_ps1_ptr(game_get32(o + 4));
+    }
+    game_copy((u8 *)&d->unk104, in + 0x104, GAME_SPAN(PlayerDeck, unk104, unk10E));
+}
+
+void game_profile_from_ps1(void *profile, const u8 *in) {
+    PlayerProfile *p = profile;
+    int i;
+    game_copy((u8 *)p, in, offsetof(PlayerProfile, partners));
+    if (p->profileSize == GAME_PROFILE_SIZE) {
+        p->profileSize = (s16)sizeof(PlayerProfile); /* game_profile_to_ps1's inverse */
+    }
+    for (i = 0; i < 3; i++) {
+        game_unpack_partner(&p->partners[i], in + 0x80 + GAME_PARTNER_SIZE * i);
+        game_unpack_deck(&p->savedDecks[i], in + 0x2438 + GAME_DECK_SIZE * i);
+    }
+    game_copy((u8 *)p->bonusCounts, in + 0x848, GAME_SPAN(PlayerProfile, bonusCounts, unk2435));
+    game_copy((u8 *)p->rewardCards, in + 0x2768, GAME_SPAN(PlayerProfile, rewardCards, unk2771));
+}
+
+/* ---- The checkpoint image: the first PlayerProfile at PLAYER_PROFILES in its PS1 layout, zeros before it exists */
+uint32_t game_state_image_size(void) {
+    return GAME_PROFILE_SIZE;
+}
+
+void game_state_image(uint8_t *out) {
+    const PlayerProfile *p = (const PlayerProfile *)PLAYER_PROFILES;
+    int i;
+    if (p == NULL) {
+        for (i = 0; i < GAME_PROFILE_SIZE; i++) {
+            out[i] = 0;
+        }
+        return;
+    }
+    game_profile_to_ps1(out, p);
 }
 
 int game_state_volatile_count(void) {

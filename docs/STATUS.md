@@ -3,7 +3,7 @@
 _Last updated: 2026-10-09_
 
 The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the five emulator scripts (the tutorial duel to its end among them), twice
-identical, clean under ASan/UBSan; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"). Upstream's decompilation is complete: every function and all
+identical, clean under ASan/UBSan; **M4 (saves) is complete**: saves move both ways between the port and the emulator; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"). Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
 ## The PS1 build
@@ -149,6 +149,18 @@ runners).
 - **M2, the duel's VRAM:** at the 16 duel dumps the picture is equal at 11, the polygon battle's 3D scene included;
   known: the card-art cache's VRAM slots (the art loader against the CD's timing, #45), the SUGSEG-load dumps' phase
   (#46), one pixel of a Gouraud mode-2 quad (psxstack#60).
+- **M4 (saves): cards move both ways between the port and the emulator.** The game copied the in-memory profile into
+  the card buffer, so the port's card held the host layout (`profileSize` 0x2A78, the 8-byte card pointers shifting
+  every field after `partners`), a file the PS1 calls corrupted. Under `PC_PORT` `open_save.c` writes and reads the
+  profile in the PS1's layout (`game_profile_to_ps1`/`_from_ps1` in `port/game/state.c`, the checkpoint image's
+  writer: the card pointers as PS1 heap addresses, a deck slot's pointer to a partner by its PS1 offset); the PS1
+  build is unchanged (8 OK). `tests/saves/run.py` (CI's `replay` job, about 55 s): the port and the emulator each save
+  `new_game` to File 1 of a new card (`saiseg` with the record's hash); the two cards pass `tests/saves/cards.py` (the
+  profile 0x2774 bytes, both checksums, 32 of 32 card pointers heap addresses) and are byte-identical but the
+  timing's and `rand()`'s fields, the checksums and the buffer's stale tail; the emulator loads the port's card and
+  the port the emulator's (`tests/saves/continue.json`: Continue, File 1, SAISEG), each `loaded` profile the other
+  side's saved one byte for byte but the play time. The sanitizer build saves the same card and loads with no report
+  (by hand). The launcher keeps the cards in `~/.local/share/dcb/` (docs/PORT.md "Saves").
 - Next: the rest of the duel (#4) and the card-art cache's timing (#45, with the CD's per-read latency: psxstack#62);
   M2: the stretched quads' row or column (psxstack#54).
 

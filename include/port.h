@@ -68,8 +68,15 @@ extern u8 port_scratchpad[PORT_SCRATCHPAD_SIZE];
 s32 game_ptr_to_s32(const void *p);
 void *game_s32_to_ptr(s32 v);
 s32 game_heap_owns(const void *p); /* whether p is in the heap's host bytes */
+s32 game_heap_holds(s32 v);         /* whether v is a PS1 address in the heap */
 #define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
 #define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
+
+/* A PlayerProfile (include/game.h) to and from its PS1 layout, 0x2774 bytes, its card pointers as PS1 heap addresses:
+   what a save on the memory card holds (src/openseg/memcard/open_save.c) and the checkpoint image. Defined in
+   port/game/state.c (void pointers: this header comes before game.h's types). */
+void game_profile_to_ps1(u8 *out, const void *profile);
+void game_profile_from_ps1(void *profile, const u8 *in);
 
 /* A heap block's size the PS1 code writes as its byte count, of an object whose type (host, a sizeof) is larger on the
    host: the block keeps the PS1's size, so the heap's table and every later block keep the PS1's addresses, and the
