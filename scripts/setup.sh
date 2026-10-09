@@ -28,6 +28,14 @@
 #               headers only the offscreen driver is built (the self-tests', not a window). Offline shortcut:
 #               DCB_SDL_TOOLS_FROM=DIR (e.g. ../dw2003recomp/tools) first symlinks DIR's sdl3, dxc and imgui there;
 #               the stack's setup then checks them against its pins and rebuilds any that differ
+#   windows     (not by default) the Windows cross-build's tools (scripts/build_windows.sh): the stack's llvm-mingw,
+#               sdl3-windows, dxc and imgui steps, the same way in bin/psxstack-tools/ (~80 MB download and SDL3
+#               cross-built, a few minutes; DCB_SDL_TOOLS_FROM links DIR's llvm-mingw and sdl3-windows too)
+#   sdl3-desktop (not by default) the release AppImage's SDL3 (scripts/package_appimage.sh): the stack's sdl3-desktop
+#               step, every desktop backend required (it fails without their -dev headers instead of building an
+#               offscreen-only SDL into a release)
+#   appimage    (not by default) the pinned appimagetool and static AppImage runtime into bin/appimage
+#               (scripts/package_appimage.sh); DCB_SDL_TOOLS_FROM links DIR/appimage when it has the same pins
 #   link        in a git worktree: bin/, .venv and disks/ of the main checkout, symlinked (worktrees share them)
 #
 # Worktrees: everything built goes into the MAIN checkout (bin/, .venv) and is symlinked into the worktree; run
@@ -230,10 +238,16 @@ step_redux() {
     rm -f "$debs"
 }
 
-step_sdl() {
-    local stack dest="$MAIN/bin/psxstack-tools" rev t drivers
+# psxstack_tools NAME STACK_STEP...: the stack's own scripts/setup.sh with those steps, in a checkout of the stack at
+# the submodule's commit, bin/psxstack-tools/ (the stack's setup installs into its own checkout's tools/).
+# DCB_SDL_TOOLS_FROM=DIR first symlinks DIR's built tools of those steps there (the offline shortcut); the stack's
+# setup then checks them against its pins and rebuilds any that differ.
+PSXSTACK_TOOLS="$MAIN/bin/psxstack-tools"
+psxstack_tools() {
+    local name="$1" stack dest="$PSXSTACK_TOOLS" rev t
+    shift
     stack="${PSXSTACK_DIR:-$ROOT/psxstack}"
-    [[ -f "$stack/scripts/setup.sh" ]] || die "sdl: $stack/scripts/setup.sh is missing (scripts/worktree_init.sh, or PSXSTACK_DIR=<checkout>)"
+    [[ -f "$stack/scripts/setup.sh" ]] || die "$name: $stack/scripts/setup.sh is missing (scripts/worktree_init.sh, or PSXSTACK_DIR=<checkout>)"
     rev="$(git -C "$stack" rev-parse HEAD)"
     # A checkout of the stack with its own .git: init + fetch rather than clone, so it also lands on a directory that
     # already holds tools (CI restores bin/psxstack-tools/tools from its cache first). Only tracked files change.
@@ -243,16 +257,22 @@ step_sdl() {
         git -C "$dest" -c advice.detachedHead=false checkout -q --force --detach "$rev"
     fi
     if [[ -n "${DCB_SDL_TOOLS_FROM:-}" ]]; then
-        [[ -d "$DCB_SDL_TOOLS_FROM" ]] || die "sdl: DCB_SDL_TOOLS_FROM=$DCB_SDL_TOOLS_FROM is not a directory"
-        for t in sdl3 dxc imgui; do
+        [[ -d "$DCB_SDL_TOOLS_FROM" ]] || die "$name: DCB_SDL_TOOLS_FROM=$DCB_SDL_TOOLS_FROM is not a directory"
+        mkdir -p "$dest/tools"
+        for t in "$@"; do
             [[ -e "$DCB_SDL_TOOLS_FROM/$t" && ! -e "$dest/tools/$t" ]] || continue
             ln -s "$(cd "$DCB_SDL_TOOLS_FROM/$t" && pwd)" "$dest/tools/$t"
-            log "sdl: bin/psxstack-tools/tools/$t -> $DCB_SDL_TOOLS_FROM/$t (checked against the pins next)"
+            log "$name: bin/psxstack-tools/tools/$t -> $DCB_SDL_TOOLS_FROM/$t (checked against the pins next)"
         done
     fi
-    log "sdl: psxstack $(git -C "$stack" describe --tags --always)'s scripts/setup.sh sdl3 dxc imgui in bin/psxstack-tools"
+    log "$name: psxstack $(git -C "$stack" describe --tags --always)'s scripts/setup.sh $* in bin/psxstack-tools"
     # the stack's setup takes cmake and ninja from the PATH (the venv's, as CI pip-installs them; else it pip-installs its own)
-    PATH="$MAIN/.venv/bin:$PATH" bash "$dest/scripts/setup.sh" sdl3 dxc imgui
+    PATH="$MAIN/.venv/bin:$PATH" bash "$dest/scripts/setup.sh" "$@"
+}
+
+step_sdl() {
+    local dest="$PSXSTACK_TOOLS" drivers
+    psxstack_tools sdl sdl3 dxc imgui
     drivers="$(nm -g --defined-only "$dest/tools/sdl3/lib/libSDL3.a" 2>/dev/null |
                sed -n 's/.* D \(X11\|Wayland\|OFFSCREEN\|PIPEWIRE\|PULSEAUDIO\|ALSA\)_bootstrap$/\1/p' | sort -u | tr '\n' ' ')"
     log "sdl: SDL3's drivers: ${drivers:-none found}"
@@ -262,6 +282,71 @@ step_sdl() {
             "then rm -rf bin/psxstack-tools/tools/sdl3 && scripts/setup.sh sdl"
     fi
     log "sdl: PSXSTACK_TOOLS_DIR=$dest/tools"
+}
+
+# The Windows cross-build's tools (scripts/build_windows.sh; DECISIONS "Windows: cross-built from Linux with
+# llvm-mingw, tested under Wine"): llvm-mingw, SDL3 cross-built for Windows, DXC and Dear ImGui, the stack's pins.
+step_windows() {
+    psxstack_tools windows llvm-mingw sdl3-windows dxc imgui
+    log "windows: PSXSTACK_TOOLS_DIR=$PSXSTACK_TOOLS/tools"
+}
+
+# The release AppImage's SDL (scripts/package_appimage.sh): SDL3 with its desktop backends required (X11, Wayland,
+# PipeWire, PulseAudio, ALSA), so it fails without their -dev headers (psxstack/scripts/setup.sh --sdl3-desktop-apt
+# lists Ubuntu's) instead of silently building an offscreen-only SDL into a release.
+step_sdl3-desktop() {
+    psxstack_tools sdl3-desktop sdl3-desktop
+}
+
+# The AppImage tools for the release (scripts/package_appimage.sh; DECISIONS "Releases: tagged drafts, published by
+# hand"), the same pins as dw2003recomp's (its scripts/setup.sh appimage): appimagetool (MIT) and the static type-2
+# runtime (MIT, with musl, libfuse 3 (LGPL-2.1), squashfuse, zstd and zlib linked in: the AppImage needs no libfuse2 on
+# the player's machine), each a pinned release asset checked by SHA-256, and the runtime's LICENSE at its tag's commit
+# (bundled in the AppImage's LICENSES/). appimagetool is itself an AppImage: unpacked once (--appimage-extract needs no
+# FUSE) and run as bin/appimage/appimagetool/AppRun. DCB_SDL_TOOLS_FROM=DIR links DIR/appimage when its stamp is these
+# pins (offline).
+APPIMAGETOOL_VER=1.9.1
+APPIMAGETOOL_SHA256=ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0
+APPIMAGE_RUNTIME_VER=20251108
+APPIMAGE_RUNTIME_COMMIT=dd6cebedcbddde9c82f89b011e8e1d40b6e43868
+APPIMAGE_RUNTIME_SHA256=2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d
+APPIMAGE_RUNTIME_LICENSE_SHA256=aa154fc9070614bbe7921f89db11efd1dba7a1f3a41685958110e2230f9c0ca1
+appimage_get() { # URL FILE SHA256
+    log "appimage: downloading $(basename "$2")"
+    fetch "$1" "$2.part"
+    echo "$3  $2.part" | sha256sum -c --quiet - || die "appimage: checksum mismatch: $1"
+    mv "$2.part" "$2"
+}
+step_appimage() {
+    local dir="$MAIN/bin/appimage" stamp="$APPIMAGETOOL_SHA256 $APPIMAGE_RUNTIME_SHA256 $APPIMAGE_RUNTIME_LICENSE_SHA256"
+    appimage_ok() {
+        [[ -x "$1/appimagetool/AppRun" && -f "$1/runtime-x86_64" && -f "$1/runtime-LICENSE" &&
+           -f "$1/.sha256" && "$(cat "$1/.sha256")" == "$stamp" ]]
+    }
+    if [[ -n "${DCB_SDL_TOOLS_FROM:-}" && ! -e "$dir" ]] && appimage_ok "$DCB_SDL_TOOLS_FROM/appimage"; then
+        ln -s "$(cd "$DCB_SDL_TOOLS_FROM/appimage" && pwd)" "$dir"
+        log "appimage: bin/appimage -> $DCB_SDL_TOOLS_FROM/appimage (the same pins)"
+    fi
+    if appimage_ok "$dir"; then
+        log "appimage: appimagetool $APPIMAGETOOL_VER, runtime $APPIMAGE_RUNTIME_VER in bin/appimage"
+        return
+    fi
+    [[ "$(uname -m)" == x86_64 ]] || die "appimage: the pinned tools are x86_64 builds"
+    rm -rf "$dir"
+    mkdir -p "$dir"
+    appimage_get "https://github.com/AppImage/appimagetool/releases/download/$APPIMAGETOOL_VER/appimagetool-x86_64.AppImage" \
+        "$dir/appimagetool-x86_64.AppImage" "$APPIMAGETOOL_SHA256"
+    appimage_get "https://github.com/AppImage/type2-runtime/releases/download/$APPIMAGE_RUNTIME_VER/runtime-x86_64" \
+        "$dir/runtime-x86_64" "$APPIMAGE_RUNTIME_SHA256"
+    appimage_get "https://raw.githubusercontent.com/AppImage/type2-runtime/$APPIMAGE_RUNTIME_COMMIT/LICENSE" \
+        "$dir/runtime-LICENSE" "$APPIMAGE_RUNTIME_LICENSE_SHA256"
+    chmod +x "$dir/appimagetool-x86_64.AppImage"
+    (cd "$dir" && ./appimagetool-x86_64.AppImage --appimage-extract >/dev/null) || die "appimage: unpacking appimagetool failed"
+    mv "$dir/squashfs-root" "$dir/appimagetool"
+    rm "$dir/appimagetool-x86_64.AppImage"
+    [[ -x "$dir/appimagetool/AppRun" ]] || die "appimage: appimagetool has no AppRun"
+    echo "$stamp" > "$dir/.sha256"
+    log "appimage: installed appimagetool $APPIMAGETOOL_VER and runtime $APPIMAGE_RUNTIME_VER to bin/appimage"
 }
 
 step_link() {
@@ -285,7 +370,7 @@ step_link() {
 steps=("$@")
 [[ ${#steps[@]} -gt 0 ]] || steps=(submodules binutils python venv deps gamedata)
 for s in "${steps[@]}"; do
-    case "$s" in -h|--help) sed -n '2,33p' "$0"; exit 0 ;; esac
+    case "$s" in -h|--help) sed -n '2,42p' "$0"; exit 0 ;; esac
     declare -F "step_$s" >/dev/null || die "unknown step: $s"
     "step_$s"
 done

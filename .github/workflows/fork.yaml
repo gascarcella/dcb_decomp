@@ -214,3 +214,82 @@ jobs:
           build/port-sdl/crash-*.txt
           build/launcher/self-test.log
         if-no-files-found: ignore
+
+  # The Windows build (docs/PORT.md "Running it"; DECISIONS "Windows: cross-built from Linux with llvm-mingw, tested
+  # under Wine"): the game and the launcher cross-compiled with llvm-mingw and SDL3 for Windows (scripts/setup.sh
+  # windows: psxstack's own steps at the submodule's pins in bin/psxstack-tools/, cached on those pins), then under
+  # Ubuntu's Wine, headless (scripts/build_windows.sh --test): the launcher's self-test with the disc and dcb.exe, the
+  # game's input self-test, the boot and title replays (the emulator's cross-core view, two runs identical), and boot's
+  # frame log, record and SPU trace byte-identical to the Linux headless build's. The disc comes from the data
+  # checkout, as the replay job's.
+  windows:
+    if: >-
+      github.repository == 'gascarcella/dcb_decomp' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    name: windows (cross-build, Wine)
+    env:
+      WINEDEBUG: "-all"
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - uses: actions/checkout@v5
+      with:
+        repository: gascarcella/dcb-gamedata
+        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
+        path: gamedata-checkout
+        sparse-checkout: gamedata/us
+        persist-credentials: false
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    # wine64 alone: no 32-bit multiarch (the binaries are x86_64; `wine` is the command the scripts call).
+    - run: |
+        python3 -m venv .venv
+        .venv/bin/pip install cmake ninja
+        sudo apt-get update -q
+        sudo apt-get install -y -q --no-install-recommends wine wine64
+
+    - id: pins
+      run: echo "hash=$(psxstack/scripts/setup.sh --pins | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          bin/psxstack-tools/tools/llvm-mingw
+          bin/psxstack-tools/tools/sdl3-windows
+          bin/psxstack-tools/tools/dxc
+          bin/psxstack-tools/tools/imgui
+        key: psxstack-tools-windows-${{ runner.os }}-${{ steps.pins.outputs.hash }}
+
+    - run: DCB_GAMEDATA="$PWD/gamedata-checkout" scripts/setup.sh disc windows
+
+    - run: |
+        mkdir -p build/wine-prefix
+        WINEPREFIX="$PWD/build/wine-prefix" wineboot --init
+        wine --version
+
+    - run: scripts/build_windows.sh --test
+      timeout-minutes: 30
+
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: windows-logs
+        # Not build/**: the Wine prefix's dosdevices/z: links to /, which the glob cannot walk.
+        path: |
+          build/port-win.*.log
+          build/launcher-win.*.log
+          build/port-win/input-test.log
+          build/port-win/crash-*.txt
+          build/launcher-win/selftest.log
+          build/port-test-wine/*/*.stderr
+          build/port-test-wine/*/*_crash/
+          build/port-test-linux.log
+        if-no-files-found: ignore

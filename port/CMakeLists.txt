@@ -67,9 +67,17 @@ psxstack_add_game(dcb
 # The adapter's port/game/tasks.c (startup.s's task glue) includes the game's headers for Task and the scheduler's
 # prototypes, and game.h declares libc's functions with the PS1's types (strlen, memset, bzero, ...): under the
 # adapter's -Werror those clash with the compiler's builtins. The units compile with -fno-builtin for the same reason.
-# state.c (the probes) includes them too.
+# state.c (the probes) includes them too, and libc_win32.c (the Windows build's bzero and bcopy) defines two of them.
 set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/game/tasks.c" "${CMAKE_CURRENT_SOURCE_DIR}/game/state.c"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/game/libc_win32.c"
              APPEND PROPERTY COMPILE_OPTIONS -fno-builtin)
+# state.c includes the runtime's port_runtime.h (psxstack/types.h) and then the game's common.h, which defines the same
+# s8..u64 again, outside psxstack's PSXSTACK_TYPES_H guard (upstream's header). Identical typedefs are valid C11 and
+# GCC accepts them at -std=gnu99; clang (the Windows build's llvm-mingw) warns, which -Werror makes an error.
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    set_property(SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/game/state.c" APPEND PROPERTY COMPILE_OPTIONS
+                 -Wno-typedef-redefinition)
+endif()
 # The adapter's generated header (overlay_ids.h: the overlay IDs and the PS1 addresses it maps), quote-only as the
 # game's include directories are for it.
 set_property(SOURCE ${DCB_ADAPTER_SRCS} APPEND PROPERTY COMPILE_OPTIONS "-iquote" "${DCB_INPUTS}")

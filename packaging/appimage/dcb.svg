@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The PC port's icon (drawn for this project; nothing from the game): two playing cards fanned on a rounded tile. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f6f5c"/>
+      <stop offset="1" stop-color="#0d3329"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f1e6"/>
+      <stop offset="1" stop-color="#cfc8b0"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="44" fill="url(#tile)"/>
+  <g transform="rotate(-14 128 136)">
+    <rect x="62" y="52" width="104" height="148" rx="12" fill="#b9472f" stroke="#f4f1e6" stroke-width="6"/>
+    <rect x="80" y="70" width="68" height="112" rx="6" fill="none" stroke="#f4f1e6" stroke-width="4" opacity="0.7"/>
+  </g>
+  <g transform="rotate(12 128 136)">
+    <rect x="96" y="58" width="104" height="148" rx="12" fill="url(#card)" stroke="#0d3329" stroke-width="4"/>
+    <path d="M148 98 l20 34 -20 34 -20 -34 z" fill="#1f6f5c"/>
+    <circle cx="148" cy="132" r="7" fill="#f4f1e6"/>
+  </g>
+</svg>

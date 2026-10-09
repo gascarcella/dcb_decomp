@@ -123,6 +123,16 @@ runners).
   right, the GPU renderer's equal to the software one's. The SPU's output is not silent (not yet compared: M3). CI's
   `desktop` job runs both scripts, its tools cached on the stack's pins. The game crashes without a disc (#39), so the
   input self-test needs it. Ready for a play-test by hand.
+- **The release path** (docs/PORT.md "Running it" Windows, "Releases"): `scripts/build_windows.sh` cross-builds the game
+  and the launcher for Windows with llvm-mingw (`scripts/setup.sh windows`: the stack's steps at its pins); under Wine
+  (`--test`, CI's `windows` job) the launcher's self-test (301 of 301, with the disc and `dcb.exe`), the input
+  self-test and the `boot` and `title` replays pass, and `boot`'s frame log, record and SPU trace are byte-identical to
+  the Linux headless build's. Two game-side Windows fixes: `bzero`/`bcopy`, missing from the UCRT
+  (`port/game/libc_win32.c`), and clang's duplicate-typedef error in `state.c`. `scripts/package_appimage.sh` and
+  `scripts/package_windows.sh` make `dcb-<version>-linux-x86_64.AppImage` (5 MB, glibc 2.38+) and
+  `dcb-<version>-windows-x86_64.zip` (4 MB; the PDBs in `-debug.zip`), each smoke-tested (303 of 303 inside the
+  package, with the disc); `release.yml` drafts a release on a `vX.Y.Z` tag, which the owner publishes by hand;
+  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). No release yet.
 - Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: the duel's VRAM, the
   stretched quads' row or column (psxstack#54).
 

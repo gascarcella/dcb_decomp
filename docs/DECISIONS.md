@@ -66,7 +66,9 @@ The window's and the launcher's tools (SDL3, DXC, Dear ImGui; 2026-10-08) are th
 own `scripts/setup.sh` rather than a copy of its steps here (dw2003recomp keeps a copy and must hold its pins equal by
 hand): `scripts/setup.sh sdl` checks the stack out at the submodule's commit in `bin/psxstack-tools/`, because the
 stack's setup installs into its own checkout's `tools/`, which for a submodule would be inside `.git/`. A pin bump
-in the stack rebuilds them; CI caches them on `psxstack/scripts/setup.sh --pins`.
+in the stack rebuilds them; CI caches them on `psxstack/scripts/setup.sh --pins`. The Windows build's and the
+release's (llvm-mingw, SDL3 for Windows, SDL3 with the desktop backends: `scripts/setup.sh windows`, `sdl3-desktop`)
+come the same way; the AppImage tools, which the stack does not pin, are our own `appimage` step (the first game's pins).
 
 ## psxstack is a submodule pinned by tag; changes to it are psxstack pull requests
 _Decided: 2026-10-08_
@@ -91,3 +93,24 @@ Work lands on this fork's `main` through a pull request opened against `gascarce
 gascarcella/dcb_decomp --base main`: gh otherwise proposes the parent repository). CI must be green, and the owner
 reviews and merges. `docs/` holds reference documents only: the current state is a short `docs/STATUS.md`, and plans
 and problems are issues (here and in psxstack). There is no session log: the pull requests say what was done.
+
+## Releases: tagged drafts, published by hand
+_Decided: 2026-10-08_ (as the first game's, its DECISIONS of the same name)
+
+Players get a Linux x86_64 AppImage and a Windows x86_64 zip (each: the launcher, the game, the mods' manifests; the
+debug info in separate files) and supply their own disc. A pushed tag `vX.Y.Z` runs `release.yml`: both packages built
+on `ubuntu-24.04` (the AppImage's glibc floor) and smoke-tested, then a **draft** GitHub release. Publishing binaries
+built from the decompiled code (no game data) is the owner's explicit decision each time. Unlike the first game's, the
+release job does not rerun the tests that need the disc: `fork.yaml` runs them on every push to `main`, so the tag is
+cut on a commit whose CI is green, and the release needs no data checkout. `scripts/release_local.sh` builds the same
+packages in a Docker `ubuntu:24.04` container.
+
+## Windows: cross-built from Linux with llvm-mingw, tested under Wine
+_Decided: 2026-10-08_ (as the first game's, its DECISIONS "Windows: cross-built from Linux with llvm-mingw, tested
+under Wine and Proton")
+
+The Windows build of the game and the launcher is cross-compiled here with psxstack's toolchain file and its pinned
+llvm-mingw (clang + lld, UCRT; lld writes the PDBs), SDL3 cross-built the same way: the stack's own setup steps in
+`bin/psxstack-tools/` (`scripts/setup.sh windows`), no system package. Static, x86_64, Windows 10 or newer. Tested on
+Linux under Wine (`scripts/build_windows.sh --test`, CI's `windows` job): the launcher's and the input self-tests, the
+replays, and `boot`'s log byte-identical to the Linux build's. Real Windows comes from testers.
