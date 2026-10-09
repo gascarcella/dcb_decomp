@@ -57,7 +57,7 @@ renderer on Vulkan gives the software renderer's picture at internal scale 1). A
 run's byte for byte. Known unfinished: **sound** is M3: the SPU plays the game's sequences through the stack's LIBSND
 and SPU (the output is not silent), but nothing has compared it with the emulator's; **saves** are M4: saving to a card
 works within the port (the `new_game` script saves to a fresh card), but cards have not moved between the port and the
-emulator; the opening movie (about two minutes, unskippable as on the PS1) ends some 1,200 frames early (#26); the duel
+emulator; the opening movie (about two minutes, unskippable as on the PS1) plays every frame at the emulator's pace (#26: "Busy-waits"); the duel
 has been run only through its tutorial's first round (#37).
 
 ## The contract, for this game
@@ -469,6 +469,24 @@ the timeout counts frames as there. The movie's spins get **no** hook: they are 
 dw2003's title movie, and the shim already models them (`StGetNext` runs a vsync tick once per 5000 empty polls,
 `DecDCTout` runs its callback before it returns, so `isdone` is set when the loop starts). A `PLATFORM_WAIT` there
 would make their timeouts (2000 x 2000 polls, 0x800000 iterations) count frames instead of polls.
+
+**The movie's pace, measured (#26, psxstack v0.3.4):** the player is paced by the stream, not by the polls. It takes a
+frame from the ring when its last sector has arrived, and the drive delivers 2.5 sectors a tick at 60 Hz. `DIGIMON.MOV`'s
+main movie (`OPEN_MOVIES[0]`: 2870 frames, 30 fps, 5 sectors a frame, 14,344 sectors) plays frames 1 to 2870 in
+5,738 ticks on the port and 5,739 vsyncs in the emulator; the logo movie before it (`OPEN_MOVIES[2]`: 82 frames,
+15 fps, 10 sectors a frame) plays them in 324 on both sides. Every frame is shown, each one tick after it is complete
+in the ring, with no ring overrun (`StRingStatus`) and no early end (`OPEN_MOVIE_ENDED` comes from frame 2870). The
+movie was some 1,000 ticks short before psxstack v0.3.3, whose CD delivered 3 sectors a tick at 60 Hz (psxstack#42).
+In the emulator the empty-ring loop polls `StGetNext` about 10,360 times a vsync, against the shim's estimate of 5000. The
+drive feeds the ring every tick here, so the estimate has no effect on the movie. The port still reaches the title
+809 frames before the emulator, and `first_duel` 1,525 frames before: none of that is the movie. It is OpenBIOS's
+boot (584 vsyncs before the game's first `CdSearchFile`; the port starts at `main`), the CD's latency per
+Setloc + `CdRead` (PCSX-Redux takes 200 ms before the second sector of any read after a Setloc, whatever the
+distance, and the shim 3 ticks plus 1 per 8192 sectors before the first: about 9 vsyncs a read, +544 over the 66 reads
+up to `first_duel`), and the memory card's writes (the save's 125 asynchronous writes take 6 vsyncs each in the
+emulator and 3 ticks on the port: +394). These are the stack's timing stand-ins (psxstack#62). The emulator's side of
+these numbers comes from `tests/replay/timing.lua` (a `--prelude`: the movie's frames, the loader's reads, the card's
+writes, per vsync), and the port's from its `--trace`.
 
 ### Interrupt-context code
 - The vblank preemption handler (above).
