@@ -151,6 +151,9 @@ jobs:
     # M2: the VRAM, textures and picture against the emulator's at every checkpoint; the known differences are in
     # tests/port/vram_known.json. No PNGs: pictures of the game stay off CI.
     - run: .venv/bin/python tests/port/vram.py -j 2 --no-png
+    # M4: saves both ways: the port and the emulator each save new_game to a new card, the cards' formats, then each
+    # loads the other's card (tests/saves/continue.json). The cards are made here and never uploaded (game data).
+    - run: .venv/bin/python tests/saves/run.py
 
   # The desktop build (docs/PORT.md "Running it"): the window build (-DPSXSTACK_SDL=ON) and the launcher, with SDL3, DXC
   # and Dear ImGui from scripts/setup.sh sdl (psxstack's own setup at the submodule's pins, in bin/psxstack-tools/),

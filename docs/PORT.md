@@ -75,10 +75,9 @@ not yet on real Windows.
 **State at M2** (2026-10-08): the window and the launcher work on this desktop (Wayland, both renderers; the GPU
 renderer on Vulkan gives the software renderer's picture at internal scale 1). A window run's log is the headless
 run's byte for byte. Known unfinished: **sound** is M3: the SPU plays the game's sequences through the stack's LIBSND
-and SPU (the output is not silent), but nothing has compared it with the emulator's; **saves** are M4: saving to a card
-works within the port (the `new_game` script saves to a fresh card), but cards have not moved between the port and the
-emulator; the opening movie (about two minutes, unskippable as on the PS1) plays every frame at the emulator's pace (#26: "Busy-waits"); the duel
+and SPU (the output is not silent), but nothing has compared it with the emulator's; the opening movie (about two minutes, unskippable as on the PS1) plays every frame at the emulator's pace (#26: "Busy-waits"); the duel
 has been run only through its tutorial's first round (#37).
+**Saves** (M4, "Saves" below) move both ways: a card the port writes loads in PCSX-Redux and the other way round.
 
 ## Releases
 DECISIONS "Releases: tagged drafts, published by hand". A release is two packages, each with the launcher, the game (the
@@ -587,6 +586,38 @@ A first grep for definitions in psxstack's `psyq/` and `runtime/`. Confirm with 
 The game also uses libc's `sprintf` (345 calls), `rand` (87), `str*`, `memset`, `bzero` and `bcopy`. Their
 Psy-Q-specific behaviour (`rand`'s sequence, `sprintf`'s formats) needs a check against the emulator.
 
+### Saves
+**The format.** A memory card is a raw 128 KB `.mcd` image (psxstack's `runtime/memcard.c`: the format PCSX-Redux reads
+and writes), whose file system is the shim's (`psyq/libcard.c`: the BIOS file calls `open`/`read`/`write`/`lseek`/
+`close`/`firstfile`/`nextfile` on `bu00:`/`bu10:` and LIBCARD's `_card_*`, deterministic on the vsync tick). The game
+(`us`) saves each of its three files as a two-block file, `BASLUS-01328_A`, `_B`, `_C` (Files 1 to 3;
+`open_save.c`): OPEN_buildSaveHeader's 0x200 bytes (the Sony header `SC`, type 0x13: the icon's three frames from
+VRAM, the title "ＤＣＢ［1］hours：minutes" in Shift-JIS), then the card buffer, a 0x4000-byte heap block: the player's
+`PlayerProfile` (0x2774 bytes), its two checksums (`save_checksum.c`: the XOR and the sum of the profile's bytes, in the
+two after it), and the buffer's stale bytes to the file's end. A load reads the first 0x80 bytes of each file for the
+file list (`SaveSlot`: a `size` other than 0x2774 is "corrupted"), then the whole file, checks the checksums over
+`size` bytes and copies the profile back (`OPEN_applyLoadedSave`).
+
+**The layout on the host.** The game copies the profile into the buffer as it is in memory (`*buffer =
+PLAYER_DATA(port)`), and the profile is not pointer-free ("Memory and pointers": two card pointers per partner, one per
+saved deck slot): the host's struct is 0x2A78 bytes, so before M4 the port's card held the host layout (`profileSize`
+0x2A78, the 8-byte pointers shifting every field after `partners`), which the PS1 calls corrupted. Under `PC_PORT`
+`OPEN_prepareSaveData` writes the profile in the PS1's layout instead and `OPEN_applyLoadedSave` reads it back
+(`game_profile_to_ps1`/`game_profile_from_ps1`, `port/game/state.c`, the checkpoint image's writer): the pointers as
+PS1 heap addresses (the host's block table holds the PS1's, so the emulator's card database is at the same address),
+a deck slot pointing at a partner (`card_db.c`'s `cardSlot->card = &partners[slot]`) by the partner's PS1 offset in
+the profiles' block, a word that is not a heap address (the stale bytes of the partners and decks not set up yet) kept
+as it is, `profileSize` as the PS1's 0x2774. The two cards of the same game, one saved by the port and one by the
+emulator, are then the same bytes but the profile's `VOLATILE_RANGES` (the id, the play time, the rand()-drawn
+serials and bonus cards, the heap the game never writes), the checksums that cover them, the title's play time and the
+buffer's stale tail (`tests/saves/cards.py`). The icon and the directory are byte-identical.
+
+**Where the cards are.** Started bare, the game's cards are fresh ones in memory unless `--memcard1 FILE` (and
+`--memcard2`) names a file, created formatted when missing and rewritten whole after every write. The launcher keeps
+them in the settings directory, `~/.local/share/dcb/card1.mcd` and `card2.mcd` (`$XDG_DATA_HOME/dcb/`; "Running it"). A
+PCSX-Redux card (its `-memcard1` file, or a `.mcd` from its memory card manager) can be copied there, and a port card
+loaded in the emulator, as they are.
+
 ## Testing
 The oracle is the game in PCSX-Redux (dw2003recomp's DECISIONS "The port is checked against the emulator"); the
 runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configured here. The stack is the submodule
@@ -605,6 +636,7 @@ runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configure
 | The launcher | `build/launcher/dcb-launcher` builds from `game.json`; its self-test passes (the settings directory, `settings.json`'s round trips, every screen with injected keys and a virtual gamepad, the play path), with the real disc's SHA-1 and the SDL game run 300 frames from the launcher's command | `scripts/launcher_build.sh` (CI `desktop`) |
 | The Windows build | `build/port-win/dcb.exe` and `build/launcher-win/dcb-launcher.exe` cross-build (llvm-mingw, `-DPSXSTACK_SDL=ON`, Release), GUI subsystem, only Windows' DLLs imported; under Wine: the launcher's self-test with the disc and `dcb.exe` (301 of 301), `dcb.exe --input-test`, the `boot` and `title` replays (`tests/port/run.py --exe build/port-win/dcb.exe --wine`: the emulator's cross-core view, two runs identical), and `boot`'s frame log, record and SPU trace byte-identical to the Linux headless build's | `scripts/build_windows.sh --test` (CI `windows`) |
 | The packages | The AppImage and the Windows zip build, hold only the expected files, say the version, and their launcher's self-test passes inside them with the bundled game and mods (without the disc on the release run; with it locally) | `scripts/package_appimage.sh --test`, `scripts/package_windows.sh --test` (`release.yml`; `scripts/release_local.sh`) |
+| Saves both ways (M4) | The port and the emulator each run `new_game` with a new card in slot 1 (the save to File 1; `saiseg` with the record's stable hash); both cards pass the format checks (File 1, the Sony header, the profile's size 0x2774, both checksums, its card pointers 4-byte heap addresses) and are equal byte for byte but the masked ranges ("Saves"); then each loads the other's card with `tests/saves/continue.json` (the title's Continue, File 1, into SAISEG): the `loaded` profile is the other side's saved one byte for byte but the play time, and the two loads' cross-core views are equal. The cards are made by the run (`build/saves-test/`), never committed | `tests/saves/run.py` (CI `replay`, about 55 s), `tests/saves/cards.py` |
 | The port's VRAM and pictures against the emulator's (M2) | At every checkpoint of the five scripts and at a few more moments (the name entry before typing, the starter list, `title+120`, SAISEG's first area `saiseg_area` and its first message `saiseg_message`), a `vram` step dumps the whole VRAM on both sides (psxstack's `vram` step: `PCSX.GPU.getVRAM()` in the emulator, `DCB_PORT_CHECKPOINT_DIR` in the port), keyed by the dump's name, never by a frame; the emulator's prelude `tests/port/vram.lua` adds the displayed picture (`PCSX.GPU.takeScreenShot()`) and the game's cadence (its frame-buffer index and `vblanksPerFrame` over the last 60 vsyncs); the port is run twice, the second time with `--screenshot` at the frames the first run's record gives. **The dumps are aligned on the game's own state, not on frame counts** (#33): the port reaches the checkpoints after other frame counts (the CD and loader timing, the movie, #26), and the screen's animations follow the frames. So before a dump `vram.py`'s variant of the script (`ALIGN`, `EXTRA_DUMPS`, `END_DUMPS`; the committed scripts and records are unchanged) waits on the counter that drives what is on screen: the scrolling background's `SCROLL_BACKGROUND.scrollPos` (30 per rendered frame, wrapping every 256 frames; hidden it stays 0, and SAISEG's area starts it again from 0 with its corner icon) reaching a position both sides pass through, after the page's text is typed out where something else still moves (the registration's `OPEN_INTRO_TEXT.blink`), and SAISEG's message arrow (`SAI_AREA.nextBlink`); the port's adapter maps those addresses (`port/game/state.c`). A dump aligned this way can come an odd number of frames later on one side, whose two display buffers are then the other way round: each side's displayed buffer is the one its picture matches, and the port's are exchanged before the whole-VRAM check. Three checks per dump, each a gate unless `tests/port/vram_known.json` lists it: the whole VRAM, the textures and CLUTs (the VRAM right of the display buffers, which start at x 0), the displayed picture. The emulator is never CPU-bound at these dumps (its frame-buffer index flips every vsync, `vblanksPerFrame` 1; the movie's `openseg_loaded` excepted, where the render loop is not running), so all three can be compared everywhere. **Now:** the textures are equal at every dump; the whole VRAM and the picture at `openseg_loaded`, `title+120`, `saiseg` and `first_duel`. Known: the software GPU against PCSX-Redux's ([psxstack#54](https://github.com/gascarcella/psxstack/issues/54)): `title` (2 pixels' mask bit), `title_menu` (one column of a mode-2 modulated sprite), and the registration's and SAISEG's screens (51 to 165 pixels: one row or column of a stretched textured quad, whose texture span is a texel short of its screen span); `starter_chosen` also shows the player's model in another pose: its looping idle animation starts with the page, so waiting for the background moves it to another phase (aligned on the page instead, the model agrees and the background does not). **The duel** (`first_duel_play`'s 16 dumps): the picture is equal at 11 of them, the polygon battle's 3D scene included (`duel_battle1_3d`); known: the card-art cache's slots in the textures from the first turn on (VRAM x 640..763, y 256..447: the art loader skips the cursor's moves while the CD reads, so the cards it holds follow the CD timing, #45) and the hand view's art panel (`duel_hand`), the three dumps taken as SUGSEG becomes resident (the field's zoom-out at another phase, #46), and one pixel of a Gouraud mode-2 quad at `duel_digivolve` ([psxstack#60](https://github.com/gascarcella/psxstack/issues/60)) | `tests/port/vram.py` (CI `replay`, about 135 s at `-j 4`; the differences as PNGs in `build/port-vram/<script>/`, `--keep` keeps the dumps) |
 
 **The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG

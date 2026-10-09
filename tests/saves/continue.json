@@ -1,0 +1,106 @@
+{
+  "name": "continue",
+  "description": "The boot and the title, then Continue with a card holding new_game's save in File 1 (tests/saves/run.py gives it: the port's or the emulator's): the load screen (OPENSEG's memory card screen, mode 7) reads both cards' files, File 1 is loaded and applied (OPEN_applyLoadedSave), and the saved game resumes in its area: SAISEG, Beginner City. The checkpoint `loaded` hashes the loaded profile. Not a replay script of its own (no record: it needs the card), so it is not in tests/replay/scripts.",
+  "max_frames": 12000,
+  "default_timeout": 6000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x8006E050",
+      "size": 4,
+      "value": "0x800C8964",
+      "comment": "PLAYER_PROFILES allocated by initPlayerData, at the address probes.lua hashes"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 8,
+      "comment": "OPENSEG loaded: the opening movie's overlay"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F51A0",
+      "size": 4,
+      "value": 6,
+      "timeout": 8000,
+      "comment": "OPEN_TITLE_STATE 6: 'PRESS START' blinks"
+    },
+    {
+      "type": "press",
+      "buttons": ["START"],
+      "frames": 2,
+      "release": 10,
+      "until": {"type": "wait_mem", "addr": "0x801F51A0", "size": 4, "value": 8},
+      "timeout": 600,
+      "comment": "START opens the menu (OPEN_TITLE_STATE 8), its cursor on Continue"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 60,
+      "comment": "the menu's fade-in"
+    },
+    {
+      "type": "press",
+      "buttons": ["CROSS"],
+      "frames": 2,
+      "release": 10,
+      "until": {"type": "wait_mem", "addr": "0x801F80BD", "size": 1, "value": 10},
+      "timeout": 1500,
+      "comment": "Continue: the load screen reads the cards and shows the files (OPEN_MEMCARD.state 10)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": ["CROSS"],
+      "frames": 2,
+      "release": 10,
+      "comment": "File 1: 'Do you want to Load File1?' opens, its cursor on No (initDialog's default)"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 30
+    },
+    {
+      "type": "press",
+      "buttons": ["LEFT"],
+      "frames": 2,
+      "release": 10,
+      "comment": "the cursor to Yes"
+    },
+    {
+      "type": "press",
+      "buttons": ["CROSS"],
+      "frames": 2,
+      "release": 10,
+      "comment": "Yes: the file is read (state 9), its checksum checked and the profile applied (state 25)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F80BD",
+      "size": 1,
+      "value": 12,
+      "timeout": 1500,
+      "comment": "'Load complete' (state 12) waits for a press; a corrupted file would stop at state 15"
+    },
+    {
+      "type": "wait_frames",
+      "frames": 60,
+      "comment": "the message settles"
+    },
+    {
+      "type": "press",
+      "buttons": ["CROSS"],
+      "frames": 2,
+      "release": 20,
+      "until": {"type": "wait_stage", "stage": 6},
+      "timeout": 3000,
+      "comment": "close the load screen: the game resumes in the saved area (resumeInArea), SAISEG (overlay id 6)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "loaded"
+    }
+  ]
+}

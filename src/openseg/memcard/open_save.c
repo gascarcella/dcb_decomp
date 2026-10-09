@@ -413,7 +413,12 @@ void OPEN_applyLoadedSave(s32 port, s32 slot, s32 file) {
     case 7:
     case 0xFF:
         src = OPEN_MEMCARD_BUFFER;
+#ifdef PC_PORT
+        /* the card holds the PS1's layout (port/game/state.c) */
+        game_profile_from_ps1(&((PlayerProfile *)PLAYER_PROFILES)[port], (u8 *)src);
+#else
         ((PlayerProfile *)PLAYER_PROFILES)[port] = *src;
+#endif
         ((SessionView *)SESSION_DATA)->saves[port].playTime = src->playTime;
         break;
     }
@@ -433,7 +438,12 @@ void OPEN_prepareSaveData(s32 port) {
         PLAYER_DATA(port).resumeInArea = 1;
         PLAYER_DATA(port).unk28_13 = OPEN_MEMCARD.unk538;
         ((SessionView *)SESSION_DATA)->saves[port].playTime = PLAYER_DATA(port).playTime;
+#ifdef PC_PORT
+        /* the card holds the PS1's layout (port/game/state.c) */
+        game_profile_to_ps1((u8 *)buffer, &PLAYER_DATA(port));
+#else
         *buffer = PLAYER_DATA(port);
+#endif
         return;
     case 2:
     case 4:
@@ -444,7 +454,11 @@ void OPEN_prepareSaveData(s32 port) {
         }
     case 6:
         ((SessionView *)SESSION_DATA)->saves[port].playTime = PLAYER_DATA(port).playTime;
+#ifdef PC_PORT
+        game_profile_to_ps1((u8 *)buffer, &PLAYER_DATA(port));
+#else
         *buffer = PLAYER_DATA(port);
+#endif
         break;
     }
 }

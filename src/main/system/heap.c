@@ -399,4 +399,10 @@ void *game_s32_to_ptr(s32 v) {
 s32 game_heap_owns(const void *p) {
     return (u32p)p - (u32p)HEAP_ARENA.bytes < sizeof(HEAP_ARENA);
 }
+
+/* whether v is a PS1 address in the heap (the adapter reads a saved profile's
+   card pointers: game_s32_to_ptr gives the host's byte) */
+s32 game_heap_holds(s32 v) {
+    return (u32)v - HEAP_ARENA_ADDR < HEAP_SIZE;
+}
 #endif
