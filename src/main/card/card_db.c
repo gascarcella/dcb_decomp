@@ -429,7 +429,7 @@ void rollRewardCards(s32 player, s32 pack) {
     s32 row;
 
     clearCollectionFirstObtainedFlags(player);
-    cards = allocTaskHeapBlock(HOST_SIZE(0x4B4, 0x12D * sizeof(DigimonCardData *)));
+    cards = allocTaskHeapBlock(HOST_FITS(0x4B4, 0x12D * sizeof(DigimonCardData *)));
     inRange = allocTaskHeapBlock(0x25A); /* PC_PORT: bytes (an s16 per card) */
     nearRange = allocTaskHeapBlock(0x25A); /* PC_PORT: bytes (an s16 per card) */
     bonusChance = 0;

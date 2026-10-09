@@ -39,9 +39,8 @@ typedef u32 u32p;
    s32 field), and back: the address itself on the PS1 */
 #define GAME_PTR_TO_S32(p) ((s32)(p))
 #define GAME_S32_TO_PTR(type, v) ((type)(v))
-/* the size of an object the PS1 code writes as its byte count (a heap block's size): the literal on the PS1, the host
-   type's size on the host, where the type holds pointers and is larger (docs/PORT.md "Memory and pointers") */
-#define HOST_SIZE(ps1, host) ps1
+/* a heap block's size the PS1 code writes as its byte count, of an object whose host type is larger: ps1 */
+#define HOST_FITS(ps1, host) ps1
 
 #else
 
@@ -59,15 +58,20 @@ extern u8 port_scratchpad[PORT_SCRATCHPAD_SIZE];
 #define SCRATCHPAD(type, ofs) ((type)(port_scratchpad + (ofs)))
 
 /* A pointer kept in an s32 on the PS1 (docs/PORT.md "Memory and pointers"): one into the game's heap (HEAP_ARENA)
-   becomes the PS1 address of the same byte, so the 32-bit word holds what it holds on the PS1; NULL is 0; anything
-   else goes to psxstack's PTR_TO_S32 (the overlay slot; fatal elsewhere). Defined in src/main/system/heap.c. */
+   becomes the PS1 address of the same byte (its block's PS1 address plus its offset in the block: the host spaces the
+   blocks wider), so the 32-bit word holds what it holds on the PS1; NULL is 0; anything else goes to psxstack's
+   PTR_TO_S32 (the overlay slot; fatal elsewhere). Defined in src/main/system/heap.c. */
 s32 game_ptr_to_s32(const void *p);
 void *game_s32_to_ptr(s32 v);
+s32 game_heap_owns(const void *p); /* whether p is in the heap's host bytes */
 #define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
 #define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
 
-/* A size the PS1 code writes as its byte count, of an object whose type is larger on the host: the host's (a sizeof) */
-#define HOST_SIZE(ps1, host) (host)
+/* A heap block's size the PS1 code writes as its byte count, of an object whose type (host, a sizeof) is larger on the
+   host: the block keeps the PS1's size, so the heap's table and every later block keep the PS1's addresses, and the
+   host's bytes fit because heap.c spaces each block HEAP_HOST_SCALE (sizeof(void *) / 4) times its size; checked at
+   compile time (issue #31) */
+#define HOST_FITS(ps1, host) (0 * sizeof(char[(host) <= (ps1) * (sizeof(void *) / 4) ? 1 : -1]) + (ps1))
 
 /* The arguments of a call to one of startup.s's stubs that the game declares without a prototype and calls with as
  * many arguments as it uses (spawnTask, resumeTask; include/game.h): each one an s32p, the missing ones 0. On the

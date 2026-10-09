@@ -39,8 +39,8 @@ s32 readHuffmanTree(void) {
         if (node >= 0x21F) {
             return -1;
         }
-        (&HUFFMAN_LEFT)[node] = readHuffmanTree();
-        (&HUFFMAN_RIGHT)[node] = readHuffmanTree();
+        HUFFMAN_NODE(HUFFMAN_LEFT, node) = readHuffmanTree();
+        HUFFMAN_NODE(HUFFMAN_RIGHT, node) = readHuffmanTree();
     } else {
         node = readBitstreamBits(9);
     }
@@ -73,9 +73,9 @@ void decompressLzHuffman(u32 outputSize) {
         symbol = root;
         while (symbol >= 0x110) {
             if (readBitstreamBit() != 0) {
-                symbol = (&HUFFMAN_RIGHT)[symbol];
+                symbol = HUFFMAN_NODE(HUFFMAN_RIGHT, symbol);
             } else {
-                symbol = (&HUFFMAN_LEFT)[symbol];
+                symbol = HUFFMAN_NODE(HUFFMAN_LEFT, symbol);
             }
         }
         HUFFMAN_SYMBOLS_DECODED++;

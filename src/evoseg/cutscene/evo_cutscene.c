@@ -649,7 +649,7 @@ void EVO_initShatterScene(s32 allocBuffers) {
         SCENE_3D->ot[i].point = 0;
         SCENE_3D->ot[i].tag = SCENE_3D->ot[i].org + 0xFFF;
     }
-    EVO_SHARDS = allocHeapBlock(HOST_SIZE(0x4B0, 60 * sizeof(EvoShard)), 0x7F);
+    EVO_SHARDS = allocHeapBlock(HOST_FITS(0x4B0, 60 * sizeof(EvoShard)), 0x7F);
     EVO_SHARD_VERTEX_POOL = allocHeapBlock(0x3E80, 0x7F); /* PC_PORT: bytes (SVECTORs) */
     EVO_SHATTER_STARTED = 0;
     EVO_CUTSCENE_STEP = 0;

@@ -75,10 +75,16 @@ VOLATILE_RANGES = ((0x10, 0x12),   # profileId: drawn from rand() when the profi
                    (0x2768, 0x276E),  # rewardCards[3]
                    (0x276E, 0x2771),  # rewardResults[3]
                    (0x2772, 0x2774),  # unk2771 bytes 1-2
-                   # The starter card: open_starter.c draws it with rand() % 2, and the rand() sequence's position
-                   # depends on how many times the idle loop ran per frame, so which of the two is owned differs
-                   (0x14CE, 0x14CF),    # cardCollection[28] (0x14B2 + 28; plain literals: port_inputs reads this with ast)
-                   (0x153B, 0x153C))  # cardCollection[137] (0x14B2 + 137)
+                   # The starter's bonus cards: OPEN_giveStarterDeck draws each of five with rand() % 2 from a pair
+                   # (OPEN_STARTER_BONUS_CARDS), and the rand() sequence's position depends on how many times the idle
+                   # loop ran per frame, so which card of each pair is owned differs. The scripts' deck (Veemon,
+                   # deck 0): its ten cards' cardCollection bytes (0x14B2 + id; plain literals: port_inputs reads this
+                   # with ast)
+                   (0x14BD, 0x14BE), (0x1526, 0x1527),  # cards 0x0B, 0x74
+                   (0x14CB, 0x14CC), (0x1535, 0x1536),  # cards 0x19, 0x83
+                   (0x14CE, 0x14CF), (0x153B, 0x153C),  # cards 0x1C, 0x89
+                   (0x14D1, 0x14D2), (0x153C, 0x153D),  # cards 0x1F, 0x8A
+                   (0x15AB, 0x15AC), (0x15B4, 0x15B5))  # cards 0xF9, 0x102
 
 CFG = emulator.configure(
     root=ROOT, game_json=ROOT / "port/game/game.json", redux_dir=ROOT / "bin/redux", iso=ROOT / "disks/us/dcb_us.cue",

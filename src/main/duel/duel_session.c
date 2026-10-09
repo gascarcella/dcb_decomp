@@ -34,8 +34,8 @@
 void initDuelState(s32 isCpuDuel) {
     void *block;
 
-    CARD_ANIMS = block = allocTaskHeapBlock(HOST_SIZE(0x870, 60 * sizeof(CardAnim)));
-    DUEL_STATE = block = allocTaskHeapBlock(HOST_SIZE(0x86C, sizeof(Duel)));
+    CARD_ANIMS = block = allocTaskHeapBlock(HOST_FITS(0x870, 60 * sizeof(CardAnim)));
+    DUEL_STATE = block = allocTaskHeapBlock(HOST_FITS(0x86C, sizeof(Duel)));
     DUEL->sprites = (void *)KAW_allocCardPolys();
     DUEL->turnPlayer = rand() % 2;
     DUEL->step = 0;

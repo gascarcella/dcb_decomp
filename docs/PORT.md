@@ -277,17 +277,37 @@ override and derived symbol file with the pin bump.
 ### Memory and pointers
 - **The game heap:** `src/main/system/heap.c` manages `HEAP_ARENA` (0x8008C848, `HEAP_SIZE` 0x148000, inside the
   EXE's `.bss`; on the host a game `.bss` array, not psxstack's arena: `game.json` has no heap).
-  - `HeapBlock.addr` keeps the in-use flag in bit 31 and strips the KSEG bits of free blocks. Done (M1 step 3): it is
-    `s32p` (the table is in memory only), and the `HEAP_ADDR_*` macros of `heap.c` are the original expressions on
-    the PS1; on the host the flag is the top bit of the pointer-wide word.
+  - `HeapBlock.addr` keeps the in-use flag in bit 31 and strips the KSEG bits of free blocks. It is `s32p` (M1
+    step 3), and the `HEAP_ADDR_*` macros of `heap.c` are the original expressions on the PS1.
+  - **The host's layout** (issue #25, decided at the end of M1): the block table holds **the PS1's values** (PS1
+    addresses, the flag in bit 31, sign-extended in the wider word), so the allocator makes the PS1's first-fit
+    decisions on the same sizes and every block has the address the PS1 gives it. Only the bytes move: the block at
+    PS1 offset o of the arena is at `HEAP_HOST_SCALE * o` of the host's arena (`sizeof(void *) / 4`: 2 at `-m64`,
+    1 at `-m32`, the PS1's layout there), `heap.c`'s own `HEAP_ARENA` that much larger. Every block then starts on
+    a multiple of 8 on a 64-bit host, the alignment of its pointers (at the PS1's 4, UBSan reported every access to
+    the profile, `SessionData`, `SaisegSession`, `PlayerDeck`, `CardSlot`), and the spacing after a block's size is never handed
+    out (a host struct allocated with a PS1 byte count, issue #31, runs into it instead of the next block).
+    `HEAP_ADDR_PTR`/`HEAP_PTR_ADDR` convert between a table value and the host pointer; a pointer off the grid or
+    outside the arena is no block's (0), as it never matches on the PS1.
+  - **The PS1's leftovers:** a block handed out holds what the blocks before it left on the same PS1 bytes, and the
+    game reads some it never writes (the profile's name after its terminator, the settings word's unused bits,
+    `scriptOffset`, `deckChoice`: the checkpoint image compares them). The host keeps a freed block's bytes (and a
+    shrunk block's tail) at their PS1 offsets in `HEAP_PS1_BYTES` and copies them into each new block, so its bytes
+    are the PS1's too. Alternatives rejected: aligning the blocks in the table itself (the PS1 addresses drift after
+    the first odd block: `PLAYER_PROFILES` would no longer be 0x800C8964, the scripts' `wait_mem` and the image's
+    card pointers would need a table of their own, and first-fit could choose other blocks), and keeping the 4-byte
+    alignment with `-fno-sanitize=alignment` (undefined behaviour left in, against psxstack's rule that suppressions
+    are only for in-struct overruns).
   - A heap pointer kept in an `s32` (a script register, below) goes through `GAME_PTR_TO_S32`/`GAME_S32_TO_PTR`
-    (`include/port.h`, defined in `heap.c`): on the host it becomes the PS1 address of the same byte, so the word
-    holds what it holds on the PS1; a pointer elsewhere goes to psxstack's `PTR_TO_S32` (the slot, else fatal).
-  - The heap's layout is the PS1's up to the player profiles (the replay scripts wait for `PLAYER_PROFILES` at
-    0x800C8964, and the checkpoint image writes heap pointers as PS1 addresses), so a permanent block that is larger
-    on the host must not grow there: the memory card directories (`CardDir`, 0x260 bytes on the PS1, larger on the
-    host because the shim's `DIRENTRY` holds a pointer) are host storage in `memcard.c`, and the PS1's two blocks are
-    still allocated (M1 step 4). Host structs then sit at the PS1's 4-byte alignment (UBSan: issue #25).
+    (`include/port.h`, defined in `heap.c`): on the host it becomes the PS1 address of the same byte (the block's
+    PS1 address from the table plus the offset in the block), so the word holds what it holds on the PS1; a pointer
+    elsewhere goes to psxstack's `PTR_TO_S32` (the slot, else fatal). The adapter writes the profile's card pointers
+    the same way (`game_heap_owns`).
+  - The PS1 addresses hold as long as the game makes the PS1's allocations with the PS1's sizes before a block:
+    the replay scripts wait for `PLAYER_PROFILES` at 0x800C8964, and the checkpoint image writes heap pointers as
+    PS1 addresses. So a permanent block that is larger on the host must not grow there: the memory card directories
+    (`CardDir`, 0x260 bytes on the PS1, larger on the host because the shim's `DIRENTRY` holds a pointer) are host
+    storage in `memcard.c`, and the PS1's two blocks are still allocated (M1 step 4).
 - **Psy-Q's libc heap:** `InitHeap` puts it over the overlay area, but game code never calls malloc or free.
 - **Pointers held in integers:**
   - `addFrameCallback(s32)`: 56 sites, 55 with `(s32)fn`.
@@ -352,12 +372,13 @@ override and derived symbol file with the pin bump.
   - **Stack locals as arrays**: `SUG_tickHudSlides` walks a function's separate `HudSlide` locals as an array (the
     PS1 frame has them adjacent); on the host they are one array.
   - **Heap sizes** (issue #31): of the 42 literal `alloc*HeapBlock` sizes in the `us` units, 8 are a host-grown type's
-    PS1 size and go through `HOST_SIZE(ps1, host)` (`port.h`: the literal on the PS1, a `sizeof` on the host:
-    `SESSION_DATA`, `CARD_ANIMS`, `DUEL_STATE`, `DUEL_PLAYERS` (`PLAYER_BLOCK_SIZE`: the name runs past the struct),
-    `rollRewardCards`' pointers, `SUG_SPRITE_CACHE`, `EVO_SHARDS`, `SUB_EDITED_DECK`); 3 were host-sized before (the
-    card directories, `KAW_MATCH_SCREEN`); 31 are true byte counts, marked `/* PC_PORT: bytes */`. The blocks before
-    `PLAYER_PROFILES` keep their PS1 sizes. psxstack's `counts --sites size` knows only the first game's allocator
-    names, so it lists none here.
+    PS1 size: `SESSION_DATA`, `CARD_ANIMS`, `DUEL_STATE`, `DUEL_PLAYERS` (`PLAYER_BLOCK_SIZE`: the name runs past the
+    struct), `rollRewardCards`' pointers, `SUG_SPRITE_CACHE`, `EVO_SHARDS`, `SUB_EDITED_DECK`. They keep the PS1's size
+    in the block table, so later blocks keep their PS1 addresses, and go through `HOST_FITS(ps1, host)` (`port.h`),
+    which checks at compile time that the host's type fits the block's host bytes (`HEAP_HOST_SCALE` times its size,
+    above). 3 were handled before (the card directories, `KAW_MATCH_SCREEN`'s `sizeof`); 31 are true byte counts,
+    marked `/* PC_PORT: bytes */`. psxstack's `counts --sites size` knows only the first game's allocator names, so it
+    lists none here (psxstack#55).
   - **Reads through null pointers** the PS1 survives (address 0 is the kernel's RAM, zeros under OpenBIOS):
     `initDialog` measures a null text, `unloadModelAnimations` reads the id of a slot `unloadModel` cleared. On the
     host each reads OpenBIOS's zeros (an empty string, id 0) under `PC_PORT`.
@@ -469,7 +490,8 @@ runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configure
 | The emulator boots the disc | PCSX-Redux (`scripts/setup.sh redux`, the pin in the data checkout) loads OPENSEG for the opening movie | `scripts/check_emulator.sh` (`tests/replay/replay.py boot`) |
 | Emulator replays | Four pad scripts replayed from boot, each twice byte-identical: `boot` (the title, frame 7866), `title` (the menu), `new_game` (the registration: name, starter, the save to a fresh card, SAISEG at 11681), `first_duel` (Beginner City's script into KAWSEG at 14211), with the player profile hashed at every checkpoint | `tests/replay/replay.py check` (CI `replay`), `tests/replay/scripts/`, `expected/`, `probes.lua` |
 | The port builds and boots | `build/port/dcb` links (every writable section renamed: `port_gen.py sections`); booted headless from the disc for 600 frames it exits 0 at the frame cap with OPENSEG loaded (stage 8) | `scripts/port_build.sh` (CI `probe`), `scripts/port_build.sh --boot` (CI `replay`) |
-| The port against the emulator | The port replays the same scripts and reaches the emulator's checkpoints (the cross-core view: names, stages, maps, stable profile hashes, the overlay sequence) twice byte-identical | `tests/port/run.py`: all four scripts pass and are the CI gate (`replay` job): every checkpoint at the emulator's stage and map, the overlay and map sequences, two runs identical (the four take about 100 s). Checkpoints before the profile is defined carry no image (`"image": false`: `openseg_loaded`, `title`, `title_menu`, `name_entered`, `starter_chosen`; the record has no hashes). `saiseg` and `first_duel` keep theirs, and the stable hash leaves out (`VOLATILE_RANGES`): `profileId`, `playTime` and `cardCopySerials` (`rand()`); the heap the game never writes before those checkpoints (the emulator has the allocator's leftovers, the port zeros: partner 0's last 3 padding bytes, partners 1-2, decks 1-2, the starter deck's name after its terminator, `unk104` and `unk10E`, `unk15DF`, `unk2435`, `unk2771` bytes 1-2, `rewardCards`, `rewardResults`); and the two `cardCollection` bytes of cards 28 and 137, because the starter card is drawn with `rand() % 2` and the sequence's position depends on the idle loop's calls per frame (psxstack#40). Deck 0's cards, the rest of the collection and the registration's fields stay compared |
+| The port against the emulator | The port replays the same scripts and reaches the emulator's checkpoints (the cross-core view: names, stages, maps, stable profile hashes, the overlay sequence) twice byte-identical | `tests/port/run.py`: all four scripts pass and are the CI gate (`replay` job): every checkpoint at the emulator's stage and map, the overlay and map sequences, two runs identical (the four take about 100 s). Checkpoints before the profile is defined carry no image (`"image": false`: `openseg_loaded`, `title`, `title_menu`, `name_entered`, `starter_chosen`; the record has no hashes). `saiseg` and `first_duel` keep theirs, and the stable hash leaves out (`VOLATILE_RANGES`): `profileId`, `playTime` and `cardCopySerials` (`rand()`); the heap the game never writes before those checkpoints (the emulator has the allocator's leftovers, the port zeros: partner 0's last 3 padding bytes, partners 1-2, decks 1-2, the starter deck's name after its terminator, `unk104` and `unk10E`, `unk15DF`, `unk2435`, `unk2771` bytes 1-2, `rewardCards`, `rewardResults`); and the `cardCollection` bytes of the Veemon deck's ten bonus cards (0x0B, 0x74, 0x19, 0x83, 0x1C, 0x89, 0x1F, 0x8A, 0xF9, 0x102: the starter gets one of each pair by `rand() % 2`, and the sequence's position depends on the idle loop's calls per frame). Deck 0's cards, the rest of the collection and the registration's fields stay compared. The port's frames (psxstack v0.3.3, the CD at 60 Hz): `openseg_loaded` 181, `title` 7057, `title_menu` 7059, `name_entered` 7634, `starter_chosen` 8148, `saiseg` 10203, `first_duel` 12686 |
+| The port under ASan and UBSan | The sanitizer build (`-DPSXSTACK_SANITIZE=ON`, `build/port-san`) replays each script once with no report, and its log, record and SPU trace equal the plain build's. UBSan's suppressions are `tests/port/ubsan.supp` (psxstack's rule: only in-struct overruns the game relies on, each named with its function): `assignCardCopySerial`'s 8 serials in a row of 6. Fixed for the host instead: the heap's 4-byte alignment ("Memory and pointers"), `HUFFMAN_LEFT`/`HUFFMAN_RIGHT` (declared `s32` and indexed as tables of 0x220: arrays under `PC_PORT`, `HUFFMAN_NODE` in `decompress.c`) | `tests/port/run.py --sanitize`: the four scripts, CI's `replay` job |
 | The port's VRAM and pictures against the emulator's (M2) | At every checkpoint of the four scripts, and at `title+120`, `saiseg+120` and `saiseg+600` (frames after `boot`'s and `new_game`'s last checkpoint), a `vram` step dumps the whole VRAM on both sides (psxstack's `vram` step: `PCSX.GPU.getVRAM()` in the emulator, `DCB_PORT_CHECKPOINT_DIR` in the port), keyed by the checkpoint's name, never by a frame; the emulator's prelude `tests/port/vram.lua` adds the displayed picture (`PCSX.GPU.takeScreenShot()`) and the game's cadence (its frame-buffer index and `vblanksPerFrame` over the last 60 vsyncs); the port is run twice, the second time with `--screenshot` at the frames the first run's record gives. Three checks per dump, each a gate unless `tests/port/vram_known.json` lists it: the whole VRAM, the textures and CLUTs (the VRAM right of the display buffers, which start at x 0), the displayed picture. **At M2's start:** the emulator is never CPU-bound at these dumps (its frame-buffer index flips every vsync, `vblanksPerFrame` 1; the movie's `openseg_loaded` excepted, where the render loop is not running), so all three can be compared everywhere. The whole VRAM is equal at `openseg_loaded`, `title+120`, `saiseg` and `first_duel`; the textures at every dump but `saiseg+120`; the picture everywhere but `title_menu` (5 pixels) and the four dumps of #33. Known: `title` (2 pixels' mask bit) and `title_menu` (one column of a mode-2 modulated sprite), the software GPU against PCSX-Redux's ([psxstack#54](https://github.com/gascarcella/psxstack/issues/54)); `name_entered`, `starter_chosen`, `saiseg+120`, `saiseg+600`: the port reaches them after other frame counts, so the scrolling background and SAISEG's loading and animations are at another phase (#33) | `tests/port/vram.py` (CI `replay`, about 70 s at `-j 4`; the differences as PNGs in `build/port-vram/<script>/`, `--keep` keeps the dumps) |
 
 **The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG
@@ -482,8 +504,10 @@ scripts' `wait_mem` targets (`PLAYER_PROFILES` as the PS1 address of its heap bl
 is loaded). The profile is not pointer-free: each partner keeps two pointers into the card database and each saved
 deck thirty (`Partner.baseCard`/`armorCard`, `CardSlot.card`, heap addresses on the PS1), so the host's struct is
 0x2A78 bytes and the adapter writes the image field by field in the PS1 layout, the pointers as PS1 heap addresses.
-`random_index` stays 0 on the host: psxstack's shim has no LIBC2 `rand`, and without one the host libc's links in
-its place (another sequence and `RAND_MAX`; [psxstack#40](https://github.com/gascarcella/psxstack/issues/40)).
+On the host `random_index` is LIBC2's `rand` state, `port_rand_seed()` (the shim's `rand` is the PS1's generator since
+psxstack v0.3.3): it is **recorded, not compared** (the cross-core view leaves it out), because `main()`'s idle loop
+calls `rand()` as often as it spins between vsyncs on the PS1, so the sequence's position at a checkpoint depends on
+the core's timing.
 
 **The core.** PCSX-Redux's dynarec cannot run this game: the overlay loader's first CD read never completes
 (`FILE_LOADER_BUSY` stays 1, the vblank event stops after about 165 frames; with OpenBIOS and the retail BIOS alike,
@@ -524,3 +548,7 @@ first, [psxstack#27](https://github.com/gascarcella/psxstack/issues/27), then co
 5. Would upstream take the hooks? They leave the PS1 build identical, and upstream's CONTRIBUTING.md forbids
    `NON_MATCHING`, not `PC_PORT`. Not asked yet (the owner's call, 2026-10-08): the hooks stay in the fork for now;
    the 36 missing prototypes and the 4 duplicate overlay names are upstream PR candidates on their own.
+6. ~~The heap's alignment on the host~~ Decided (2026-10-08, issue #25): the block table keeps the PS1's addresses
+   and the host spaces the blocks twice as wide, with the PS1's leftover bytes copied in ("Memory and pointers"):
+   the records keep their meaning (the same PS1 addresses and the same bytes), and the sanitizer runs with no
+   alignment exception. Still open there: the allocations sized by PS1 byte counts (issue #31).

@@ -1103,7 +1103,7 @@ void SUB_initDeckEdit(PlayerDeck *deck) {
     s32 style;
 
     SUB_DECK_EDIT.deckCounts = allocTaskHeapBlock(301); /* PC_PORT: bytes (a count per card) */
-    SUB_EDITED_DECK = allocTaskHeapBlock(HOST_SIZE(0x110, sizeof(PlayerDeck)));
+    SUB_EDITED_DECK = allocTaskHeapBlock(HOST_FITS(0x110, sizeof(PlayerDeck)));
     *SUB_EDITED_DECK = *deck;
     SUB_DECK_EDIT.statsPage = 0;
     SUB_DECK_EDIT.slot = 0;

@@ -1,0 +1,15 @@
+# UBSan suppressions for the port's sanitizer run (tests/port/run.py --sanitize; psxstack's port_test passes the file
+# as UBSAN_OPTIONS=suppressions=...). psxstack's docs/PORT.md "Compiling the game C for the host": only out-of-bounds
+# indexes of the game's own C that stay inside one struct whose layout is the same on the host, so the host computes
+# what the PS1 computes. Each line names the function and the finding (docs/PORT.md "Testing").
+#
+# assignCardCopySerial (src/main/card/card_db.c), from resetPlayerData's j < 8: each card gets 8 serials in a
+# u16 cardCopySerials[301][6] row, so copies 6 and 7 land on the next card's copies 0 and 1 (which that card's own
+# turn rewrites) and the last card's on areaScriptFlags[0] (which resetScriptProgress zeroes after). Both inside
+# PlayerProfile, whose bytes from bonusCounts to unk2435 have the PS1's layout on the host (port/game/state.c).
+bounds:assignCardCopySerial
+#
+# KAW_tickCardCursor (src/kawseg/duel/kaw_hand.c): the card cursor looks for the nearest card through 9 entries from
+# Player.hand[4] on, so hand[4..8] are topCards[0..4], the s8/u8 bytes right after it (Player 0x1B9-0x1C1, pointer-free:
+# the same layout on the host). Reached in the duel (issue #30), not by the four gated scripts.
+bounds:KAW_tickCardCursor

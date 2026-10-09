@@ -81,7 +81,7 @@ SpriteEntry *SUG_findSpriteEntry(s32 key, s32p subKey) {
 void SUG_initSpriteCache(void) {
     s32 i;
 
-    SUG_SPRITE_CACHE = allocHeapBlock(HOST_SIZE(0x600, 128 * sizeof(SpriteEntry)), 0x80);
+    SUG_SPRITE_CACHE = allocHeapBlock(HOST_FITS(0x600, 128 * sizeof(SpriteEntry)), 0x80);
     for (i = 0; i < 128; i++) {
         SUG_SPRITE_CACHE[i].key = -1;
         SUG_SPRITE_CACHE[i].data = NULL;

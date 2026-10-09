@@ -75,9 +75,10 @@ static void game_put32(u8 *out, uint32_t v) {
     out[3] = (u8)(v >> 24);
 }
 
-/* A pointer as the PS1 address the game would keep (include/port.h GAME_PTR_TO_S32, src/main/system/heap.c: the
- * heap's byte at HEAP_ARENA's PS1 address plus the offset; NULL is 0; anything else goes to psxstack's PTR_TO_S32,
- * fatal outside the arena). It equals the emulator's only while the host heap lays its blocks out as the PS1's. */
+/* A pointer as the PS1 address the game would keep (include/port.h GAME_PTR_TO_S32, src/main/system/heap.c: its
+ * heap block's PS1 address plus the offset in the block; NULL is 0; anything else goes to psxstack's PTR_TO_S32,
+ * fatal outside the arena). The host's block table holds the PS1's addresses, so it equals the emulator's as long as
+ * the game makes the same allocations with the same sizes. */
 static uint32_t game_heap_ps1(const void *p) {
     return (uint32_t)GAME_PTR_TO_S32(p);
 }
@@ -86,11 +87,8 @@ static uint32_t game_heap_ps1(const void *p) {
  * other value is not a pointer the game made but the bytes the heap block held before (resetPlayerData leaves the
  * partners' and the decks' card pointers as it finds them, and the boot's checkpoints come before a profile exists):
  * its low 32 bits, the word the PS1 would read there if its bytes were the same. */
-extern s32 HEAP_ARENA;
-#define GAME_HEAP_SIZE 0x148000 /* src/main/system/heap.c HEAP_SIZE, us */
-
 static uint32_t game_image_ptr(const void *p) {
-    if (p == NULL || (uintptr_t)p - (uintptr_t)&HEAP_ARENA < GAME_HEAP_SIZE) {
+    if (p == NULL || game_heap_owns(p)) {
         return game_heap_ps1(p);
     }
     return (uint32_t)(uintptr_t)p;
@@ -148,9 +146,13 @@ int32_t game_state_map(void) {
     return p != NULL ? p->areaId : 0;
 }
 
-/* game_state_random_index: libc's rand() state on the PS1 (D_801DDC10). Not here: psxstack's shim has no LIBC2
- * rand, so the host's libc rand links in its place (another sequence and RAND_MAX) and its state is not the game's to
- * read. The weak default (0) stands until the shim has Psy-Q's rand and a way to read its state. */
+/* ---- The random index: LIBC2's rand() state, what the PS1 keeps in D_801DDC10 (0 at power-on, then each draw's).
+ * The shim's rand is the PS1's generator (psxstack v0.3.3), so the value is the same kind as the emulator's; the
+ * record keeps it but the test does not compare it: the idle loop in main() calls rand() as often as it spins between
+ * vsyncs on the PS1, a count the host does not reproduce (docs/PORT.md "Testing"). */
+int32_t game_state_random_index(void) {
+    return (int32_t)port_rand_seed();
+}
 
 /* ---- The checkpoint image: the first PlayerProfile at PLAYER_PROFILES in its PS1 layout, zeros before it exists */
 uint32_t game_state_image_size(void) {
@@ -209,7 +211,7 @@ const PortRange *game_state_volatile(void) {
 /* ---- PS1 addresses the replay scripts read (wait_mem). The overlay slot is the arena's, which the runtime maps.
  * Mapped here:
  * - PLAYER_PROFILES (an s32p, 8 bytes on the host): read only, as the PS1 address of the heap block it points to
- *   (the scripts compare it with 0x800C8964: the host heap must lay its blocks out as the PS1's);
+ *   (the scripts compare it with 0x800C8964: the host's block table holds the PS1's addresses);
  * - OPENSEG's objects, while OPENSEG is the current overlay (on the PS1 the slot holds another file's bytes
  *   otherwise): OPEN_TITLE_STATE, OPEN_INTRO_TEXT (pointer-free), OPEN_MEMCARD.state (a field after a pointer);
  * - the executable's sized data symbols whose host layout is the PS1's (port_exe_data, generated). */
