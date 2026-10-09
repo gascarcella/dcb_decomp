@@ -229,7 +229,7 @@ static void game_image_partner(u8 *out, const Partner *p) {
     game_copy(out, p->card, sizeof(p->card));
     game_put32(out + 0x278, game_image_ptr(p->baseCard));
     game_put32(out + 0x27C, game_image_ptr(p->armorCard));
-    game_copy(out + 0x280, &p->hpBonus, GAME_SPAN(Partner, hpBonus, unk295));
+    game_copy(out + 0x280, (const u8 *)p + offsetof(Partner, hpBonus), GAME_SPAN(Partner, hpBonus, unk295));
 }
 
 static void game_image_deck(u8 *out, const PlayerDeck *d) {
@@ -240,7 +240,7 @@ static void game_image_deck(u8 *out, const PlayerDeck *d) {
         game_copy(o, &d->cards[i], GAME_SPAN(CardSlot, type, id));
         game_put32(o + 4, game_image_ptr(d->cards[i].card));
     }
-    game_copy(out + 0x104, &d->unk104, GAME_SPAN(PlayerDeck, unk104, unk10E));
+    game_copy(out + 0x104, (const u8 *)d + offsetof(PlayerDeck, unk104), GAME_SPAN(PlayerDeck, unk104, unk10E));
 }
 
 void game_profile_to_ps1(u8 *out, const void *profile) {
@@ -256,8 +256,8 @@ void game_profile_to_ps1(u8 *out, const void *profile) {
         game_image_partner(out + 0x80 + GAME_PARTNER_SIZE * i, &p->partners[i]);
         game_image_deck(out + 0x2438 + GAME_DECK_SIZE * i, &p->savedDecks[i]);
     }
-    game_copy(out + 0x848, p->bonusCounts, GAME_SPAN(PlayerProfile, bonusCounts, unk2435));
-    game_copy(out + 0x2768, p->rewardCards, GAME_SPAN(PlayerProfile, rewardCards, unk2771));
+    game_copy(out + 0x848, (const u8 *)p + offsetof(PlayerProfile, bonusCounts), GAME_SPAN(PlayerProfile, bonusCounts, unk2435));
+    game_copy(out + 0x2768, (const u8 *)p + offsetof(PlayerProfile, rewardCards), GAME_SPAN(PlayerProfile, rewardCards, unk2771));
 }
 
 static uint32_t game_get32(const u8 *in) {
@@ -296,7 +296,7 @@ static void game_unpack_partner(Partner *p, const u8 *in) {
     game_copy((u8 *)p->card, in, sizeof(p->card));
     p->baseCard = game_ps1_ptr(game_get32(in + 0x278));
     p->armorCard = game_ps1_ptr(game_get32(in + 0x27C));
-    game_copy((u8 *)&p->hpBonus, in + 0x280, GAME_SPAN(Partner, hpBonus, unk295));
+    game_copy((u8 *)p + offsetof(Partner, hpBonus), in + 0x280, GAME_SPAN(Partner, hpBonus, unk295));
 }
 
 static void game_unpack_deck(PlayerDeck *d, const u8 *in) {
@@ -304,10 +304,10 @@ static void game_unpack_deck(PlayerDeck *d, const u8 *in) {
     game_copy((u8 *)d, in, GAME_SPAN(PlayerDeck, inUse, name));
     for (i = 0; i < (int)(sizeof(d->cards) / sizeof(d->cards[0])); i++) {
         const u8 *o = in + 0x14 + GAME_CARD_SLOT_SIZE * i;
-        game_copy((u8 *)&d->cards[i], o, GAME_SPAN(CardSlot, type, id));
+        game_copy((u8 *)&d->cards[i] + offsetof(CardSlot, type), o, GAME_SPAN(CardSlot, type, id));
         d->cards[i].card = game_ps1_ptr(game_get32(o + 4));
     }
-    game_copy((u8 *)&d->unk104, in + 0x104, GAME_SPAN(PlayerDeck, unk104, unk10E));
+    game_copy((u8 *)d + offsetof(PlayerDeck, unk104), in + 0x104, GAME_SPAN(PlayerDeck, unk104, unk10E));
 }
 
 void game_profile_from_ps1(void *profile, const u8 *in) {
@@ -321,8 +321,8 @@ void game_profile_from_ps1(void *profile, const u8 *in) {
         game_unpack_partner(&p->partners[i], in + 0x80 + GAME_PARTNER_SIZE * i);
         game_unpack_deck(&p->savedDecks[i], in + 0x2438 + GAME_DECK_SIZE * i);
     }
-    game_copy((u8 *)p->bonusCounts, in + 0x848, GAME_SPAN(PlayerProfile, bonusCounts, unk2435));
-    game_copy((u8 *)p->rewardCards, in + 0x2768, GAME_SPAN(PlayerProfile, rewardCards, unk2771));
+    game_copy((u8 *)p + offsetof(PlayerProfile, bonusCounts), in + 0x848, GAME_SPAN(PlayerProfile, bonusCounts, unk2435));
+    game_copy((u8 *)p + offsetof(PlayerProfile, rewardCards), in + 0x2768, GAME_SPAN(PlayerProfile, rewardCards, unk2771));
 }
 
 /* ---- The checkpoint image: the first PlayerProfile at PLAYER_PROFILES in its PS1 layout, zeros before it exists */
