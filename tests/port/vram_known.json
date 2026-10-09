@@ -7,21 +7,29 @@
   "vram": "x 286, 5 pixels per buffer, one colour step: the last column of the menu's 255-wide mode-2 modulated sprite (psxstack#54, 2)",
   "frame": "the same 5 pixels (psxstack#54, 2)"
  },
+ "_comment_aligned": "The registration's and SAISEG's dumps, aligned on the game's state (vram.py ALIGN, EXTRA_DUMPS, END_DUMPS; #33): what is left is the software GPU against PCSX-Redux on stretched textured quads (a texture span one texel short of the screen span: one row or column of the quad takes the neighbouring texel), and one model animation",
+ "name_entry": {
+  "vram": "65 pixels per buffer: one row or column of the stretched title parts (the tab bar's row 34, the logo's row 53, the Reception label's column 230) (psxstack#54, 3)",
+  "frame": "the same pixels (psxstack#54, 3)"
+ },
  "name_entered": {
-  "vram": "the scrolling background at another scroll position: the port reaches the checkpoint after other frame counts (#33)",
-  "frame": "the scrolling background's phase (#33)"
+  "vram": "77 pixels per buffer: one row or column of the stretched title parts (psxstack#54, 3)",
+  "frame": "the same pixels (psxstack#54, 3)"
+ },
+ "starter_select": {
+  "vram": "51 pixels per buffer: one row or column of the stretched title parts (the tab bar's row 34, column 220, column 75) (psxstack#54, 3)",
+  "frame": "the same pixels (psxstack#54, 3)"
  },
  "starter_chosen": {
-  "vram": "the scrolling background's phase (#33)",
-  "frame": "the scrolling background's phase (#33)"
+  "vram": "the player's model in another pose: its looping idle animation starts with the page, so the wait for the scrolling background (the frames the loads took differ) puts it at another phase; aligned on the page instead, the model agrees and the background does not (#33); and the title parts' rows (psxstack#54, 3)",
+  "frame": "the same (#33, psxstack#54, 3)"
  },
- "saiseg+120": {
-  "vram": "SAISEG's area screen still loading in the emulator, the port's loads done earlier (#33)",
-  "textures": "the same: the area's textures not all uploaded yet in the emulator (#33)",
-  "frame": "black in the emulator, the loading indicator in the port (#33)"
+ "saiseg_area": {
+  "vram": "157 pixels per buffer: one column or row of SAISEG's stretched quads (Beginner City's 254-wide picture with u 0..255: column 160; the frame's 40x40 tiles with uv spans of 39: row 30, column 18) (psxstack#54, 3)",
+  "frame": "the same pixels (psxstack#54, 3)"
  },
- "saiseg+600": {
-  "vram": "Beginner City's preview and the scrolling background at another point of their animations (#33)",
-  "frame": "the same animations' phase (#33)"
+ "saiseg_message": {
+  "vram": "165 pixels per buffer: the same columns and rows as saiseg_area (psxstack#54, 3)",
+  "frame": "the same pixels (psxstack#54, 3)"
  }
 }

@@ -84,14 +84,15 @@ runners).
   `rand()` starter card (`cardCollection` 28 and 137) in `VOLATILE_RANGES`: **all four scripts pass the port test and
   gate CI** (about 100 s).
 - **M2 (rendering) started: the port's VRAM and pictures against the emulator's** (`tests/port/vram.py`, CI's `replay`
-  job; `docs/PORT.md` "Testing"). At the four scripts' 7 checkpoints and 3 later frames (the title, SAISEG's first
-  area), keyed by name: the whole VRAM is equal at `openseg_loaded`, `title+120`, `saiseg` and `first_duel` (KAWSEG
-  loaded: every texture of the registration and SAISEG); the textures and CLUTs at every dump but `saiseg+120`; the
-  displayed picture at all but five. The emulator is not CPU-bound at any of them (a frame every vsync), so frames can
-  be compared throughout. Known, in `tests/port/vram_known.json`: two pixels' mask bit at `title` and one column at
-  `title_menu` (the software GPU against PCSX-Redux, psxstack#54: probably the emulator's known rounding and mode-2
-  behaviour); `name_entered`, `starter_chosen`, `saiseg+120`, `saiseg+600` differ by animation phase, the port
-  reaching them after other frame counts (#33).
+  job; `docs/PORT.md` "Testing"). At the four scripts' 7 checkpoints and 5 more moments (the name entry, the starter
+  list, the title 120 frames on, SAISEG's first area and first message), keyed by name. **The dumps are aligned on the
+  game's state** (#33): before each, the script's variant waits for the scrolling background's position, a page typed
+  out or SAISEG's message arrow, so the frame counts the loads took no longer matter. The textures and CLUTs are equal
+  at every dump; the whole VRAM and the picture at `openseg_loaded`, `title+120`, `saiseg` and `first_duel`; the
+  registration and SAISEG screens differ in 51 to 165 pixels (one row or column of stretched textured quads), the
+  title in 2 and 5: the software GPU against PCSX-Redux (psxstack#54, known in `tests/port/vram_known.json`).
+  `starter_chosen` also shows the player's model in another pose (its idle animation runs from the page, so the wait
+  for the background moves its phase). The emulator is not CPU-bound at any of them (a frame every vsync).
 - **M1 closed (#25):** the pin is v0.3.3. The port's frames moved with the CD's 60 Hz rate (`openseg_loaded` 181,
   `title` 7057, `title_menu` 7059, `name_entered` 7634, `starter_chosen` 8148, `saiseg` 10203, `first_duel` 12686;
   the emulator: 827, 7866, 7868, 8541, 9102, 11681, 14211); with the PS1's `rand` the starter's five bonus cards fall
@@ -122,8 +123,8 @@ runners).
   right, the GPU renderer's equal to the software one's. The SPU's output is not silent (not yet compared: M3). CI's
   `desktop` job runs both scripts, its tools cached on the stack's pins. The game crashes without a disc (#39), so the
   input self-test needs it. Ready for a play-test by hand.
-- Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: align the phase-shifted
-  dumps (#33), then the duel's VRAM.
+- Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: the duel's VRAM, the
+  stretched quads' row or column (psxstack#54).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

@@ -16,6 +16,7 @@
 #include "common.h"
 #include "game.h"
 #include "dcb/openseg.h"
+#include "dcb/saiseg.h"
 #include "overlay_ids.h"
 
 /* ---- The checkpoint image's layout: PlayerProfile (include/game.h, us), 0x2774 bytes on the PS1. It is not
@@ -60,6 +61,24 @@ _Static_assert(PS1_OPEN_MEMCARD_STATE - PS1_OPEN_MEMCARD == 0x535, "OPEN_MEMCARD
 _Static_assert(offsetof(MemcardScreen, state) == 0x535, "MemcardScreen.state: not at its PS1 offset");
 #endif
 extern s32 OPEN_TITLE_STATE; /* src/openseg/open_bss.c (only open_title.c declares it) */
+
+/* tests/port/vram.py's alignment waits (docs/PORT.md "Testing"): the scrolling background's state after its tim
+   pointer (mode .. texWindowH, pointer-free: scrollPos at +0x70), and SAISEG's area state from imageHidden to
+   nextBlink (bytes: mode, typing, waitingForCross, nextBlink) */
+#define GAME_SCROLL_TAIL 0x6C
+#define GAME_SAI_AREA_BYTES 0x109
+_Static_assert(GAME_SPAN(ScrollBackground, mode, texWindowH) == 0x80 - GAME_SCROLL_TAIL,
+               "ScrollBackground: mode..texWindowH");
+_Static_assert(offsetof(ScrollBackground, scrollPos) - offsetof(ScrollBackground, mode) == 0x70 - GAME_SCROLL_TAIL,
+               "ScrollBackground.scrollPos");
+_Static_assert(GAME_SPAN(AreaState, imageHidden, nextBlink) == 0x122 - GAME_SAI_AREA_BYTES,
+               "AreaState: imageHidden..nextBlink");
+_Static_assert(offsetof(AreaState, nextBlink) - offsetof(AreaState, imageHidden) == 0x121 - GAME_SAI_AREA_BYTES,
+               "AreaState.nextBlink");
+#if __SIZEOF_POINTER__ == 4
+_Static_assert(offsetof(ScrollBackground, mode) == GAME_SCROLL_TAIL, "ScrollBackground.mode: not at its PS1 offset");
+_Static_assert(offsetof(AreaState, imageHidden) == GAME_SAI_AREA_BYTES, "AreaState.imageHidden: not at its PS1 offset");
+#endif
 
 static void game_copy(u8 *dst, const void *src, size_t n) {
     const u8 *s = src;
@@ -214,6 +233,8 @@ const PortRange *game_state_volatile(void) {
  *   (the scripts compare it with 0x800C8964: the host's block table holds the PS1's addresses);
  * - OPENSEG's objects, while OPENSEG is the current overlay (on the PS1 the slot holds another file's bytes
  *   otherwise): OPEN_TITLE_STATE, OPEN_INTRO_TEXT (pointer-free), OPEN_MEMCARD.state (a field after a pointer);
+ * - tests/port/vram.py's alignment waits: SCROLL_BACKGROUND's fields after its tim pointer (scrollPos), and SAISEG's
+ *   SAI_AREA bytes imageHidden..nextBlink while SAISEG is current;
  * - the executable's sized data symbols whose host layout is the PS1's (port_exe_data, generated). */
 typedef struct GameField {
     uint32_t addr;   /* the PS1 address */
@@ -226,6 +247,8 @@ static const GameField game_fields[] = {
     { PS1_OPEN_TITLE_STATE, sizeof(OPEN_TITLE_STATE), &OPEN_TITLE_STATE, GAME_OVERLAY_OPENSEG },
     { PS1_OPEN_INTRO_TEXT, sizeof(OPEN_INTRO_TEXT), &OPEN_INTRO_TEXT, GAME_OVERLAY_OPENSEG },
     { PS1_OPEN_MEMCARD_STATE, sizeof(OPEN_MEMCARD.state), &OPEN_MEMCARD.state, GAME_OVERLAY_OPENSEG },
+    { PS1_SCROLL_BACKGROUND + GAME_SCROLL_TAIL, 0x80 - GAME_SCROLL_TAIL, &SCROLL_BACKGROUND.mode, 0 },
+    { PS1_SAI_AREA + GAME_SAI_AREA_BYTES, 0x122 - GAME_SAI_AREA_BYTES, &SAI_AREA.imageHidden, GAME_OVERLAY_SAISEG },
 };
 #define GAME_FIELD_COUNT ((int)(sizeof(game_fields) / sizeof(game_fields[0])))
 
