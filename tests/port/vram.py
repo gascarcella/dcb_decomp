@@ -89,6 +89,7 @@ SAI_NEXT_BLINK = 0x801F4588 + 0x121   # SAI_AREA.nextBlink (u8): the frames the 
                                       # blinked, 0 until a message is typed out and waits for CROSS (sai_text.c)
 SUB_CARD_ART_BUSY = 0x801F4188 + 0x1A   # SUB_CARD_IMAGE_CACHE.busy (s8): 1 while SUBSEG's card-art cache loads a
                                         # card's picture from the CD (sub_deck_editor.c SUB_runCardImageCache)
+EVO_SCRIPT_STATE = 0x801F5478 + 0xBB   # EVO_FUSION.scriptState (s8): 2 while the fusion script waits for CROSS
 
 
 def wait_mem(addr, value, size, why, timeout=600):
@@ -123,6 +124,12 @@ ALIGN = {
     **{name: card_art_loaded() for name in ("deck_editor", "deck_sort_menu", "deck_sorted", "deck_saved")},
     **{name: [scroll_at(3840)] for name in ("deck_editor_done", "partner_screen", "partner_digiparts",
                                             "partner_equipped", "partner_done")},
+    # fusion: the world map and EVOSEG's screens, each over the scrolling background
+    "fusion_shop": [wait_mem(EVO_SCRIPT_STATE, 2, 1, "Andromon's first message typed: EVOSEG's textures uploaded"),
+                    scroll_at(3840)],
+    **{name: [scroll_at(3840)] for name in ("world_map", "flame_city_map", "type_choice", "card_list",
+                                            "fuse_dialog", "fused", "partner_status", "partner_reward",
+                                            "fusion_end")},
 }
 EXTRA_DUMPS = [
     # (name, after the step waiting for addr == value, the alignment steps)

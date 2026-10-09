@@ -147,7 +147,7 @@ jobs:
         .venv/bin/python tests/replay/replay.py check -j 2
 
     - run: scripts/port_build.sh --boot
-    - run: .venv/bin/python tests/port/run.py boot title new_game first_duel first_duel_play deck_edit --sanitize
+    - run: .venv/bin/python tests/port/run.py boot title new_game first_duel first_duel_play deck_edit fusion --sanitize
     # M2: the VRAM, textures and picture against the emulator's at every checkpoint; the known differences are in
     # tests/port/vram_known.json. No PNGs: pictures of the game stay off CI.
     - run: .venv/bin/python tests/port/vram.py -j 2 --no-png

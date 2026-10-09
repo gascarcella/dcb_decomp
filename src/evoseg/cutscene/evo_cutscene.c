@@ -211,7 +211,11 @@ typedef union {
 extern s16 CAMERA_TARGET_MODEL;
 #endif
 extern _GsFCALL GsFCALL4;
+#ifndef PC_PORT
 extern u16 EVO_BANNER_CLUT[16];
+#else
+extern u16 EVO_BANNER_CLUT[32]; /* PC_PORT: the 64 bytes StoreImage writes (src/evoseg/evo_bss.c, issue #44) */
+#endif
 extern s8 EVO_BANNER_FADE;
 extern u8 EVO_BANNER_BRIGHTNESS;
 extern MATRIX GsLIGHTWSMATRIX;

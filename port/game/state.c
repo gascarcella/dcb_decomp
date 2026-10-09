@@ -97,6 +97,9 @@ _Static_assert(GAME_SPAN(AreaState, imageHidden, nextBlink) == 0x122 - GAME_SAI_
 _Static_assert(offsetof(AreaState, nextBlink) - offsetof(AreaState, imageHidden) == 0x121 - GAME_SAI_AREA_BYTES,
                "AreaState.nextBlink");
 #if __SIZEOF_POINTER__ == 4
+_Static_assert(offsetof(WorldMap, state) == 0x403 && offsetof(WorldMap, nodeIndex) == 0x406 &&
+                   offsetof(WorldMap, active) == 0x407,
+               "WorldMap: a mapped field is not at its PS1 offset (game_saiseg_views)");
 _Static_assert(offsetof(AreaState, choicePhase) == 0x81 && offsetof(AreaState, choiceMode) == 0x82 &&
                    offsetof(AreaState, choiceCursor) == 0x83 && offsetof(AreaState, choiceCount) == 0x84,
                "AreaState: a choice field is not at its PS1 offset (game_saiseg_views)");
@@ -357,8 +360,11 @@ const PortRange *game_state_volatile(void) {
 
 /* ---- PS1 addresses the replay scripts read (wait_mem). The overlay slot is the arena's, which the runtime maps.
  * Mapped here:
- * - the overlays' views (views.h): SAISEG's area choice menu, SUBSEG's editor, menus and windows (views_subseg.c),
- *   each while its overlay is current;
+ * - the overlays' views (views.h): SAISEG's area choice menu and world map, SUBSEG's editor, menus and windows
+ *   (views_subseg.c), EVOSEG's fusion state, dialog and cutscene words (views_evoseg.c), each while its overlay is
+ *   current;
+ * - player 0's profile by PS1 offset in its heap block (the header, cardCollection, areaScriptFlags,
+ *   areaScriptValues): what fusion.json's write_mem steps write (game_state_host);
  * - the duel's words (game_views): the duel state's fields, while DUEL_STATE points into the heap (its PS1 address
  *   is the block's, the same as the emulator's: first_duel_play.json names it), the tutorial window's (KAWSEG
  *   current) and the duel dialog's;
@@ -411,8 +417,23 @@ static const GameViewField game_sai_choice_fields[] = {
     GAME_VIEW_FIELD(0x81, AreaState, choicePhase),  GAME_VIEW_FIELD(0x82, AreaState, choiceMode),
     GAME_VIEW_FIELD(0x83, AreaState, choiceCursor), GAME_VIEW_FIELD(0x84, AreaState, choiceCount),
 };
+/* Player 0's profile by PS1 offset in its heap block (fusion.json's write_mem steps, through game_state_host: the
+   area script's flags, the card collection): the pointer-free header and the spans after the partners */
+static const GameViewField game_profile_fields[] = {
+    { 0, 0x80, 0 },
+    GAME_VIEW_FIELD(0x14B2, PlayerProfile, cardCollection),
+    GAME_VIEW_FIELD(0x23FC, PlayerProfile, areaScriptFlags),
+    GAME_VIEW_FIELD(0x242C, PlayerProfile, areaScriptValues),
+};
+
+/* SAISEG's world map (fusion.json: the walk to Flame City), after its route and node pointers */
+static const GameViewField game_world_map_fields[] = {
+    GAME_VIEW_FIELD(0x403, WorldMap, state), GAME_VIEW_FIELD(0x406, WorldMap, nodeIndex),
+    GAME_VIEW_FIELD(0x407, WorldMap, active),
+};
 static const GameView game_saiseg_views[] = {
     GAME_VIEW(SAI_AREA, &SAI_AREA, 1, 0, GAME_OVERLAY_SAISEG, game_sai_choice_fields),
+    GAME_VIEW(SAI_WORLD_MAP, &SAI_WORLD_MAP, 1, 0, GAME_OVERLAY_SAISEG, game_world_map_fields),
 };
 static const int game_saiseg_view_count = GAME_COUNT(game_saiseg_views);
 
@@ -423,6 +444,7 @@ static const struct {
 } game_overlay_views[] = {
     { game_saiseg_views, &game_saiseg_view_count },
     { game_subseg_views, &game_subseg_view_count },
+    { game_evoseg_views, &game_evoseg_view_count },
 };
 
 /* The host bytes of the field at `ofs` (`size` bytes) of an object at PS1 `base` and host `host`, or NULL. */
@@ -464,6 +486,11 @@ static u8 *game_views(uint32_t addr, uint32_t size) {
     const PortOverlay *o = port_overlay_current(GAME_OVERLAY_TIER);
     u8 *p;
     if ((p = game_overlay_view(o, addr, size)) != NULL) {
+        return p;
+    }
+    if (PLAYER_PROFILES != 0 && game_heap_owns((const void *)PLAYER_PROFILES) &&
+        (p = game_view_field(addr, size, game_heap_ps1((const void *)PLAYER_PROFILES), (void *)PLAYER_PROFILES,
+                             game_profile_fields, GAME_COUNT(game_profile_fields))) != NULL) {
         return p;
     }
     if ((p = game_view_field(addr, size, PS1_DUEL_DIALOG, &DUEL_DIALOG, game_dialog_fields,

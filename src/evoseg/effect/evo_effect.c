@@ -88,6 +88,15 @@ _Static_assert(__builtin_offsetof(EvoModelFx, model) == __builtin_offsetof(Model
                    __builtin_offsetof(EvoModelFx, flags) == __builtin_offsetof(ModelLink, axisMode) &&
                    __builtin_offsetof(EvoModelFx, active) == __builtin_offsetof(ModelLink, enabled),
                "ModelLink is a view of EvoModelFx (issue #30)");
+/* EvoFx is EffectObject's layout by its PS1 offsets: the main executable's effect code takes it as one (issue #36) */
+_Static_assert(__builtin_offsetof(EvoFx, parent) == __builtin_offsetof(EffectObject, parent) &&
+                   __builtin_offsetof(EvoFx, pos) == __builtin_offsetof(EffectObject, sx0) &&
+                   __builtin_offsetof(EvoFx, scaleAccel) == __builtin_offsetof(EffectObject, ddrx) &&
+                   __builtin_offsetof(EvoFx, state) == __builtin_offsetof(EffectObject, state) &&
+                   __builtin_offsetof(EvoFx, speed) == __builtin_offsetof(EffectObject, speed) &&
+                   __builtin_offsetof(EvoFx, suspended) == __builtin_offsetof(EffectObject, suspended) &&
+                   sizeof(EvoFx) == sizeof(EffectObject),
+               "EvoFx is a view of EffectObject (issue #36)");
 #endif
 
 typedef void (*EvoFxFunc)(EvoFx *);

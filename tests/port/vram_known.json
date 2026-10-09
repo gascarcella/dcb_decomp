@@ -131,5 +131,44 @@
  "partner_done": {
   "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there, and the picture's differences",
   "frame": "one row or column of SAISEG's stretched textured quads, as at saiseg_message (psxstack#54, 3), and the corner icon's pulse at another phase (SAI_runCornerIcon's own counter, which the background's position does not align)"
+ },
+ "_comment_fusion": "fusion's dumps (the world map, EVOSEG's Fusion Shop, Flame City's menu again), aligned on the background's position (vram.py ALIGN; the shop's first dump also on its first message): the textures are equal at all eleven, the picture at six",
+ "world_map": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there, and the picture's differences",
+  "frame": "one row or column of the world map's stretched textured quads (the frame's top line, the map's left column: psxstack#54, 3), and its animated water and clouds at another phase (SAI_MAP_ANIMS' own counter, which the background's position does not align)"
+ },
+ "flame_city_map": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there, and the picture's differences",
+  "frame": "one row or column of the world map's stretched textured quads (the frame's top line, the map's left column: psxstack#54, 3), and its animated water and clouds at another phase (SAI_MAP_ANIMS' own counter, which the background's position does not align)"
+ },
+ "fusion_shop": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there; and 58 pixels of the buffer not displayed (rows 474..495), the frame being drawn when the dump is taken"
+ },
+ "type_choice": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there"
+ },
+ "fuse_dialog": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there"
+ },
+ "fused": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there"
+ },
+ "partner_status": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there"
+ },
+ "partner_reward": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there"
+ },
+ "card_list": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there, and the picture's row",
+  "frame": "the card list's row 011 Meteormon (1 card on the emulator, 0 on the port): the starter's bonus cards, one of each pair drawn with rand() (replay.py VOLATILE_RANGES)"
+ },
+ "fusion_cutscene": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there, and the picture's pixels",
+  "frame": "117 single pixels on the edges of the fused Paildramon's polygons: the software GPU's rasterisation against PCSX-Redux's (psxstack#54, psxstack#60)"
+ },
+ "fusion_end": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there, and the picture's differences",
+  "frame": "one row or column of SAISEG's stretched textured quads, as at saiseg_message (psxstack#54, 3), and the corner icon's pulse at another phase (SAI_runCornerIcon's own counter), as at partner_done"
  }
 }

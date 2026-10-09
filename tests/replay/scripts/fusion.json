@@ -1,0 +1,1326 @@
+{
+  "name": "fusion",
+  "after": "first_duel_play",
+  "description": "first_duel_play, then EVOSEG: the Fusion Shop of Flame City. The shop opens only after five CPU duels (Beginner City's two arenas, or Flame City's), whose shuffles and choices follow rand(), whose position differs between the emulator and the port; so on the world map a fixture writes the progress (write_mem: areaScriptFlags r12, r13, r283; scriptFlags bit 9, the shop fusing up to level 3; one ExVeemon and one Stingmon, an EVO_FUSION_RECIPES pair whose result draws no rand()), Beginner City is entered and left once (its script loads and saves the flags), and the marker walks to Flame City. In the shop: Card Fusion of ExVeemon and Stingmon (the Yes/No dialog, the fusion cutscene with its banner, issue #44, and the RECEIVED! result), then Partner Fusion of Veemon with the new Paildramon (the partner list and status, a Digi-Part reward), then out and back to Flame City's menu. Every press waits on the state that takes it: SAISEG's SAI_AREA (waitingForCross +0x120, mode +0x10E, choicePhase +0x81, choiceMode +0x82, choiceCursor +0x83) and SAI_WORLD_MAP (state +0x403, nodeIndex +0x406); EVOSEG's EVO_FUSION (swapState +0xB9, fusionType +0xBA, scriptState +0xBB, typeChoiceOpen +0xBC, partnerListOpen +0xBE, step +0xC1, previewOpen +0xC3, pickSlot +0xC4, resultKind +0xC5, cutscene +0xC7, textTyping +0xC9), EVO_DIALOG (animDone +0x41, choice +0xA5, closed +0xB4), EVO_CURSOR_CARD, EVO_CUTSCENE_STEP, EVO_BANNER_FADE.",
+  "max_frames": 20000,
+  "default_timeout": 3000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon's message 1 typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon's message 2 typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon's message 3 typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 2,
+      "comment": "SAI_AREA.mode 2: the talk panel (\"Who do you want to talk to?\")"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4696",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 600,
+      "comment": "leave it: the area script opens the city menu (mode 1)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 1,
+      "comment": "the city menu (choiceMode 1: Battle Cafe, Battle Arena, Menu, Player's Room)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1,
+      "comment": "slid in: choicePhase 1 takes the pad (SAI_tickChoiceInput)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      },
+      "comment": "\"Push TRIANGLE to go to map\": SAI_runArea ends, SAI_runWorldMap starts"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F524B",
+      "size": 1,
+      "value": 0,
+      "timeout": 1200,
+      "comment": "SAI_WORLD_MAP.state: MAP_OPENING (SAI_runWorldMap)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F524B",
+      "size": 1,
+      "value": 1,
+      "comment": "MAP_IDLE: the marker takes the pad (SAI_tickMapInput), Beginner City"
+    },
+    {
+      "type": "checkpoint",
+      "name": "world_map"
+    },
+    {
+      "type": "write_mem",
+      "addr": "0x800CAD60",
+      "size": 4,
+      "value": 3,
+      "mask": "0x00000003",
+      "comment": "the fixture (docs/PORT.md \"Testing\"): areaScriptFlags[0] bits 0-1, SAISEG's r12 (the Passcode to Flame City) and r13 (Greymon beaten: Flame City's menu offers the Fusion Shop)"
+    },
+    {
+      "type": "write_mem",
+      "addr": "0x800CAD80",
+      "size": 4,
+      "value": 32768,
+      "mask": "0x00008000",
+      "comment": "areaScriptFlags[8] bit 15, r283: Flame City's node on the world map (SAI_unlockMapNodes)"
+    },
+    {
+      "type": "write_mem",
+      "addr": "0x800C8990",
+      "size": 4,
+      "value": 512,
+      "mask": "0x00000200",
+      "comment": "scriptFlags bit 9, EVOSEG's var 29: the Fusion Shop fuses up to level 3 (UNIT00's var 12)"
+    },
+    {
+      "type": "write_mem",
+      "addr": "0x800C9E22",
+      "size": 1,
+      "value": 1,
+      "comment": "cardCollection[0x0C] = 1: an ExVeemon"
+    },
+    {
+      "type": "write_mem",
+      "addr": "0x800C9E8B",
+      "size": 1,
+      "value": 1,
+      "comment": "cardCollection[0x75] = 1: a Stingmon (with ExVeemon one of EVO_FUSION_RECIPES: Paildramon, no rand())"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F524B",
+        "size": 1,
+        "value": 6
+      },
+      "comment": "enter Beginner City again (MAP_ENTER_AREA): its area script loads the flags just written, and saves them when it ends"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 1,
+      "comment": "the city menu"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      },
+      "comment": "to the map"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F524B",
+      "size": 1,
+      "value": 0,
+      "timeout": 1200,
+      "comment": "SAI_runWorldMap again: SAI_unlockMapNodes reads r283"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F524B",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F524E",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "SAI_MAP_NODES[0].next[3]: Flame City (node 1)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F524B",
+      "size": 1,
+      "value": 1,
+      "comment": "MAP_IDLE: the marker arrived"
+    },
+    {
+      "type": "checkpoint",
+      "name": "flame_city_map"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F524B",
+        "size": 1,
+        "value": 6
+      },
+      "comment": "enter Flame City"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 1,
+      "comment": "Flame City's menu (Battle Cafe, Battle Arena, Extra Arena, Fusion Shop, Menu)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 2
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 3
+      },
+      "comment": "Fusion Shop"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      },
+      "comment": "UNIT00's event: SAI_copyScriptFlagsForFusion, AREA_EXIT_FUSION, openPartnerFusion(0)"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 9,
+      "timeout": 1200,
+      "comment": "EVOSEG: EVO_runFusion(0), the Fusion Shop of Andromon No.1"
+    },
+    {
+      "type": "checkpoint",
+      "name": "fusion_shop",
+      "comment": "EVOSEG loaded (the profile with the fixture's flags and two cards)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 1 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 2 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 3 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 4 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 5 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 6 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 7 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 8 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 9 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: Andromon No.1's message 10 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 1,
+      "comment": "the type choice (EVO_tickFusionTypeChoice): Card Fusion in front (fusionType 0)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5531",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "checkpoint",
+      "name": "type_choice"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5534",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "Card Fusion: the script closes the choice (EVO_closeFusionTypeChoice)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 3,
+      "comment": "the card list (EVO_tickCardList), the first card (pickSlot 1)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F553C",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5458",
+        "size": 2,
+        "value": 12
+      },
+      "timeout": 600,
+      "comment": "EVO_CURSOR_CARD: down the list (by card number) to No.012 ExVeemon"
+    },
+    {
+      "type": "checkpoint",
+      "name": "card_list"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "ExVeemon into TRAY1 (EVO_loadCardImage)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 3,
+      "comment": "the card list again, the second card (pickSlot 2)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F553C",
+      "size": 1,
+      "value": 2
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5458",
+        "size": 2,
+        "value": 117
+      },
+      "timeout": 3000,
+      "comment": "down to No.117 Stingmon"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F553D",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "Stingmon into TRAY2: EVO_findFusionResult finds the recipe (resultKind 1: Paildramon)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: the result's message 1 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F585C",
+      "size": 1,
+      "value": 0,
+      "comment": "EVO_DIALOG (EVO_runChoiceDialog: \"Do you want to Fuse these two Cards?\"), open"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F57E9",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F584D",
+      "size": 1,
+      "value": 2,
+      "comment": "on No"
+    },
+    {
+      "type": "checkpoint",
+      "name": "fuse_dialog"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F584D",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F585C",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F553F",
+      "size": 1,
+      "value": 1,
+      "timeout": 600,
+      "comment": "the trays merged (EVO_tickFusionResult): the cards traded for Paildramon, EVO_FUSION.cutscene 1: EVO_runFusionCutscene"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F02C0",
+      "size": 1,
+      "value": 1,
+      "timeout": 3000,
+      "comment": "the fused Digimon and its banner (EVO_initFusionBanner, issue #44) fading in"
+    },
+    {
+      "type": "checkpoint",
+      "name": "fusion_cutscene"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F05F4",
+        "size": 1,
+        "value": 6
+      },
+      "timeout": 600,
+      "comment": "EVO_runFusedDigimonTask: CROSS (or 180 frames) ends the cutscene (EVO_CUTSCENE_STEP 6)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 17,
+      "timeout": 1200,
+      "comment": "EVO_runFusion(-1) again: the result (EVO_showCutsceneResult)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F553F",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "checkpoint",
+      "name": "fused",
+      "comment": "Paildramon in the collection, ExVeemon and Stingmon gone, fusedCards and fusionCardsUsed counted"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 18
+      },
+      "comment": "close the RECEIVED! window (EVO_closeFusionResult)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 3,
+      "comment": "the card list for another Card Fusion"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "back (vars[8] 2): the script reopens the type choice"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5531",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5532",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 600,
+      "comment": "swap the panels (swapState 1, 20 frames): Partner Fusion in front"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5536",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "Partner Fusion: the partner list (EVO_openPartnerList)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_tickPartnerList, on partner 0 (Veemon)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "partner_status",
+      "comment": "the partner list and Veemon's status (EVO_drawPartnerList, EVO_drawPartnerStatus)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "Veemon (EVO_FUSION.firstCard: the partner's card)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 3,
+      "comment": "the card list (pickSlot 1)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5458",
+        "size": 2,
+        "value": 4
+      },
+      "timeout": 600,
+      "comment": "No.004 Paildramon, just made (level 3: UNIT00 fuses up to 3 with var 29)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F553B",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "its card (EVO_WINDOWS[12])"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "fuse it with Veemon"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F585C",
+      "size": 1,
+      "value": 0,
+      "comment": "EVO_DIALOG: \"Are you sure you want to Fuse these two Cards?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F57E9",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F584D",
+      "size": 1,
+      "value": 1,
+      "comment": "on Yes (EVO_runChoiceDialog(1) keeps initDialog's choice)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F585C",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 4,
+      "comment": "the partner's reward (EVO_tickPartnerReward): Veemon with Paildramon is one of EVO_PARTNER_FUSION_REWARDS, a Digi-Part"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5533",
+      "size": 1,
+      "value": 2,
+      "comment": "EVO_FUSION.scriptState 2: the reward's message 1 (E10/11 waits for CROSS)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5541",
+      "size": 1,
+      "value": 0,
+      "comment": "typed out (textTyping)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5533",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300,
+      "comment": "EVO_advanceText"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F585C",
+      "size": 1,
+      "value": 0,
+      "comment": "EVO_DIALOG: \"Obtained Digi-Part No.073\" (EVO_tickPartnerReward, rewardStep 1)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F57E9",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F585C",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 3,
+      "comment": "back in the card list (rewardStep 10)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "partner_reward",
+      "comment": "Veemon's new Digi-Part (ownedAbilities), Paildramon used up"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "leave the list (vars[8] 2): back to the partner list"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 2,
+      "comment": "the partner list"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F5539",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "leave it (vars[8] 2): the script reopens the type choice"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5539",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F5531",
+      "size": 1,
+      "value": 0
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 30,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F585C",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "leave the type choice (vars[8] 2): \"Do you want to quit?\""
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F57E9",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F584D",
+      "size": 1,
+      "value": 2,
+      "comment": "on No"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "LEFT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F584D",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "Yes"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F585C",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "wait_stage",
+      "stage": 6,
+      "timeout": 1200,
+      "comment": "returnToWorldMap: SAISEG again, SAI_runArea in Flame City"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 1,
+      "comment": "Flame City's menu"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "fusion_end",
+      "comment": "back in SAISEG: the profile EVO_saveScriptFlags left"
+    }
+  ]
+}
