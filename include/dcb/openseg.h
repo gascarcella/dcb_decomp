@@ -140,12 +140,27 @@ typedef struct {
 } SaveInfo;
 
 typedef struct {
+#ifdef PC_PORT /* PC_PORT: SessionData's pointers before 0x1010 are wider (issue #36) */
+    u8 unk0[__builtin_offsetof(SessionData, saveSlots)];
+#else
     /* 0x0000 */ u8 unk0[0x1010];
+#endif
     /* 0x1010 */ SaveInfo saves[2];
     /* 0x1020 */ u8 unk1020[7];
     /* 0x1027 */ u8 playWithoutSaving;
     /* 0x1028 */ s8 menuRow;
 } SessionView;
+#ifdef PC_PORT
+#define OPEN_SESSION_MENU_ROW (((SessionView *)SESSION_DATA)->menuRow) /* issue #36 */
+#else
+#define OPEN_SESSION_MENU_ROW (*((s8 *)SESSION_DATA + 0x1028))
+#endif
+#ifdef PC_PORT
+_Static_assert(__builtin_offsetof(SessionView, unk1020) == __builtin_offsetof(SessionData, unk1020), "SessionView.unk1020");
+_Static_assert(__builtin_offsetof(SessionView, playWithoutSaving) == __builtin_offsetof(SessionData, playWithoutSaving), "SessionView.playWithoutSaving");
+_Static_assert(__builtin_offsetof(SessionView, menuRow) == __builtin_offsetof(SessionData, menuRow), "SessionView.menuRow");
+_Static_assert(sizeof(SaveInfo) * 2 == sizeof(((SessionData *)0)->saveSlots), "SessionView.saves");
+#endif
 
 typedef struct {
     UiWindow window;

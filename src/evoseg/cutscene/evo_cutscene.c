@@ -811,8 +811,8 @@ void EVO_renderDissolvingObject(GsDOBJ4 *obj, s32 mode) {
 
     shade = EVO_WIRE_SHADE_MIN + rand() % (EVO_WIRE_SHADE_MAX - EVO_WIRE_SHADE_MIN);
     tmd = (TmdObject *)obj->tmd;
-    vert = tmd->vertTop;
-    norm = tmd->normTop;
+    vert = TMD_VERT_TOP(tmd);
+    norm = TMD_NORM_TOP(tmd);
     nprim = tmd->nprim;
     prim = tmd->prims;
     pk = (EvoPacket *)GsGetWorkBase();

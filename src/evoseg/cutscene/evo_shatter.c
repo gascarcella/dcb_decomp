@@ -588,10 +588,10 @@ s32 EVO_addShard(s32 part, s32 arg) {
     rot = ((EvoModel *)SCENE_3D->models[EVO_SHATTER.model])->matrices[part];
     verts = EVO_SHARD_VERTEX_CURSOR;
 #if VERSION_US
-    vert = obj->vertTop;
+    vert = TMD_VERT_TOP(obj);
 #elif VERSION_EU
     /* eu walks the vertices with prim too */
-    prim = (u8 *)obj->vertTop;
+    prim = (u8 *)TMD_VERT_TOP(obj);
 #else
 #error "evoseg/cutscene/evo_shatter: version not checked"
 #endif
@@ -617,16 +617,16 @@ s32 EVO_addShard(s32 part, s32 arg) {
     shard->offsets = EVO_SHARD_VERTEX_CURSOR;
     shard->part = arg;
     shard->verts = verts;
-    shard->prims = (s8 *)obj->primTop;
+    shard->prims = (s8 *)TMD_PRIM_TOP(obj);
     shard->primCount = obj->nprim;
-    prim = obj->primTop;
+    prim = TMD_PRIM_TOP(obj);
     for (k = 0; k < obj->nprim; k++) {
         switch ((s8)(prim[3] - 0x20)) {
         case 0x14:
         case 0x16:
-            a = &obj->normTop[*(u16 *)(prim + 0x10)];
-            b = &obj->normTop[*(u16 *)(prim + 0x14)];
-            c = &obj->normTop[*(u16 *)(prim + 0x18)];
+            a = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x10)];
+            b = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x14)];
+            c = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x18)];
             ApplyMatrixSV(&rot, a, &n0);
             ApplyMatrixSV(&rot, b, &n1);
             ApplyMatrixSV(&rot, c, &n2);
@@ -641,10 +641,10 @@ s32 EVO_addShard(s32 part, s32 arg) {
             break;
         case 0x1C:
         case 0x1E:
-            a = &obj->normTop[*(u16 *)(prim + 0x14)];
-            b = &obj->normTop[*(u16 *)(prim + 0x18)];
-            c = &obj->normTop[*(u16 *)(prim + 0x1C)];
-            d = &obj->normTop[*(u16 *)(prim + 0x20)];
+            a = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x14)];
+            b = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x18)];
+            c = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x1C)];
+            d = &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x20)];
             ApplyMatrixSV(&rot, a, &n0);
             ApplyMatrixSV(&rot, b, &n1);
             ApplyMatrixSV(&rot, c, &n2);
@@ -659,7 +659,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             prim += 0x24;
             break;
         case 0x0C:
-            ApplyMatrixSV(&rot, &obj->normTop[*(u16 *)(prim + 0x14)], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x14)], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
@@ -668,7 +668,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             prim += 0x20;
             break;
         case 0x04:
-            ApplyMatrixSV(&rot, &obj->normTop[*(u16 *)(prim + 0x10)], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x10)], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
@@ -678,7 +678,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             break;
         case 0x0D:
         case 0x0F:
-            ApplyMatrixSV(&rot, &obj->normTop[1], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[1], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
@@ -687,7 +687,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             prim += 0x20;
             break;
         case 0x05:
-            ApplyMatrixSV(&rot, &obj->normTop[1], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[1], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
@@ -697,7 +697,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             break;
         case 0x08:
         case 0x10:
-            ApplyMatrixSV(&rot, &obj->normTop[*(u16 *)(prim + 0x8)], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x8)], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
@@ -706,7 +706,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             prim += 0x14;
             break;
         case 0x18:
-            ApplyMatrixSV(&rot, &obj->normTop[*(u16 *)(prim + 0x8)], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x8)], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
@@ -715,7 +715,7 @@ s32 EVO_addShard(s32 part, s32 arg) {
             prim += 0x18;
             break;
         case 0x00:
-            ApplyMatrixSV(&rot, &obj->normTop[*(u16 *)(prim + 0x8)], &n0);
+            ApplyMatrixSV(&rot, &TMD_NORM_TOP(obj)[*(u16 *)(prim + 0x8)], &n0);
             center = n0;
             EVO_SHARD_VERTEX_CURSOR->vx = center.vx;
             EVO_SHARD_VERTEX_CURSOR->vy = center.vy;
