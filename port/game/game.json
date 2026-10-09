@@ -13,6 +13,7 @@
       "cue": "dcb_us.cue"
     }
   ],
+  "disc_required": true,
   "video": {
     "rate": 60,
     "rates": [60]

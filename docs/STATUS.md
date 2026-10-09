@@ -124,8 +124,8 @@ runners).
   NVIDIA) the `new_game` script ran in a real window with each renderer (`--renderer gpu`: Vulkan) to SAISEG, 60.00
   vsyncs a second, both logs equal to the headless run's; the pictures (the movie, the title, the registration) are
   right, the GPU renderer's equal to the software one's. The SPU's output is not silent (compared since: M3 below). CI's
-  `desktop` job runs both scripts, its tools cached on the stack's pins. The game crashes without a disc (#39), so the
-  input self-test needs it. Ready for a play-test by hand.
+  `desktop` job runs both scripts, its tools cached on the stack's pins. Without a disc the port refuses to start (exit
+  64, game.json `disc_required`, #39) and the input self-test runs disc-free. Ready for a play-test by hand.
 - **The release path** (docs/PORT.md "Running it" Windows, "Releases"): `scripts/build_windows.sh` cross-builds the game
   and the launcher for Windows with llvm-mingw (`scripts/setup.sh windows`: the stack's steps at its pins); under Wine
   (`--test`, CI's `windows` job) the launcher's self-test (301 of 301, with the disc and `dcb.exe`), the input
@@ -135,7 +135,7 @@ runners).
   `scripts/package_windows.sh` make `dcb-<version>-linux-x86_64.AppImage` (5 MB, glibc 2.38+) and
   `dcb-<version>-windows-x86_64.zip` (4 MB; the PDBs in `-debug.zip`), each smoke-tested (303 of 303 inside the
   package, with the disc); `release.yml` drafts a release on a `vX.Y.Z` tag, which the owner publishes by hand;
-  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). No release yet.
+  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). v0.1.0 was published on 2026-10-09.
 - **The tutorial duel replayed to its end (#37):** `tests/replay/scripts/first_duel_play.json` plays it after
   `first_duel`'s steps with every press waiting on the duel's state (the tutorial window, the duel dialog, the duel
   state's step and awaitingInput, the cursor: `docs/PORT.md` "Testing"), 30,582 emulator frames (KAWSEG to SAISEG:

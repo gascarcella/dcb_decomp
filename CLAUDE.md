@@ -104,7 +104,7 @@ scripts/tasks_test.sh       # the task scheduler (task.c + port/game/tasks.c) on
 .venv/bin/python tests/port/sound.py [--sanitize] [port|wav ...]   # M3: LIBSND/SPU replayed on the emulator's SPU trace (the gate); port: the port's runs; wav: a --wav dump
 .venv/bin/python tests/sound/spu_trace.py run|record|diff ...    # the emulator's SPU write trace (record: tests/sound/traces/first_duel_play.trace.gz, ~7 min a run)
 scripts/port_build.sh [--boot]   # the headless port, build/port/dcb (--boot: 600 frames from the disc to OPENSEG)
-scripts/port_build.sh --sdl [--boot]   # the window build, build/port-sdl/dcb, and its --input-test (offscreen; needs the disc); --boot: its log equals the headless run's
+scripts/port_build.sh --sdl [--boot]   # the window build, build/port-sdl/dcb, and its --input-test (offscreen; no disc: the port refuses to start without one, #39); --boot: its log equals the headless run's
 build/port-sdl/dcb --disc disks/us/dcb_us.cue --window [--renderer gpu] [--memcard1 build/card1.mcd]   # play (docs/PORT.md "Running it": keys, where saves go)
 scripts/launcher_build.sh   # build/launcher/dcb-launcher and its self-test (offscreen; with the disc and build/port-sdl/dcb, the real game too)
 scripts/setup.sh windows    # llvm-mingw, SDL3 for Windows, DXC, Dear ImGui at psxstack's pins (DCB_SDL_TOOLS_FROM links too)
