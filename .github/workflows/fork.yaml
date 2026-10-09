@@ -164,7 +164,8 @@ jobs:
   # and Dear ImGui from scripts/setup.sh sdl (psxstack's own setup at the submodule's pins, in bin/psxstack-tools/),
   # cached on those pins (psxstack/scripts/setup.sh --pins: a pin bump rebuilds them once, ~2 min). No apt: on the
   # runner SDL gets whatever backends its headers allow, and the checks run on its offscreen video and dummy audio
-  # drivers. The game cannot start without its disc, so the input self-test needs the data checkout, as the replay job.
+  # drivers. The input self-test runs without the disc (#39); the boot and the launcher's self-test need the data
+  # checkout, as the replay job.
   # scripts/port_build.sh --sdl --boot: the input self-test (every default key and a virtual gamepad's buttons reach the
   # pad, hotkeys never do, the pause), then the boot in an offscreen window whose log and picture must equal the
   # headless build's; scripts/launcher_build.sh: the launcher's self-test, with the real disc and the SDL game.

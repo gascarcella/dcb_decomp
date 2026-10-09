@@ -20,7 +20,7 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.4 (the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+v0.3.5 (game.json `disc_required`: no start without a disc, `--input-test` aside, psxstack #64; v0.3.4: the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
 runners).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
@@ -124,8 +124,8 @@ runners).
   NVIDIA) the `new_game` script ran in a real window with each renderer (`--renderer gpu`: Vulkan) to SAISEG, 60.00
   vsyncs a second, both logs equal to the headless run's; the pictures (the movie, the title, the registration) are
   right, the GPU renderer's equal to the software one's. The SPU's output is not silent (compared since: M3 below). CI's
-  `desktop` job runs both scripts, its tools cached on the stack's pins. The game crashes without a disc (#39), so the
-  input self-test needs it. Ready for a play-test by hand.
+  `desktop` job runs both scripts, its tools cached on the stack's pins. Without a disc the port refuses to start (exit
+  64, game.json `disc_required`, #39) and the input self-test runs disc-free. Ready for a play-test by hand.
 - **The release path** (docs/PORT.md "Running it" Windows, "Releases"): `scripts/build_windows.sh` cross-builds the game
   and the launcher for Windows with llvm-mingw (`scripts/setup.sh windows`: the stack's steps at its pins); under Wine
   (`--test`, CI's `windows` job) the launcher's self-test (301 of 301, with the disc and `dcb.exe`), the input
@@ -135,7 +135,7 @@ runners).
   `scripts/package_windows.sh` make `dcb-<version>-linux-x86_64.AppImage` (5 MB, glibc 2.38+) and
   `dcb-<version>-windows-x86_64.zip` (4 MB; the PDBs in `-debug.zip`), each smoke-tested (303 of 303 inside the
   package, with the disc); `release.yml` drafts a release on a `vX.Y.Z` tag, which the owner publishes by hand;
-  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). No release yet.
+  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). v0.1.0 was published on 2026-10-09.
 - **The tutorial duel replayed to its end (#37):** `tests/replay/scripts/first_duel_play.json` plays it after
   `first_duel`'s steps with every press waiting on the duel's state (the tutorial window, the duel dialog, the duel
   state's step and awaitingInput, the cursor: `docs/PORT.md` "Testing"), 30,582 emulator frames (KAWSEG to SAISEG:
