@@ -99,6 +99,24 @@ typedef struct {
     u16 tsb;
 } TmdPrim;
 
+#ifdef PC_PORT
+/* a mapped TMD's object entry (GsMapModelingData): on the host its three tops are offsets relative to the entry
+   itself, not addresses (psxstack's libgs.h; issue #22) */
+typedef struct {
+    s32 vertTop;
+    u32 nvert;
+    s32 normTop;
+    u32 nnormal;
+    s32 primTop;
+    u32 nprim;
+    s32 scale;
+    TmdPrim prims[1];
+} TmdObject;
+_Static_assert(__builtin_offsetof(TmdObject, prims) == 28, "TmdObject is the 28-byte TMD object entry");
+#define TMD_VERT_TOP(tmd) ((SVECTOR *)((u8 *)(tmd) + (tmd)->vertTop))
+#define TMD_NORM_TOP(tmd) ((SVECTOR *)((u8 *)(tmd) + (tmd)->normTop))
+#define TMD_PRIM_TOP(tmd) ((u8 *)(tmd) + (tmd)->primTop)
+#else
 typedef struct {
     SVECTOR *vertTop;
     u32 nvert;
@@ -109,6 +127,10 @@ typedef struct {
     s32 scale;
     TmdPrim prims[1];
 } TmdObject;
+#define TMD_VERT_TOP(tmd) ((tmd)->vertTop)
+#define TMD_NORM_TOP(tmd) ((tmd)->normTop)
+#define TMD_PRIM_TOP(tmd) ((tmd)->primTop)
+#endif
 
 #ifndef PC_PORT /* PC_PORT: the Model itself, partCount/parts/pose/matrices its unions' names (game.h, issue #30) */
 typedef struct {

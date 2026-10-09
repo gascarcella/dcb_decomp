@@ -407,6 +407,12 @@ override and derived symbol file with the pin bump.
     A streak `Particle` holds its parent at 0x48 too, and the `u8[0x4C]` transforms (`EffectSlots.xform`,
     `TrailEffect.edges`/`xform`) are `TRANSFORM_HOST_SIZE`. SUGSEG's `TexAnim` holds four pointers, so `RingEffect`'s
     `texAnim`, `ModelLink` and `EvoModelFx` make room for it (`TEX_ANIM_HOST_EXTRA`).
+  - **Views outside the duel** (issue #36): `SessionView` (OPENSEG) and `SaisegSessionData` (SAISEG) pad to
+    `__builtin_offsetof(SessionData, ...)` on the host, each field pinned by a `_Static_assert`; OPENSEG's raw
+    `SESSION_DATA + 0x1028` is `OPEN_SESSION_MENU_ROW`. The audit of the other overlays found no more: the other
+    `unk0[..]` pads sit over disc data, script-variable `s32` arrays or the same type. **TMD objects** (issue #22):
+    EVOSEG's `TmdObject` holds its three tops as `s32` words on the host, read through `TMD_VERT_TOP`/`TMD_NORM_TOP`/
+    `TMD_PRIM_TOP` (`evoseg.h`: `(u8 *)entry + word`, psxstack's `libgs.h`; the PS1 side is the field).
   - **Stack locals as arrays**: `SUG_tickHudSlides` walks a function's separate `HudSlide` locals as an array (the
     PS1 frame has them adjacent); on the host they are one array.
   - **Heap sizes** (issue #31): of the 42 literal `alloc*HeapBlock` sizes in the `us` units, 8 are a host-grown type's

@@ -5,9 +5,16 @@
 #include "dcb/saiseg.h"
 
 typedef struct {
+#ifdef PC_PORT /* PC_PORT: SessionData's pointers are wider (issue #36) */
+    u8 pad[__builtin_offsetof(SessionData, unk1020)];
+#else
     u8 pad[0x1020];
+#endif
     u16 armorFlags;
 } SaisegSessionData;
+#ifdef PC_PORT
+_Static_assert(__builtin_offsetof(SaisegSessionData, armorFlags) == __builtin_offsetof(SessionData, unk1020), "armorFlags");
+#endif
 
 #ifndef PC_PORT /* PC_PORT: their fields (below) */
 extern u8 SAI_OPPONENT_COUNT;

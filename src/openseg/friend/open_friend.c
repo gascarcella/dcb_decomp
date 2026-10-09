@@ -53,7 +53,7 @@ void OPEN_drawFriendMenu(void) {
         same = 1;
     }
     for (i = 0; i < 7; i++) {
-        if (*((s8 *)SESSION_DATA + 0x1028) == i) {
+        if (OPEN_SESSION_MENU_ROW == i) {
             clutY = 0x98;
             if (i == 1 && same) {
                 clutY = 0x99;
