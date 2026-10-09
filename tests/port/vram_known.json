@@ -100,5 +100,36 @@
   "vram": "the card-art cache (#45) and the picture's pixel",
   "textures": "the duel's card-art cache (VRAM x 640..763, y 256..447, its CLUT rows): which cards the art loader read into its six slots follows the CD's timing against the tutorial's cursor moves (#45)",
   "frame": "1 pixel (192, 207), one step of blue inside a Gouraud-shaded mode-2 (B-F) quad of the digivolution's swirl: the software GPU against PCSX-Redux (psxstack#60)"
+ },
+ "_comment_subseg": "deck_edit's dumps (SUBSEG's deck editor and partner equipment screen, SAISEG's Menu page between them), aligned on SUBSEG's card-art cache being idle and the background's position (vram.py ALIGN): the textures are equal at all nine, the picture at six",
+ "deck_editor": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there, and the picture's the card list's CARD INFO counts and its owned-card grid (cards 011, 025, 028)",
+  "frame": "the card list's CARD INFO counts and its owned-card grid (cards 011, 025, 028): the starter's bonus cards, one of each pair drawn with rand() (replay.py VOLATILE_RANGES)"
+ },
+ "deck_sort_menu": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there"
+ },
+ "deck_sorted": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there"
+ },
+ "deck_saved": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there"
+ },
+ "partner_screen": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there"
+ },
+ "partner_digiparts": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there"
+ },
+ "partner_equipped": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there"
+ },
+ "deck_editor_done": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there, and one row or column of SAISEG's stretched textured quads, as at saiseg_message (psxstack#54, 3)",
+  "frame": "one row or column of SAISEG's stretched textured quads, as at saiseg_message (psxstack#54, 3)"
+ },
+ "partner_done": {
+  "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); SUBSEG does not write there, and the picture's differences",
+  "frame": "one row or column of SAISEG's stretched textured quads, as at saiseg_message (psxstack#54, 3), and the corner icon's pulse at another phase (SAI_runCornerIcon's own counter, which the background's position does not align)"
  }
 }

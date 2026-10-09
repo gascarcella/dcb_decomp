@@ -177,6 +177,17 @@ runners).
   rendering of the emulator's writes sample for sample (35.4 s), and against PCSX-Redux's own audio (an SDL disk
   capture, host-paced) the same level and envelope. The port's trace cannot be replayed on its own timeline yet
   (psxstack#63).
+- **SUBSEG reached (M5, #55):** `tests/replay/scripts/deck_edit.json` continues `first_duel_play` (a script may name
+  the one it continues, `"after"`: `tests/replay/chain.py` writes every script resolved to `build/replay/scripts/` for
+  psxstack's runners; docs/PORT.md "Testing") into SUBSEG twice from Beginner City's Menu page: the deck editor (the
+  card list, the deck menu, Deck 1 sorted by Strength and stored) and the partner equipment screen (Veemon's one
+  Digi-Part equipped), every press waiting on SAISEG's choice menu or SUBSEG's editor, menus and windows (views by PS1
+  offset, `port/game/views_subseg.c`). The emulator gives it twice identical (33,331 frames); the port passes it twice
+  identical with all 32 checkpoints' hashes the emulator's, and under ASan/UBSan with no report; it gates CI with the
+  other five. The port crashed at the sort: `sortArray` took the PS1's element sizes (pointers, `CardSlot`s), now
+  `HOST_SIZEOF` (OPENSEG's trade list: #59). VRAM: the textures equal at all 9 SUBSEG dumps, the picture at 6
+  (aligned on the card-art cache and the background; known: the duel's card-art CLUT rows, the starter's `rand()`
+  bonus cards in the card list's counts, SAISEG's stretched quads and corner icon). SUBSEG's SPU trace: #60.
 - Next: the rest of the duel (#4) and the card-art cache's timing (#45, with the CD's per-read latency: psxstack#62);
   M2: the stretched quads' row or column (psxstack#54); M3: the port's own SPU trace replayed on its timeline
   (psxstack#63).

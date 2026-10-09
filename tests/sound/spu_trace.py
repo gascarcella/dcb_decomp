@@ -359,7 +359,7 @@ def trace_runs(script_path, script, base, bios, repeat, detail=False, prelude=No
 
 def cmd_run(args):
     replay.check_tools()
-    script_path = Path(args.script)
+    script_path = replay.script_file(args.script)   # resolved when it continues another ("after")
     script = cut_script(replay.load_script(script_path), args.until, args.extra_frames)
     bios = replay.bios_path(args.bios)
     base = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="dcb_spu_trace_"))

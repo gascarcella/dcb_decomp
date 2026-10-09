@@ -15,7 +15,9 @@ movie), and the screen's animations follow the frames, the scrolling background 
 the position both sides pass through), the registration's and SAISEG's message arrows (their blink counters).
 A `vram` step takes its frame, so the steps after a dump start later than in the committed script; both sides run the
 same variant, and every dump is keyed by its name, never by a frame number (the port's frames are not the
-emulator's). The committed scripts and records are not changed.
+emulator's). The committed scripts and records are not changed. A script that continues another (`"after"`,
+tests/replay/chain.py) is run combined, but dumps only from its own steps on (`after_steps`): the base's dumps are
+the base script's.
 - The emulator (tests/replay/replay.py's run_once, the interpreter core) runs it with tests/port/vram.lua before
   psxstack's run.lua: each dump also writes the displayed picture (PCSX.GPU.takeScreenShot) and the last 120 vsyncs of
   the game's frame-buffer index and vblanksPerFrame.
@@ -85,6 +87,8 @@ OPEN_INTRO_BLINK = 0x801F4F44     # OPEN_INTRO_TEXT.blink (s32): the frames the 
                                   # until the page is typed out and waits for CROSS (open_registration.c)
 SAI_NEXT_BLINK = 0x801F4588 + 0x121   # SAI_AREA.nextBlink (u8): the frames the message window's "next" arrow has
                                       # blinked, 0 until a message is typed out and waits for CROSS (sai_text.c)
+SUB_CARD_ART_BUSY = 0x801F4188 + 0x1A   # SUB_CARD_IMAGE_CACHE.busy (s8): 1 while SUBSEG's card-art cache loads a
+                                        # card's picture from the CD (sub_deck_editor.c SUB_runCardImageCache)
 
 
 def wait_mem(addr, value, size, why, timeout=600):
@@ -98,6 +102,12 @@ def scroll_at(pos, why="the scrolling background at a position both sides pass t
     return wait_mem(SCROLL_POS, pos, 2, why, timeout=600)
 
 
+def card_art_loaded():
+    """SUBSEG's screens: the card-art cache idle, its picture loaded whatever the CD's timing (one side may still show
+    the placeholder at a checkpoint), then the background aligned at a position 128 frames on."""
+    return [scroll_at(1920), wait_mem(SUB_CARD_ART_BUSY, 0, 1, "SUBSEG's card-art cache idle"), scroll_at(5760)]
+
+
 # Where the dumps are and what each waits on before it is taken. A dump is keyed by its name, the same moment in
 # every script (the scripts are prefixes of each other). Every checkpoint of a script is a dump (on the checkpoint's
 # frame, unless ALIGN lists steps for it: then a checkpoint "<name>@aligned" after those steps gives the dump's
@@ -108,6 +118,11 @@ def scroll_at(pos, why="the scrolling background at a position both sides pass t
 ALIGN = {
     "name_entered": [scroll_at(3840)],
     "starter_chosen": [wait_mem(OPEN_INTRO_BLINK, 120, 4, "the page typed out 120 frames ago"), scroll_at(3840)],
+    # deck_edit: SUBSEG's screens and SAISEG's Menu page between them (each checkpoint is taken once its screen's
+    # windows are open; the background still moves)
+    **{name: card_art_loaded() for name in ("deck_editor", "deck_sort_menu", "deck_sorted", "deck_saved")},
+    **{name: [scroll_at(3840)] for name in ("deck_editor_done", "partner_screen", "partner_digiparts",
+                                            "partner_equipped", "partner_done")},
 }
 EXTRA_DUMPS = [
     # (name, after the step waiting for addr == value, the alignment steps)
@@ -150,8 +165,11 @@ def vram_script(name, out):
             steps.append({"type": "checkpoint", "name": dumps[d], "image": False})
         steps.append({"type": "vram", "name": d})
 
-    for step in script["steps"]:
+    own = script.get("after_steps", 0)   # a continuing script's own steps: the base's dumps are the base's
+    for i, step in enumerate(script["steps"]):
         steps.append(step)
+        if i < own:
+            continue
         if step.get("type") == "checkpoint":
             dump(step["name"], ALIGN.get(step["name"], []), checkpoint=step["name"])
         for d, (addr, value), align in EXTRA_DUMPS:

@@ -13,7 +13,9 @@ Usage:
 A script (tests/replay/scripts/<name>.json) is a list of steps (psxstack docs/RUNTIME.md "The replay runners"); the
 runner executes it in the emulator and writes result.json plus one profile dump per checkpoint. The driver hashes the
 dumps (SHA-1), builds the record and compares it with tests/replay/records/<name>.json, or writes that file with
---record. --repeat N runs the script N times and requires identical records (determinism).
+--record. --repeat N runs the script N times and requires identical records (determinism). A script may continue
+another (`"after": "<name>"`, tests/replay/chain.py): the runner gets every script resolved, from
+build/replay/scripts/ (a script named on the command line is mapped there too).
 
 The core: PCSX-Redux's dynarec cannot run this game (the overlay loader's CD read never completes: FILE_LOADER_BUSY
 stays 1 and the vblank event stops at frame ~165, with OpenBIOS and the retail BIOS alike; the interpreter core
@@ -31,7 +33,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PSXSTACK = Path(os.environ.get("PSXSTACK_DIR") or ROOT / "psxstack")
 sys.path.insert(0, str(PSXSTACK / "tools/replay"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import emulator  # noqa: E402  (psxstack's runner)
+import chain  # noqa: E402  (scripts that continue another: "after")
 from emulator import (CHECKPOINT_FIELDS, RUN_LUA, bios_path, check_tools, compare, cross_core_view,  # noqa: E402,F401
                       emulator_info, load_script, lua_literal, parse_ints, sha1_file)
 
@@ -88,12 +92,13 @@ VOLATILE_RANGES = ((0x10, 0x12),   # profileId: drawn from rand() when the profi
 
 CFG = emulator.configure(
     root=ROOT, game_json=ROOT / "port/game/game.json", redux_dir=ROOT / "bin/redux", iso=ROOT / "disks/us/dcb_us.cue",
-    scripts_dir=ROOT / "tests/replay/scripts", expected_dir=ROOT / "tests/replay/records",
+    scripts_dir=chain.sync(), expected_dir=ROOT / "tests/replay/records",
     probes=ROOT / "tests/replay/probes.lua", volatile_ranges=VOLATILE_RANGES, retail_bios=RETAIL_BIOS,
     tree_paths=("src", "include", "config", "mk"), interpreter_args=CORE_ARGS)
 # The paths the other tests use.
 REDUX, REDUX_VERSION, OPENBIOS = CFG.redux, CFG.redux_version, CFG.openbios
-ISO, SCRIPTS, EXPECTED = CFG.iso, CFG.scripts_dir, CFG.expected_dir
+ISO, SCRIPTS, EXPECTED = CFG.iso, CFG.scripts_dir, CFG.expected_dir   # SCRIPTS: the resolved scripts (chain.py)
+script_file = chain.script_file
 
 _stack_run_once = emulator.run_once
 
@@ -127,8 +132,14 @@ class _Subprocess:
 emulator.subprocess = _Subprocess()
 
 
-def main():
-    return emulator.main()
+def main(argv=None):
+    """The stack's driver, with the scripts named on the command line mapped to their resolved files."""
+    args = emulator.build_parser().parse_args(argv)
+    if getattr(args, "script", None):
+        args.script = str(script_file(args.script))
+    if getattr(args, "scripts", None):
+        args.scripts = [str(script_file(s)) for s in args.scripts]
+    return args.func(args)
 
 
 if __name__ == "__main__":

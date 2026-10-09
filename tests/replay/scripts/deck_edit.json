@@ -1,0 +1,814 @@
+{
+  "name": "deck_edit",
+  "after": "first_duel_play",
+  "description": "first_duel_play, then SUBSEG twice from Beginner City's Menu page: the deck editor (the card list, the deck menu, Deck 1 sorted by Strength and stored) and the partner equipment screen (Veemon's one Digi-Part equipped). Every press waits on the state that takes it: SAISEG's SAI_AREA (waitingForCross +0x120, mode +0x10E, choicePhase +0x81, choiceMode +0x82, choiceCursor +0x83), SUBSEG's SUB_EDITOR (hidden +0x14, editing +0x15, running +0x16, listShown +0x17), SUB_DECK_EDIT.mode (+0x10E), the menus' row (+0x14) and active (+0x26), the windows' animDone (+0x41), SUB_PARTNER_TITLE_SHOWN.",
+  "max_frames": 20000,
+  "default_timeout": 3000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon: \"Don't worry, you'll get the hang of it.\" typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon's next message typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: the player's answer typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 2,
+      "comment": "SAI_AREA.mode 2: the talk panel (\"Who do you want to talk to?\", SAI_tickOpponentSelectInput)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4696",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 600,
+      "comment": "leave it: the area script opens the city menu (mode 1: SAI_tickChoiceMenu)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 1,
+      "comment": "the city menu (choiceMode 1: Battle Cafe, Battle Arena, Menu, Player's Room)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1,
+      "comment": "slid in: choicePhase 1 takes the pad (SAI_tickChoiceInput)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 2
+      },
+      "comment": "Menu"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      }
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 0,
+      "comment": "the Menu page (choiceMode 0: Cards, Partner, Save)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      },
+      "comment": "Cards: AREA_EXIT_DECK_EDITOR, openDeckEditor(1)"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 7,
+      "timeout": 1200,
+      "comment": "SUBSEG: SUB_runDeckEditor, the card list (SUB_runCardList)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F33A1",
+      "size": 1,
+      "value": 1,
+      "timeout": 1200,
+      "comment": "the card list's windows open (SUB_WINDOWS[4].animDone; SUBSEG's .bss starts at 0)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "deck_editor"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CIRCLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BC",
+        "size": 1,
+        "value": -1,
+        "signed": true
+      },
+      "comment": "the card list's CIRCLE: the deck menu (SUB_EDITOR.hidden -1 while the screens change)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F41BC",
+      "size": 1,
+      "value": 0,
+      "comment": "SUB_runDeckMenu runs, on Deck 1 (SUB_DECK_MENU.slot 0)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F406E",
+      "size": 2,
+      "value": 0
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BD",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 300,
+      "comment": "edit Deck 1 (in use): SUB_editDeck, SUB_EDITOR.editing 1"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4056",
+      "size": 1,
+      "value": 1,
+      "comment": "SUB_DECK_EDIT.mode 1: the deck's slots (SUB_tickDeckSlots)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "SELECT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BF",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "the deck's SORT MENU (SUB_DECK_SORT_MENU, drawn by SUB_drawDeckSortMenu)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F3E91",
+      "size": 1,
+      "value": 0,
+      "comment": "SUB_DECK_SORT_WINDOW opening: its animation runs (animDone 0)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F3E91",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "deck_sort_menu"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 1
+      },
+      "comment": "SUB_DECK_SORT_MENU.row"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 2
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 3
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 4
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 5
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 6
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 7
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 8
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 9
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 10
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F21B0",
+        "size": 2,
+        "value": 11
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "comment": "row 11, Strength (SUB_compareDeckByHp): sortArray the edited deck's 30 slots"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "SELECT"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BF",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "close the sort menu"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F3E91",
+      "size": 1,
+      "value": 0,
+      "comment": "SUB_DECK_SORT_WINDOW closing: its animation runs (animDone 0)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F3E91",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "deck_sorted"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BD",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "done: the same cards (SUB_hasDeckChanged compares them as a set), so the deck is stored as it is, sorted, without asking"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F41BC",
+      "size": 1,
+      "value": -1,
+      "signed": true
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F41BC",
+      "size": 1,
+      "value": 0,
+      "comment": "the deck menu again"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F32D5",
+      "size": 1,
+      "value": 1,
+      "comment": "its windows open (SUB_WINDOWS[1].animDone)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "deck_saved"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BC",
+        "size": 1,
+        "value": -1,
+        "signed": true
+      },
+      "comment": "back to the card list"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F41BC",
+      "size": 1,
+      "value": 0,
+      "comment": "the card list runs"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F41BE",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "leave the deck editor (SUB_EDITOR.running 0)"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 6,
+      "timeout": 1200,
+      "comment": "SAISEG again: openDeckEditor(1) reloads it, SAI_runArea"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 1,
+      "timeout": 1200
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 0,
+      "comment": "back on the Menu page"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "deck_editor_done"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "Partner"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      },
+      "comment": "AREA_EXIT_EQUIPMENT, openPartnerEquipment(1)"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 7,
+      "timeout": 1200,
+      "comment": "SUBSEG: SUB_runPartnerEquipment"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F3178",
+      "size": 4,
+      "value": 1,
+      "timeout": 1200,
+      "comment": "PARTNER.ARC uploaded, the screen runs (its state 0: the partner tabs)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2861",
+      "size": 1,
+      "value": 1,
+      "comment": "the partner and armor windows' first animation (closing) over: state 0 takes UP and DOWN"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2991",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2994",
+      "size": 4,
+      "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2941",
+      "size": 1,
+      "value": 1,
+      "comment": "the three partner tabs open (SUB_PARTNER_TABS[2].window.animDone)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "partner_screen"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F2861",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "partner 1 (Veemon): state 1, its window opens"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2861",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F1F86",
+        "size": 1,
+        "value": 1
+      },
+      "comment": "the Digi-Parts list for equipment row 0: state 2 (SUB_ABILITY_MENU.active)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F26D1",
+      "size": 1,
+      "value": 0,
+      "comment": "the Digi-Parts list opening: its animation runs (animDone 0)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F26D1",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "partner_digiparts"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F1F86",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "equip its one Digi-Part (010, Attack Power +100: equipPartnerAbility), back to state 1"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F26D1",
+      "size": 1,
+      "value": 0,
+      "comment": "the Digi-Parts list closing: its animation runs (animDone 0)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F26D1",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "partner_equipped"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F2861",
+        "size": 1,
+        "value": 0
+      },
+      "comment": "state 0: the partner tabs again"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2861",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F3178",
+        "size": 4,
+        "value": 0
+      },
+      "comment": "leave (state -1)"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 6,
+      "timeout": 1200,
+      "comment": "SAISEG again"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 1,
+      "timeout": 1200
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 0,
+      "comment": "back on the Menu page"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1
+    },
+    {
+      "type": "checkpoint",
+      "name": "partner_done"
+    }
+  ]
+}
