@@ -493,10 +493,6 @@
       "comment": "done: the same cards (SUB_hasDeckChanged compares them as a set), so the deck is stored as it is, sorted, without asking"
     },
     {
-      "type": "checkpoint",
-      "name": "deck_saved"
-    },
-    {
       "type": "wait_mem",
       "addr": "0x801F41BC",
       "size": 1,
@@ -509,6 +505,17 @@
       "size": 1,
       "value": 0,
       "comment": "the deck menu again"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F32D5",
+      "size": 1,
+      "value": 1,
+      "comment": "its windows open (SUB_WINDOWS[1].animDone)"
+    },
+    {
+      "type": "checkpoint",
+      "name": "deck_saved"
     },
     {
       "type": "press",
@@ -640,6 +647,13 @@
       "addr": "0x801F2994",
       "size": 4,
       "value": 0
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F2941",
+      "size": 1,
+      "value": 1,
+      "comment": "the three partner tabs open (SUB_PARTNER_TABS[2].window.animDone)"
     },
     {
       "type": "checkpoint",

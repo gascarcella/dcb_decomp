@@ -87,6 +87,8 @@ OPEN_INTRO_BLINK = 0x801F4F44     # OPEN_INTRO_TEXT.blink (s32): the frames the 
                                   # until the page is typed out and waits for CROSS (open_registration.c)
 SAI_NEXT_BLINK = 0x801F4588 + 0x121   # SAI_AREA.nextBlink (u8): the frames the message window's "next" arrow has
                                       # blinked, 0 until a message is typed out and waits for CROSS (sai_text.c)
+SUB_CARD_ART_BUSY = 0x801F4188 + 0x1A   # SUB_CARD_IMAGE_CACHE.busy (s8): 1 while SUBSEG's card-art cache loads a
+                                        # card's picture from the CD (sub_deck_editor.c SUB_runCardImageCache)
 
 
 def wait_mem(addr, value, size, why, timeout=600):
@@ -107,9 +109,20 @@ def scroll_at(pos, why="the scrolling background at a position both sides pass t
 # same moment on both sides), END_DUMPS after a script's last step. The waits put both sides at the same point of
 # the game's own counters: the frame counts differ (the CD and loader timing, the movie: #26), and the animations
 # follow the frames (#33).
+def card_art_loaded():
+    """SUBSEG's screens: the card-art cache idle, its picture loaded whatever the CD's timing (one side may still show
+    the placeholder at a checkpoint), then the background aligned at a position 128 frames on."""
+    return [scroll_at(1920), wait_mem(SUB_CARD_ART_BUSY, 0, 1, "SUBSEG's card-art cache idle"), scroll_at(5760)]
+
+
 ALIGN = {
     "name_entered": [scroll_at(3840)],
     "starter_chosen": [wait_mem(OPEN_INTRO_BLINK, 120, 4, "the page typed out 120 frames ago"), scroll_at(3840)],
+    # deck_edit: SUBSEG's screens and SAISEG's Menu page between them (each checkpoint is taken once its screen's
+    # windows are open; the background still moves)
+    **{name: card_art_loaded() for name in ("deck_editor", "deck_sort_menu", "deck_sorted", "deck_saved")},
+    **{name: [scroll_at(3840)] for name in ("deck_editor_done", "partner_screen", "partner_digiparts",
+                                            "partner_equipped", "partner_done")},
 }
 EXTRA_DUMPS = [
     # (name, after the step waiting for addr == value, the alignment steps)

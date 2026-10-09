@@ -1,6 +1,6 @@
 {
  "script": "deck_edit",
- "script_sha1": "0c879f52bcd9e6a6713cd39af5c5b09b3d2a7245",
+ "script_sha1": "79852d24309298d0450c03647047b7b302c1d777",
  "emulator": {
   "name": "pcsx-redux",
   "version": "bf4c9ceb",
@@ -12,7 +12,7 @@
   "sha1": "8f1269a22179433c8b22b4c804f11c0a076450c5"
  },
  "tree_commit": "31396d7e750ef101847a0a85edebdf00166b2a4a",
- "frames": 33306,
+ "frames": 33331,
  "checkpoints": [
   {
    "name": "openseg_loaded",
@@ -245,56 +245,56 @@
   },
   {
    "name": "deck_saved",
-   "frame": 32230,
+   "frame": 32264,
    "stage": 7,
    "map": 0,
-   "random_index": -168873521,
-   "gamestate_sha1": "007596dbe561162e046b577b7e115c825164f15d",
+   "random_index": -395379551,
+   "gamestate_sha1": "6044581113b77844bab665a7385cb0ff88c86731",
    "gamestate_sha1_stable": "bef45b0c2d9ff284f98695d8251173123f258a19"
   },
   {
    "name": "deck_editor_done",
-   "frame": 32619,
+   "frame": 32632,
    "stage": 6,
    "map": 0,
-   "random_index": 328770691,
-   "gamestate_sha1": "f0109ae37fb38849c583da61c25362b2b7a7f0b4",
+   "random_index": 733112036,
+   "gamestate_sha1": "2b20944086e6b23437a0bedeb45a19b198d0256d",
    "gamestate_sha1_stable": "ab97d65a45447133183f756502f3afd162615684"
   },
   {
    "name": "partner_screen",
-   "frame": 32904,
+   "frame": 32929,
    "stage": 7,
    "map": 0,
-   "random_index": 642840854,
-   "gamestate_sha1": "edf8082582423fd5c75060e3330154b962f98909",
+   "random_index": -1708111148,
+   "gamestate_sha1": "4ccf6142a7c8759e07d900712488022946d6e638",
    "gamestate_sha1_stable": "ab97d65a45447133183f756502f3afd162615684"
   },
   {
    "name": "partner_digiparts",
-   "frame": 32934,
+   "frame": 32959,
    "stage": 7,
    "map": 0,
-   "random_index": 339772747,
-   "gamestate_sha1": "f0dcc2f6981c6edc9fea4c92e4913e89984f6d08",
+   "random_index": 423757697,
+   "gamestate_sha1": "0765e525e9e509f5a6d3b9a84a82cd75ed4d555d",
    "gamestate_sha1_stable": "ab97d65a45447133183f756502f3afd162615684"
   },
   {
    "name": "partner_equipped",
-   "frame": 32949,
+   "frame": 32974,
    "stage": 7,
    "map": 0,
-   "random_index": 975727262,
-   "gamestate_sha1": "5228cd1c8a42c37f7aa9aa569112e2fbcb0fc561",
+   "random_index": 2085217781,
+   "gamestate_sha1": "49403cd66364b4ec831ae6c50959ee6f509acf8f",
    "gamestate_sha1_stable": "ee71f848e255f9ad962c8c9e9821458b065c35fc"
   },
   {
    "name": "partner_done",
-   "frame": 33306,
+   "frame": 33331,
    "stage": 6,
    "map": 0,
-   "random_index": -1333586586,
-   "gamestate_sha1": "baf2ae08b120fef128814d82bb8c56d40e81d5de",
+   "random_index": -40897590,
+   "gamestate_sha1": "e8646e93445f6f8309971db87729abfb8bae505a",
    "gamestate_sha1_stable": "ee71f848e255f9ad962c8c9e9821458b065c35fc"
   }
  ],
@@ -361,17 +361,17 @@
   },
   {
    "file": 0,
-   "frame": 32317,
+   "frame": 32330,
    "stage": 6
   },
   {
    "file": 0,
-   "frame": 32784,
+   "frame": 32797,
    "stage": 7
   },
   {
    "file": 0,
-   "frame": 33004,
+   "frame": 33029,
    "stage": 6
   }
  ],
@@ -6920,97 +6920,97 @@
    "buttons": [
     "TRIANGLE"
    ],
-   "frame": 32251
+   "frame": 32264
   },
   {
    "buttons": [],
-   "frame": 32253
+   "frame": 32266
   },
   {
    "buttons": [
     "TRIANGLE"
    ],
-   "frame": 32274
+   "frame": 32287
   },
   {
    "buttons": [],
-   "frame": 32276
+   "frame": 32289
   },
   {
    "buttons": [
     "TRIANGLE"
    ],
-   "frame": 32286
+   "frame": 32299
   },
   {
    "buttons": [],
-   "frame": 32288
+   "frame": 32301
   },
   {
    "buttons": [
     "DOWN"
    ],
-   "frame": 32619
+   "frame": 32632
   },
   {
    "buttons": [
     "CROSS"
    ],
-   "frame": 32621
+   "frame": 32634
   },
   {
    "buttons": [],
-   "frame": 32623
+   "frame": 32636
   },
   {
    "buttons": [
     "CROSS"
    ],
-   "frame": 32904
+   "frame": 32929
   },
   {
    "buttons": [],
-   "frame": 32906
+   "frame": 32931
   },
   {
    "buttons": [
     "CROSS"
    ],
-   "frame": 32919
+   "frame": 32944
   },
   {
    "buttons": [],
-   "frame": 32921
+   "frame": 32946
   },
   {
    "buttons": [
     "CROSS"
    ],
-   "frame": 32934
+   "frame": 32959
   },
   {
    "buttons": [],
-   "frame": 32936
+   "frame": 32961
   },
   {
    "buttons": [
     "TRIANGLE"
    ],
-   "frame": 32949
+   "frame": 32974
   },
   {
    "buttons": [],
-   "frame": 32951
+   "frame": 32976
   },
   {
    "buttons": [
     "TRIANGLE"
    ],
-   "frame": 32964
+   "frame": 32989
   },
   {
    "buttons": [],
-   "frame": 32966
+   "frame": 32991
   }
  ],
  "core": "interpreter"
