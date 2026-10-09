@@ -13,10 +13,11 @@ Usage: tests/port/run.py [SCRIPT ...] [--m32] [--sanitize] [--cd-speed instant|r
 
 Builds the port if needed (cmake -S port -B build/port -G Ninja; cmake --build), and for each script (default: every
 tests/replay/scripts/<name>.json with a tests/replay/records/<name>.json; or the names given) runs
-  build/port/dcb --disc disks/us/dcb_us.cue --script tests/replay/scripts/<name>.json --log ... --record ...
+  build/port/dcb --disc disks/us/dcb_us.cue --script build/replay/scripts/<name>.json --log ... --record ...
 twice and requires the two logs and records to be byte-identical (determinism), then compares the record's cross-core
 view (checkpoint names, stages, maps and stable profile hashes; the overlay and map sequences without frames) with
-the emulator's expected file. The emulator's records come from PCSX-Redux's interpreter core (tests/replay/replay.py);
+the emulator's expected file. A script that continues another (`"after"`, tests/replay/chain.py) runs combined:
+the runner reads the resolved scripts in build/replay/scripts/. The emulator's records come from PCSX-Redux's interpreter core (tests/replay/replay.py);
 the cross-core view is what the two must share.
 Exit codes: 0 pass, 1 fail, 2 something missing.
 """
@@ -27,9 +28,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PSXSTACK = Path(os.environ.get("PSXSTACK_DIR") or ROOT / "psxstack")
 sys.path.insert(0, str(PSXSTACK / "tools/replay"))
+sys.path.insert(0, str(ROOT / "tests/replay"))
 import port_test  # noqa: E402  (psxstack's test)
+import chain  # noqa: E402  (scripts that continue another: "after")
 
-SCRIPTS = ROOT / "tests/replay/scripts"
+SCRIPTS = chain.sync()   # every script resolved, under build/replay/scripts/ (tests/replay/chain.py)
 EXPECTED = ROOT / "tests/replay/records"
 DISC = ROOT / "disks/us/dcb_us.cue"
 VENV_BIN = ROOT / ".venv/bin"

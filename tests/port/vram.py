@@ -15,7 +15,9 @@ movie), and the screen's animations follow the frames, the scrolling background 
 the position both sides pass through), the registration's and SAISEG's message arrows (their blink counters).
 A `vram` step takes its frame, so the steps after a dump start later than in the committed script; both sides run the
 same variant, and every dump is keyed by its name, never by a frame number (the port's frames are not the
-emulator's). The committed scripts and records are not changed.
+emulator's). The committed scripts and records are not changed. A script that continues another (`"after"`,
+tests/replay/chain.py) is run combined, but dumps only from its own steps on (`after_steps`): the base's dumps are
+the base script's.
 - The emulator (tests/replay/replay.py's run_once, the interpreter core) runs it with tests/port/vram.lua before
   psxstack's run.lua: each dump also writes the displayed picture (PCSX.GPU.takeScreenShot) and the last 120 vsyncs of
   the game's frame-buffer index and vblanksPerFrame.
@@ -150,8 +152,11 @@ def vram_script(name, out):
             steps.append({"type": "checkpoint", "name": dumps[d], "image": False})
         steps.append({"type": "vram", "name": d})
 
-    for step in script["steps"]:
+    own = script.get("after_steps", 0)   # a continuing script's own steps: the base's dumps are the base's
+    for i, step in enumerate(script["steps"]):
         steps.append(step)
+        if i < own:
+            continue
         if step.get("type") == "checkpoint":
             dump(step["name"], ALIGN.get(step["name"], []), checkpoint=step["name"])
         for d, (addr, value), align in EXTRA_DUMPS:
