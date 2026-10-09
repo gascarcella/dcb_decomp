@@ -19,7 +19,7 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.3 (LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+v0.3.4 (the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
 runners).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
@@ -117,7 +117,7 @@ runners).
   `scripts/port_build.sh --sdl` builds the window build (`build/port-sdl/dcb`) and passes the stack's input self-test;
   `--sdl --boot` boots in an offscreen window whose log and picture equal the headless build's.
   `scripts/launcher_build.sh` builds `dcb-launcher` from `game.json`; its self-test passes with the real disc and game
-  but for one check that hard-codes the first game's 50 Hz (psxstack#57, accepted by name). On this desktop (Wayland,
+  fully (301 of 301; psxstack v0.3.4 reads the game's rate, #57). On this desktop (Wayland,
   NVIDIA) the `new_game` script ran in a real window with each renderer (`--renderer gpu`: Vulkan) to SAISEG, 60.00
   vsyncs a second, both logs equal to the headless run's; the pictures (the movie, the title, the registration) are
   right, the GPU renderer's equal to the software one's. The SPU's output is not silent (not yet compared: M3). CI's

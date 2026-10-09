@@ -9,8 +9,7 @@
 #
 #   scripts/launcher_build.sh [--no-test]     # PSXSTACK_DIR=/path/to/a/psxstack/checkout overrides the submodule
 #
-# Exit 0: built and the self-test passed. Known at psxstack v0.3.3: one check, "bad values fall back to the defaults",
-# expects the first game's 50 Hz where this game's rate is 60 (psxstack#57); that failure alone is accepted, by name.
+# Exit 0: built and the self-test passed (any failure fails the script).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -18,7 +17,7 @@ TEST=1
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --no-test) TEST=0; shift ;;
-        -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
         *) echo "launcher_build.sh: unknown argument $1" >&2; exit 2 ;;
     esac
 done
@@ -54,8 +53,6 @@ grep -E '^self-test: ' "$OUT" | grep -v '^self-test: FAILED' || true
 failed="$(grep '^self-test: FAILED: ' "$OUT" | sed 's/^self-test: FAILED: //' || true)"
 if [[ $rc -eq 0 ]]; then
     log "self-test passed (screens in build/launcher-test/launcher-self-test/screens/)"
-elif [[ "$failed" == "bad values fall back to the defaults" ]]; then
-    log "self-test passed but for the known check \"$failed\" (psxstack#57: it expects 50 Hz; this game's rate is 60)"
 else
     printf 'launcher_build.sh: the self-test failed (status %s; %s):\n%s\n' "$rc" "build/launcher/self-test.log" "$failed" >&2
     exit 1
