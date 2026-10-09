@@ -25,7 +25,14 @@ u32 D_801F02BC = 0x0C00A1F2;
 s8 EVO_BANNER_FADE = 0;
 /* not referenced by any code */
 u8 D_801F02C4[4] = { 0 };
+#ifndef PC_PORT
 u16 EVO_BANNER_CLUT[16] = { 0 };
+#else
+/* PC_PORT: EVO_initFusionBanner's StoreImage reads a 32x1 rectangle, 64 bytes, into it; on the PS1 the second half
+   lands on EVO_BANNER_BRIGHTNESS (reset right after), the unreferenced bytes after it and the start of
+   EVO_SPARKS[0]'s padding (issue #44); the host buffer holds all of it */
+u16 EVO_BANNER_CLUT[32] = { 0 };
+#endif
 u8 EVO_BANNER_BRIGHTNESS = 0;
 /* not referenced by any code */
 #if VERSION_US
