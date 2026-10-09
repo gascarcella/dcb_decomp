@@ -130,6 +130,14 @@ ALIGN = {
     **{name: [scroll_at(3840)] for name in ("world_map", "flame_city_map", "type_choice", "card_list",
                                             "fuse_dialog", "fused", "partner_status", "partner_reward",
                                             "fusion_end")},
+    # records.json: the player data window, ENDSEG's records screen (its window opens after the checkpoint: the
+    # records counted), the window again and the city menu, each still once open; the background's phase follows
+    # the loads' frames
+    "player_data": [scroll_at(3840)],
+    "records": [{"type": "wait_frames", "frames": 30}, scroll_at(3840, "the records screen's window open, the "
+                                                                         "background at a position both sides pass")],
+    "records_closed": [scroll_at(3840)],
+    "records_end": [scroll_at(3840)],
 }
 EXTRA_DUMPS = [
     # (name, after the step waiting for addr == value, the alignment steps)

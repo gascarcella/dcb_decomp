@@ -205,6 +205,14 @@ runners).
 - Next: the rest of the duel (#4) and the card-art cache's timing (#45, with the CD's per-read latency: psxstack#62);
   M2: the stretched quads' row or column (psxstack#54); M3: the port's own SPU trace replayed on its timeline
   (psxstack#63).
+- **ENDSEG under test (#57):** what reaches it is read from the area scripts and written in docs/PORT.md "Testing"
+  (`records`): the ending (mode 1) behind the story, 300 battle wins and the Battle Arena, and from then on the records
+  screen (mode 2) from PLAYER'S DATA. `tests/replay/scripts/records.json` continues `first_duel_play` with one fixture
+  (psxstack's `write_mem`: the area script's register 15, the flag the ending sets) into ENDSEG mode 2 and back to
+  SAISEG: twice identical on the emulator and the port, clean under ASan/UBSan (with psxstack's fix for a reused fiber
+  stack's poisoned redzones), the textures and ENDSEG's picture equal in VRAM. ENDSEG's views
+  (`port/game/views_endseg.c`) and its part of #36's audit (nothing read through a second layout). The ending itself
+  is a play-test by hand (docs/PORT.md).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

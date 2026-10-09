@@ -1,0 +1,294 @@
+{
+  "name": "records",
+  "after": "first_duel_play",
+  "description": "first_duel_play, then ENDSEG's player records screen (mode 2) from Beginner City: register 15 of the area script set (write_mem, the one fixture: the ending sets it in play), the city menu's fourth entry (PLAYER'S DATA, with the stats hint), CIRCLE (quitToTitleOrPlayEnding(2): ENDSEG, END_runPlayerRecords), START back to SAISEG (the player data window again), TRIANGLE to the city menu. Every press waits on the state that takes it: SAISEG's SAI_AREA (waitingForCross +0x120, mode +0x10E, exitAction +0x10D, choicePhase +0x81, choiceMode +0x82, choiceCursor +0x83), SAI_PLAYER_DATA_WINDOW and SAI_STATS_HINT_WINDOW (animDone +0x41), ENDSEG's END_SECTION_OFFSETS[1] (0x5E74 once the records are counted).",
+  "max_frames": 8000,
+  "default_timeout": 3000,
+  "steps": [
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon: \"Don't worry, you'll get the hang of it.\" typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: Betamon's next message typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F46A8",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_AREA.waitingForCross: the player's answer typed out"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 4,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F46A8",
+        "size": 1,
+        "value": 0
+      },
+      "timeout": 300
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 2,
+      "comment": "SAI_AREA.mode 2: the talk panel (\"Who do you want to talk to?\", SAI_tickOpponentSelectInput)"
+    },
+    {
+      "type": "write_mem",
+      "addr": "0x800D0EB4",
+      "size": 4,
+      "value": 1,
+      "comment": "the fixture: SAI_SCRIPT[0]->regs[15] = 1 (the area script's register block is at 0x800D0E78 on both runners), the flag the ending sets in play (AREA00's script, on the first win over BlackWarGreymon, behind 300 battle wins: docs/PORT.md \"What reaches ENDSEG\"); with it SAI_runPlayerData opens the stats hint and takes CIRCLE"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4696",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 600,
+      "comment": "leave it: the area script opens the city menu (mode 1: SAI_tickChoiceMenu)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F460A",
+      "size": 1,
+      "value": 1,
+      "comment": "the city menu (choiceMode 1, four entries)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1,
+      "comment": "slid in: choicePhase 1 takes the pad"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 1
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 2
+      }
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "DOWN"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F460B",
+        "size": 1,
+        "value": 3
+      },
+      "comment": "the fourth entry: AREA00's script opens PLAYER'S DATA (ev10.7: SAI_runPlayerData)"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CROSS"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4609",
+        "size": 1,
+        "value": 2
+      }
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 10,
+      "comment": "SAI_AREA.mode 10: the player data task runs"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4B41",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_PLAYER_DATA_WINDOW open (animDone)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4379",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_STATS_HINT_WINDOW open: register 15 is set"
+    },
+    {
+      "type": "checkpoint",
+      "name": "player_data"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "CIRCLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4695",
+        "size": 1,
+        "value": 6
+      },
+      "timeout": 300,
+      "comment": "CIRCLE with register 15 set: SAI_AREA.exitAction 6 (AREA_EXIT_TITLE_OR_ENDING), exitArg 2"
+    },
+    {
+      "type": "wait_stage",
+      "stage": 10,
+      "timeout": 3000,
+      "comment": "ENDSEG: quitToTitleOrPlayEnding(2), END_runPlayerRecords(parent, 2)"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801E0D70",
+      "size": 4,
+      "value": 24180,
+      "timeout": 3000,
+      "comment": "END_SECTION_OFFSETS[1]: the files loaded and the records counted; the window opens"
+    },
+    {
+      "type": "checkpoint",
+      "name": "records"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "START"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_stage",
+        "stage": 6
+      },
+      "timeout": 3000,
+      "comment": "START quits the records screen; SAISEG again"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4696",
+      "size": 1,
+      "value": 10,
+      "comment": "SAI_reopenPlayerData (resumeMode 2): the player data window again"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4B41",
+      "size": 1,
+      "value": 1,
+      "comment": "SAI_PLAYER_DATA_WINDOW open"
+    },
+    {
+      "type": "checkpoint",
+      "name": "records_closed"
+    },
+    {
+      "type": "press",
+      "buttons": [
+        "TRIANGLE"
+      ],
+      "frames": 2,
+      "release": 10,
+      "until": {
+        "type": "wait_mem",
+        "addr": "0x801F4696",
+        "size": 1,
+        "value": 1
+      },
+      "timeout": 900,
+      "comment": "close it: the area script goes on to the city menu"
+    },
+    {
+      "type": "wait_mem",
+      "addr": "0x801F4609",
+      "size": 1,
+      "value": 1,
+      "comment": "the city menu takes the pad"
+    },
+    {
+      "type": "checkpoint",
+      "name": "records_end"
+    }
+  ]
+}
