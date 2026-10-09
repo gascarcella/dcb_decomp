@@ -170,5 +170,20 @@
  "fusion_end": {
   "vram": "the duel's card-art cache's CLUT rows (VRAM x 0..255, y 508..511), as the duel left them (#45); the world map and EVOSEG do not write there, and the picture's differences",
   "frame": "one row or column of SAISEG's stretched textured quads, as at saiseg_message (psxstack#54, 3), and the corner icon's pulse at another phase (SAI_runCornerIcon's own counter), as at partner_done"
+ },
+ "player_data": {
+  "vram": "the duel's card-art cache's CLUT rows, still in VRAM (x 0..255, y 508..511: which card's palette is in which row follows the CD's timing in the duel, #45); and the picture's pixels (psxstack#54, 3)",
+  "frame": "11 pixels: SAISEG's frame tiles' row 30 under the area label, and two corners of the player data window: one row or column of a stretched quad (psxstack#54, 3)"
+ },
+ "records": {
+  "vram": "the duel's card-art cache's CLUT rows, still in VRAM (x 0..255, y 508..511: which card's palette is in which row follows the CD's timing in the duel, #45) only: ENDSEG's records screen and its textures are equal"
+ },
+ "records_closed": {
+  "vram": "the duel's card-art cache's CLUT rows, still in VRAM (x 0..255, y 508..511: which card's palette is in which row follows the CD's timing in the duel, #45); and the picture's pixels (psxstack#54, 3)",
+  "frame": "11 pixels: SAISEG's frame tiles' row 30 under the area label, and two corners of the player data window: one row or column of a stretched quad (psxstack#54, 3)"
+ },
+ "records_end": {
+  "vram": "the duel's card-art cache's CLUT rows, still in VRAM (x 0..255, y 508..511: which card's palette is in which row follows the CD's timing in the duel, #45); and the picture's pixels (psxstack#54, 3)",
+  "frame": "165 pixels: the same columns and rows as saiseg_message (Beginner City's picture column 160, the frame tiles' row 30 and column 18) (psxstack#54, 3)"
  }
 }

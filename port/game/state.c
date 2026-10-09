@@ -66,6 +66,7 @@ extern s32 OPEN_TITLE_STATE; /* src/openseg/open_bss.c (only open_title.c declar
 extern UiWindow KAW_TUTORIAL_WINDOW; /* src/kawseg/kaw_bss.c (only kaw_tutorial.c declares it) */
 extern s32 KAW_RESULT_SCREEN_STATE;  /* src/kawseg/kaw_bss.c (dcb/overlay_calls.h declares it too) */
 extern s32 SUB_PARTNER_SLOT, SUB_PARTNER_TITLE_SHOWN; /* src/subseg/partner/sub_partner.c's (pointer-free words) */
+extern UiWindow SAI_PLAYER_DATA_WINDOW, SAI_STATS_HINT_WINDOW; /* src/saiseg/sai_bss.c */
 
 /* The duel's words first_duel_play.json waits on, by their PS1 offsets: in the duel state (Duel, the heap block
    DUEL_STATE points to), in a window (UiWindow: KAW_TUTORIAL_WINDOW, the tutorial's message box) and in a dialog
@@ -360,11 +361,12 @@ const PortRange *game_state_volatile(void) {
 
 /* ---- PS1 addresses the replay scripts read (wait_mem). The overlay slot is the arena's, which the runtime maps.
  * Mapped here:
- * - the overlays' views (views.h): SAISEG's area choice menu and world map, SUBSEG's editor, menus and windows
- *   (views_subseg.c), EVOSEG's fusion state, dialog and cutscene words (views_evoseg.c), each while its overlay is
- *   current;
+ * - the overlays' views (views.h): SAISEG's area choice menu, world map and player data windows, SUBSEG's editor,
+ *   menus and windows (views_subseg.c), EVOSEG's fusion state, dialog and cutscene words (views_evoseg.c), ENDSEG's
+ *   section offsets (views_endseg.c), each while its overlay is current;
  * - player 0's profile by PS1 offset in its heap block (the header, cardCollection, areaScriptFlags,
  *   areaScriptValues): what fusion.json's write_mem steps write (game_state_host);
+ * - SAISEG's area script registers (a heap block), while SAISEG is current: what records.json's write_mem writes;
  * - the duel's words (game_views): the duel state's fields, while DUEL_STATE points into the heap (its PS1 address
  *   is the block's, the same as the emulator's: first_duel_play.json names it), the tutorial window's (KAWSEG
  *   current) and the duel dialog's;
@@ -434,6 +436,10 @@ static const GameViewField game_world_map_fields[] = {
 static const GameView game_saiseg_views[] = {
     GAME_VIEW(SAI_AREA, &SAI_AREA, 1, 0, GAME_OVERLAY_SAISEG, game_sai_choice_fields),
     GAME_VIEW(SAI_WORLD_MAP, &SAI_WORLD_MAP, 1, 0, GAME_OVERLAY_SAISEG, game_world_map_fields),
+    /* the player data window and, once the ending has set the area script's register 15, its stats hint
+       (records.json: SAI_runPlayerData) */
+    GAME_VIEW(SAI_PLAYER_DATA_WINDOW, &SAI_PLAYER_DATA_WINDOW, 1, 0, GAME_OVERLAY_SAISEG, game_window_fields),
+    GAME_VIEW(SAI_STATS_HINT_WINDOW, &SAI_STATS_HINT_WINDOW, 1, 0, GAME_OVERLAY_SAISEG, game_window_fields),
 };
 static const int game_saiseg_view_count = GAME_COUNT(game_saiseg_views);
 
@@ -445,6 +451,7 @@ static const struct {
     { game_saiseg_views, &game_saiseg_view_count },
     { game_subseg_views, &game_subseg_view_count },
     { game_evoseg_views, &game_evoseg_view_count },
+    { game_endseg_views, &game_endseg_view_count },
 };
 
 /* The host bytes of the field at `ofs` (`size` bytes) of an object at PS1 `base` and host `host`, or NULL. */
@@ -481,6 +488,23 @@ static u8 *game_overlay_view(const PortOverlay *o, uint32_t addr, uint32_t size)
     return NULL;
 }
 
+/* SAISEG's area script registers (SAI_SCRIPT[0]->regs, sai_area.c's 0x174 s32: s32 on the host too), a heap block,
+   while SAISEG is current: records.json writes register 15 (the flag the ending sets) at the PS1 address of the
+   emulator's block, which the host's block table gives it too. NULL when `addr` is not in it. */
+#define GAME_SAI_REGS 0x174
+static u8 *game_sai_regs(const PortOverlay *o, uint32_t addr, uint32_t size) {
+    uint32_t base;
+    if (o == NULL || o->file != GAME_OVERLAY_SAISEG || SAI_SCRIPT[0] == NULL || SAI_SCRIPT[0]->regs == NULL ||
+        !game_heap_owns(SAI_SCRIPT[0]->regs)) {
+        return NULL;
+    }
+    base = game_heap_ps1(SAI_SCRIPT[0]->regs);
+    if (addr < base || addr - base + size > GAME_SAI_REGS * sizeof(s32)) {
+        return NULL;
+    }
+    return (u8 *)SAI_SCRIPT[0]->regs + (addr - base);
+}
+
 /* The duel's words and the overlays' views (above): NULL when `addr` is none of them or its object is not there. */
 static u8 *game_views(uint32_t addr, uint32_t size) {
     const PortOverlay *o = port_overlay_current(GAME_OVERLAY_TIER);
@@ -491,6 +515,9 @@ static u8 *game_views(uint32_t addr, uint32_t size) {
     if (PLAYER_PROFILES != 0 && game_heap_owns((const void *)PLAYER_PROFILES) &&
         (p = game_view_field(addr, size, game_heap_ps1((const void *)PLAYER_PROFILES), (void *)PLAYER_PROFILES,
                              game_profile_fields, GAME_COUNT(game_profile_fields))) != NULL) {
+        return p;
+    }
+    if ((p = game_sai_regs(o, addr, size)) != NULL) {
         return p;
     }
     if ((p = game_view_field(addr, size, PS1_DUEL_DIALOG, &DUEL_DIALOG, game_dialog_fields,

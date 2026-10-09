@@ -44,7 +44,11 @@ ADAPTER_SYMBOLS = ["OVERLAY_AREA", "PLAYER_PROFILES", "OPEN_TITLE_STATE", "OPEN_
                    "SUB_ARMOR_WINDOW", "SUB_ABILITY_WINDOW", "SUB_EQUIPMENT_WINDOW", "SUB_DECK_SORT_WINDOW",
                    "SUB_PARTNER_TABS", "SUB_CARD_IMAGE_CACHE", "SUB_PARTNER_SLOT", "SUB_PARTNER_TITLE_SHOWN",
                    # SAISEG's world map, EVOSEG (fusion.json)
-                   "SAI_WORLD_MAP", "EVO_FUSION", "EVO_DIALOG", "EVO_CURSOR_CARD", "EVO_CUTSCENE_STEP", "EVO_BANNER_FADE"]
+                   "SAI_WORLD_MAP", "EVO_FUSION", "EVO_DIALOG", "EVO_CURSOR_CARD", "EVO_CUTSCENE_STEP", "EVO_BANNER_FADE",
+                   # SAISEG's player data window (records.json)
+                   "SAI_PLAYER_DATA_WINDOW", "SAI_STATS_HINT_WINDOW",
+                   # ENDSEG (records.json)
+                   "END_SECTION_OFFSETS"]
 
 
 def mk_variables(version):

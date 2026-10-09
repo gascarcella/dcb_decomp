@@ -37,5 +37,7 @@ extern const GameView game_subseg_views[];
 extern const int game_subseg_view_count;
 extern const GameView game_evoseg_views[];
 extern const int game_evoseg_view_count;
+extern const GameView game_endseg_views[];
+extern const int game_endseg_view_count;
 
 #endif /* DCB_PORT_VIEWS_H */

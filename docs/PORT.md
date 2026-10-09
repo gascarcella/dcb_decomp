@@ -754,6 +754,43 @@ The duel state is a heap block whose PS1 address the script names (0x800D97B0): 
 
 **`fusion`: EVOSEG** (#56). After `first_duel_play`: the Fusion Shop (`AREA_EXIT_FUSION`, `openPartnerFusion`, `EVO_runFusion`) exists only in Flame City (area 1, unit 0) and areas 7 and 10, and Flame City's menu offers it only with SAISEG's r13 (Beginner City's second arena won) or r32 (Flame City's arena won), behind its passcode r12: five CPU duels at least, whose shuffles and choices follow `rand()`, whose position differs between the emulator and the port (the idle loop), so no pad script can play them on both. **The fixture:** on the world map, where both runners hold the same state, psxstack's `write_mem` step (v0.3.6) sets player 0's `areaScriptFlags` r12, r13 and r283 (Flame City's map node), `scriptFlags` bit 9 (EVOSEG's var 29: UNIT00 fuses up to level 3) and one ExVeemon and one Stingmon in `cardCollection`; the port writes through the adapter's profile view (`port/game/state.c`: player 0's `PlayerProfile` by PS1 offset in its heap block). Beginner City is entered and left once (its script loads the flags and saves them back; `SAI_unlockMapNodes` reads them when the map opens again), the marker walks to Flame City, its menu's Fusion Shop. **In the shop:** Card Fusion of ExVeemon and Stingmon (one of `EVO_FUSION_RECIPES`: Paildramon, drawn from no `rand()`; any other pair's result is), the Yes/No dialog, the fusion cutscene with its banner (#44), the RECEIVED! result; then Partner Fusion of Veemon with the new Paildramon (the partner list and status; Veemon with Paildramon is one of `EVO_PARTNER_FUSION_REWARDS`: Digi-Part 073); out ("Do you want to quit?") to Flame City's menu. The presses wait on SAISEG's `SAI_AREA` (as `deck_edit`) and `SAI_WORLD_MAP` (`state` +0x403, `nodeIndex` +0x406), EVOSEG's `EVO_FUSION` (`scriptState` +0xBB 1 or 2 for a message, `textTyping` +0xC9, `step` +0xC1, `swapState` +0xB9, `fusionType` +0xBA, `typeChoiceOpen` +0xBC, `partnerListOpen` +0xBE, `previewOpen` +0xC3, `pickSlot` +0xC4, `resultKind` +0xC5, `cutscene` +0xC7), `EVO_DIALOG` (a `Dialog`: `animDone`, `choice`, `closed`), `EVO_CURSOR_CARD` (the card under the list's cursor), `EVO_CUTSCENE_STEP` and `EVO_BANNER_FADE`; the views are `port/game/views_evoseg.c`. The profile changes at `flame_city_map` (the flags, the two cards), `fusion_cutscene` (the cards traded for Paildramon, `fusedCards`, `fusionCardsUsed`), `partner_reward` (the Digi-Part, Paildramon used up). The emulator takes 38,598 frames (8,016 after `first_duel_play`), the port 35,360. The sanitizer build found four host faults on the way, fixed under `PC_PORT`: #44's `EVO_BANNER_CLUT` (64 bytes stored in 32: the host buffer holds 32 entries), `unloadAllModels`' `models[i - 0x40]` (the original's wrong slot: on the PS1 a word of `Scene3D.root` or `viewMatrix`, on the host before the object; cleared at the PS1 offset's field), `EVO_drawTray`'s `EvoFusion` pointer offset by the tray (misaligned; the byte read directly) and the fusion cutscene's shards (`EVO_drawShardG3`/`G4` set only their first colour: the others were the packet area's leftovers, build-dependent; cleared). Not covered: Card Fusion of any other pair (its result follows `rand()`), a fusion that adds experience (the starter's only spare cards are its `rand()` bonus cards), units 1 and 2. EVOSEG's SPU trace: #63.
 
+**`records`: ENDSEG, and what reaches it** (#57). ENDSEG is the player records screen; `quitToTitleOrPlayEnding(mode)`
+(`src/main/system/game_exit.c`) loads it for any mode but 0, runs `END_runPlayerRecords(parent, mode)`, then
+reloads SAISEG. Only two things ask for it, both read from the area scripts (chunk `(2, 200 + area)` of
+`C:\AREAnn.PAK`, decoded with `runScriptToNextEvent`'s instruction set) and confirmed on the emulator:
+- **The ending, mode 1** (it scrolls by itself until CROSS): op 11 event 19 (`exitArg = params[0]`) with 1, once
+  in all twelve scripts, AREA00 (Beginner City) at script offset `0x1127c`, on the first win over BlackWarGreymon
+  (duel 115), the last of the Battle Arena's three (Greymon 53, WarGreymon 79, BlackWarGreymon 115). The instruction
+  before it, `0x11270`, is the only one that sets **register 15**, an area flag the profile keeps
+  (`areaScriptFlags[0]` bit 3). The only other event 19 is AREA11's `0x191cc` with 0: the end of the story, back to
+  the title (the movie, the memory card screen, the "return to Title" dialog), which never loads ENDSEG.
+- **The records browsed by hand, mode 2** (START quits): the player data window (`SAI_runPlayerData`, Player's Room,
+  the city menu's fourth entry) takes CIRCLE while register 15 is set, and shows the stats hint then; no script asks for
+  mode 2.
+
+So the first ENDSEG comes after the whole story. BlackWarGreymon joins Beginner City's opponents (register 360) only
+with **300 battle wins** and register 89 (BKMetalGarurumon beaten in AREA03, who comes with 200 wins, register 248 and
+register 247: Apokarimon and Diaboromon beaten in AREA11); talking to him opens the Battle Arena (register 29).
+`records.json` (after `first_duel_play`) therefore sets the flag with psxstack's `write_mem` step, its one fixture:
+`SAI_SCRIPT[0]->regs[15] = 1` at the talk panel, the register block at 0x800D0E78 on both runners (the host's heap
+gives it the emulator's address; the adapter maps it while SAISEG is current, `port/game/state.c`). Then Player's Room
+(the city menu's fourth entry): PLAYER'S DATA with the stats hint, CIRCLE (`exitAction` 6, `exitArg` 2), ENDSEG
+(`END_SECTION_OFFSETS[1]` 0x5E74 once the records are counted: `port/game/views_endseg.c`), START, SAISEG again with
+the player data window reopened (`resumeMode` 2), TRIANGLE, the city menu: twice identical on the emulator (32,402
+frames) and on the port (29,879), every checkpoint's stable hash the emulator's, clean under ASan/UBSan. VRAM
+(`vram.py`, the dumps aligned on the scrolling background): the textures equal at all four dumps and ENDSEG's
+picture equal; the rest is known (the duel's card-art CLUT rows still in VRAM, #45; SAISEG's stretched quads,
+psxstack#54). It tests the screen, not the route; the route and the ending (mode 1) are a play-test by hand, from a
+save past the story:
+1. Win 200 battles and beat Diaboromon and Apokarimon in AREA11; BKMetalGarurumon then appears in AREA03: beat him.
+2. Win 300 battles; in Beginner City's Battle Cafe, talk to BlackWarGreymon (the Battle Arena opens).
+3. Enter the Battle Arena and win its three duels in a row (Greymon, WarGreymon, BlackWarGreymon): the ending
+   plays (ENDSEG mode 1, the records scrolling; CROSS at "Push X Button to Quit"), then SAISEG goes on with the
+   script after it. Check the records, the music, the epithet line and the return.
+4. Open Player's Room (the city menu's fourth entry): the stats hint shows; CIRCLE opens the records (mode 2):
+   UP/DOWN, L1/R1 and L2/R2 scroll, START quits back to the window. Save, reload, and check that the hint and
+   CIRCLE survive (register 15 is saved).
+
 **What the scripts know about the game:** dialogs opened by `initDialog` start with their cursor on No unless the
 caller sets `choice = 1`; the name entry's, the starter deck's and the save screen's "create a file" dialogs do not,
 so the scripts press LEFT before confirming them; the registration's own Yes/No pages do, so a plain CROSS takes the
