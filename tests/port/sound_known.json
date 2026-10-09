@@ -1,0 +1,16 @@
+{
+ "dma_past_pak": {
+  "7415 dma4 spu=49e90 len=74624": "BGM102's VAB body (the title's music) is its PAK's last chunk and ends 32 bytes before the transfer's last 64-byte block (LIBSND sends whole blocks): its 4-byte end marker, then 28 bytes of the RAM after the file (the heap's leftovers on the PS1, zeros in the replay). The block's address and length are compared, not its SHA-1",
+  "12007 dma4 spu=49e90 len=91776": "BGM112's VAB body (SAISEG's area music), the same: 32 bytes past the body, 28 past the file",
+  "12455 dma4 spu=49e90 len=84416": "BGM129's VAB body, the same: 16 bytes past the body, 12 past the file",
+  "14406 dma4 spu=01010 len=293376": "SE0's VAB body (the duel's sound effects, loaded entering KAWSEG), the same: 16 bytes past the body, 12 past the file",
+  "30451 dma4 spu=49e90 len=90752": "BGM149's VAB body (back in SAISEG after the duel), the same: 32 bytes past the body, 28 past the file"
+ },
+ "first_difference": {
+  "first_duel_play": {
+   "event": 183090,
+   "emulator": "19621 c24 v02.pitch 0e41",
+   "why": "In SUGSEG's first polygon battle (its music, SsSeqPlay at vsync 19598), two notes of vsync 19620 get voices 2 and 3 in the emulator, 1 and 2 in the replay: a one-shot note on voice 1, keyed on at the flush of 19616, reaches its sample's end 1 sample before the flush of 19620 in our SPU core (End+Mute: its envelope reads 0, so LIBSND's allocator takes it) and after it in PCSX-Redux. A one-sample margin of the SPU's position against the CPU within a vsync (the replay renders the samples between two ticks from the emulator's CPU cycle counts, 768 a sample, but where the emulator's SPU stands when the flush's KON lands is its own); not LIBSND or the game. Everything before it is exact: the boot, the registration, SAISEG, the duel's first round into SUGSEG (183,089 stores and DMA blocks)"
+  }
+ }
+}
