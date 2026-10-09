@@ -102,6 +102,12 @@ def scroll_at(pos, why="the scrolling background at a position both sides pass t
     return wait_mem(SCROLL_POS, pos, 2, why, timeout=600)
 
 
+def card_art_loaded():
+    """SUBSEG's screens: the card-art cache idle, its picture loaded whatever the CD's timing (one side may still show
+    the placeholder at a checkpoint), then the background aligned at a position 128 frames on."""
+    return [scroll_at(1920), wait_mem(SUB_CARD_ART_BUSY, 0, 1, "SUBSEG's card-art cache idle"), scroll_at(5760)]
+
+
 # Where the dumps are and what each waits on before it is taken. A dump is keyed by its name, the same moment in
 # every script (the scripts are prefixes of each other). Every checkpoint of a script is a dump (on the checkpoint's
 # frame, unless ALIGN lists steps for it: then a checkpoint "<name>@aligned" after those steps gives the dump's
@@ -109,12 +115,6 @@ def scroll_at(pos, why="the scrolling background at a position both sides pass t
 # same moment on both sides), END_DUMPS after a script's last step. The waits put both sides at the same point of
 # the game's own counters: the frame counts differ (the CD and loader timing, the movie: #26), and the animations
 # follow the frames (#33).
-def card_art_loaded():
-    """SUBSEG's screens: the card-art cache idle, its picture loaded whatever the CD's timing (one side may still show
-    the placeholder at a checkpoint), then the background aligned at a position 128 frames on."""
-    return [scroll_at(1920), wait_mem(SUB_CARD_ART_BUSY, 0, 1, "SUBSEG's card-art cache idle"), scroll_at(5760)]
-
-
 ALIGN = {
     "name_entered": [scroll_at(3840)],
     "starter_chosen": [wait_mem(OPEN_INTRO_BLINK, 120, 4, "the page typed out 120 frames ago"), scroll_at(3840)],

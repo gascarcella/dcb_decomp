@@ -17,8 +17,8 @@ tests/replay/scripts/<name>.json with a tests/replay/records/<name>.json; or the
 twice and requires the two logs and records to be byte-identical (determinism), then compares the record's cross-core
 view (checkpoint names, stages, maps and stable profile hashes; the overlay and map sequences without frames) with
 the emulator's expected file. A script that continues another (`"after"`, tests/replay/chain.py) runs combined:
-the runner reads the resolved scripts in build/replay/scripts/. The emulator's records come from PCSX-Redux's interpreter core (tests/replay/replay.py);
-the cross-core view is what the two must share.
+the runner reads the resolved scripts in build/replay/scripts/. The emulator's records come from PCSX-Redux's
+interpreter core (tests/replay/replay.py); the cross-core view is what the two must share.
 Exit codes: 0 pass, 1 fail, 2 something missing.
 """
 import os
