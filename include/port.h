@@ -41,6 +41,10 @@ typedef u32 u32p;
 #define GAME_S32_TO_PTR(type, v) ((type)(v))
 /* a heap block's size the PS1 code writes as its byte count, of an object whose host type is larger: ps1 */
 #define HOST_FITS(ps1, host) ps1
+/* a function the C declares void whose caller keeps its result through a function pointer (the effect scripts'
+   constructors): on the PS1 the result is v0 as the function's last call left it */
+#define V0_RESULT void
+#define V0_RETURN
 
 #else
 
@@ -72,6 +76,13 @@ s32 game_heap_owns(const void *p); /* whether p is in the heap's host bytes */
    host's bytes fit because heap.c spaces each block HEAP_HOST_SCALE (sizeof(void *) / 4) times its size; checked at
    compile time (issue #31) */
 #define HOST_FITS(ps1, host) (0 * sizeof(char[(host) <= (ps1) * (sizeof(void *) / 4) ? 1 : -1]) + (ps1))
+
+/* A function the C declares void whose caller keeps its result through a function pointer (KAWSEG's and SUGSEG's
+   effect-script constructors, *_create*FromParams): on the PS1 the result is v0 as the function's last call, the
+   object's constructor, left it. The host returns that call's result: x86-64's rax survives the call only by chance
+   (a stack protector's check clobbers it, and the entry kept a null object) */
+#define V0_RESULT void *
+#define V0_RETURN return
 
 /* The arguments of a call to one of startup.s's stubs that the game declares without a prototype and calls with as
  * many arguments as it uses (spawnTask, resumeTask; include/game.h): each one an s32p, the missing ones 0. On the

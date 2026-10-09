@@ -1,8 +1,8 @@
 # Status
 
-_Last updated: 2026-10-08_
+_Last updated: 2026-10-09_
 
-The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the four emulator scripts, twice
+The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the five emulator scripts (the tutorial duel to its end among them), twice
 identical, clean under ASan/UBSan; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"). Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
@@ -135,8 +135,22 @@ runners).
   `dcb-<version>-windows-x86_64.zip` (4 MB; the PDBs in `-debug.zip`), each smoke-tested (303 of 303 inside the
   package, with the disc); `release.yml` drafts a release on a `vX.Y.Z` tag, which the owner publishes by hand;
   `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). No release yet.
-- Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: the duel's VRAM, the
-  stretched quads' row or column (psxstack#54).
+- **The tutorial duel replayed to its end (#37):** `tests/replay/scripts/first_duel_play.json` plays it after
+  `first_duel`'s steps with every press waiting on the duel's state (the tutorial window, the duel dialog, the duel
+  state's step and awaitingInput, the cursor: `docs/PORT.md` "Testing"), 30,582 emulator frames (KAWSEG to SAISEG:
+  16,371; 72 s on the interpreter core) and 28,380 port frames (27 s). The port passes it twice identical and under
+  ASan/UBSan with no report (after a 65-byte `sprintf` into a 40-byte buffer, SUGSEG's effect templates from the
+  stack, the primitives' never-written bytes, and the effect-script constructors' results, which only GCC with a stack
+  protector lost, `docs/PORT.md` "Testing"), with all 16 duel checkpoints' profile hashes equal to the emulator's
+  (three polygon battles in SUGSEG, the two digivolutions, the result screen, back in SAISEG); it gates CI with the
+  other four. On the way: `PLAYER_PROFILES` was sized with the host's `sizeof`, so every later heap block was 0x608
+  bytes above its PS1 address; it keeps the PS1's size now (`HOST_FITS`), and the duel state is at the emulator's
+  0x800D97B0 (#47: task blocks before it that still differ).
+- **M2, the duel's VRAM:** at the 16 duel dumps the picture is equal at 11, the polygon battle's 3D scene included;
+  known: the card-art cache's VRAM slots (the art loader against the CD's timing, #45), the SUGSEG-load dumps' phase
+  (#46), one pixel of a Gouraud mode-2 quad (psxstack#60).
+- Next: the rest of the duel (#4) and the card-art cache's timing (#45, with the CD's per-read latency: psxstack#62);
+  M2: the stretched quads' row or column (psxstack#54).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

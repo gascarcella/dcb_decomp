@@ -123,7 +123,13 @@ void drawHudPanelContents(s32 panelIndex, s32 z) {
     HudPanel *panel = (HudPanel *)HUD_PANELS + panelIndex;
     char text[72];
     u8 shades[2][4] = { { 0x80, 0x80, 0x80, 0 }, { 0x40, 0x40, 0x40, 0 } };
+#ifdef PC_PORT
+    /* PC_PORT: the All-or-Nothing text with its count is 65 bytes; on the PS1 it runs 25 bytes past deckText
+       (sp+104) into lineColors (sp+144), which this path does not read: the host's buffer holds it */
+    char deckText[72];
+#else
     char deckText[40];
+#endif
     u8 *lineColors[10];
     DigimonCardData *card;
     s32 valueColor;

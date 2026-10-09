@@ -172,6 +172,12 @@ void uploadClut256(s32p clutData, s16 x, s16 y) {
 }
 
 void initPrimByType(s32 type, void *prim, s32 semiTrans, s32 shadeTex) {
+#ifdef PC_PORT
+    /* PC_PORT: the bytes of a primitive the game never writes (the GPU ignores them: a colour word's top byte) are
+       whatever its heap block held before; on the host that can be a host pointer's bytes, which differ from build
+       to build, and they go into the log's primitive hash. The host clears the primitive first */
+    __builtin_memset(prim, 0, PRIM_SIZES[type]);
+#endif
     PRIM_INIT_FUNCS[type](prim);
     SetSemiTrans(prim, semiTrans);
     SetShadeTex(prim, shadeTex);

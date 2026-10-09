@@ -329,6 +329,11 @@ StreakParticles *createStreakParticles(u8 *startColor, u8 *endColor, EffectTempl
     fx->direction = reverse == 0 ? 1 : -1;
     fx->kind = kind;
     for (i = 0; i < fx->count; i++, particle++) {
+#ifdef PC_PORT
+        /* PC_PORT: the lines' bytes the game never writes (a colour word's top byte, which the GPU ignores) are the
+           heap block's earlier contents, on the host build-dependent: cleared (as initPrimByType does) */
+        __builtin_memset(particle->line, 0, sizeof(particle->line));
+#endif
         if (fx->kind == 0) {
             line = &particle->line[0];
             SetLineF2(line);
@@ -432,6 +437,11 @@ StreakParticles *createStreakParticles(u8 *startColor, u8 *endColor, EffectTempl
     fx->direction = reverse == 0 ? 1 : -1;
     fx->kind = kind;
     for (i = 0; i < fx->count; i++, particle++) {
+#ifdef PC_PORT
+        /* PC_PORT: the lines' bytes the game never writes (a colour word's top byte, which the GPU ignores) are the
+           heap block's earlier contents, on the host build-dependent: cleared (as initPrimByType does) */
+        __builtin_memset(particle->line, 0, sizeof(particle->line));
+#endif
         if (fx->kind == 0) {
             line = &particle->line[0];
             SetLineF2(line);

@@ -36,7 +36,8 @@ REPLAY_PY = ROOT / "tests" / "replay" / "replay.py"
 # wait_mem targets, and tests/port/vram.py's alignment waits), looked up in config/<version>/symbols*.txt and
 # undefined_syms*.txt.
 ADAPTER_SYMBOLS = ["OVERLAY_AREA", "PLAYER_PROFILES", "OPEN_TITLE_STATE", "OPEN_INTRO_TEXT",
-                   "OPEN_MEMCARD", "OPEN_MEMCARD_STATE", "SCROLL_BACKGROUND", "SAI_AREA"]
+                   "OPEN_MEMCARD", "OPEN_MEMCARD_STATE", "SCROLL_BACKGROUND", "SAI_AREA", "PAD_INPUT_ENABLED",
+                   "DUEL_DIALOG", "KAW_TUTORIAL_WINDOW", "KAW_RESULT_SCREEN_STATE"]
 
 
 def mk_variables(version):
