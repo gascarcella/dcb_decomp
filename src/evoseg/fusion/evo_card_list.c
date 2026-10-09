@@ -473,7 +473,7 @@ void EVO_drawSortMenu(UiWindow *w) {
         EVO_CARD_LIST_MENU.row = 0;
         centerMenuOnCursor(&EVO_CARD_LIST_MENU);
         if (EVO_SORT_COMPARES[EVO_SORT_MENU.row] != NULL) {
-            sortArray((s8 *)EVO_CARD_LIST, 0x12D, 4, EVO_SORT_COMPARES[EVO_SORT_MENU.row]);
+            sortArray((s8 *)EVO_CARD_LIST, 0x12D, HOST_SIZEOF(4, void *), EVO_SORT_COMPARES[EVO_SORT_MENU.row]);
         } else {
             EVO_initCardList();
         }

@@ -908,6 +908,11 @@ void EVO_drawShardG3(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
 
     prim = (u16 *)EVO_SHARD_PRIM;
     poly = (PolyG3 *)GsGetWorkBase();
+#ifdef PC_PORT
+    /* PC_PORT: the shard sets only its first colour; the others are the packet area's earlier bytes (on the PS1 an
+       older primitive's, often its tag word), on the host build-dependent: cleared */
+    __builtin_memset(poly, 0, sizeof(*poly));
+#endif
     setlen(poly, 6);
     setcode(poly, 0x30);
     SetSemiTrans(poly, 1);
@@ -957,6 +962,11 @@ void EVO_drawShardG4(SVECTOR *pos, s32 unused, s16 div, s16 mul) {
 
     prim = (u16 *)EVO_SHARD_PRIM;
     poly = (PolyG4 *)GsGetWorkBase();
+#ifdef PC_PORT
+    /* PC_PORT: the shard sets only its first colour; the others are the packet area's earlier bytes (on the PS1 an
+       older primitive's, often its tag word), on the host build-dependent: cleared */
+    __builtin_memset(poly, 0, sizeof(*poly));
+#endif
     setlen(poly, 8);
     setcode(poly, 0x38);
     SetSemiTrans(poly, 1);

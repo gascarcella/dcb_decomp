@@ -20,7 +20,7 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.5 (game.json `disc_required`: no start without a disc, `--input-test` aside, psxstack #64; v0.3.4: the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+v0.3.6 (a replay step that writes memory, `write_mem`, psxstack #70; v0.3.5: game.json `disc_required`: no start without a disc, `--input-test` aside, psxstack #64; v0.3.4: the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
 runners).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
@@ -188,6 +188,20 @@ runners).
   `HOST_SIZEOF` (OPENSEG's trade list: #59). VRAM: the textures equal at all 9 SUBSEG dumps, the picture at 6
   (aligned on the card-art cache and the background; known: the duel's card-art CLUT rows, the starter's `rand()`
   bonus cards in the card list's counts, SAISEG's stretched quads and corner icon). SUBSEG's SPU trace: #60.
+- **EVOSEG reached (M5, #56):** `tests/replay/scripts/fusion.json` continues `first_duel_play` into Flame City's
+  Fusion Shop: a Card Fusion (ExVeemon and Stingmon, a recipe: Paildramon) with its Yes/No dialog, the fusion cutscene
+  and its banner and the RECEIVED! result, then a Partner Fusion (Veemon with Paildramon: the partner list and status,
+  a Digi-Part reward), back to SAISEG. The shop sits behind five `rand()`-driven CPU duels no pad script can play on
+  both runners, so a fixture writes that progress on the world map (psxstack's `write_mem` step, psxstack#70; the
+  port through the adapter's profile view): docs/PORT.md "Testing". Every press waits on SAISEG's choice menu and
+  world map or EVOSEG's fusion state, dialog and cutscene words (`port/game/views_evoseg.c`). The emulator gives it
+  twice identical (38,598 frames); the port passes it twice identical with all 11 new checkpoints' hashes the
+  emulator's, and under ASan/UBSan with no report and the plain build's log, after four host fixes under `PC_PORT`:
+  #44 (`EVO_BANNER_CLUT`'s 64-byte store), `unloadAllModels`' wrong slot, `EVO_drawTray`'s misaligned pointer, the
+  cutscene shards' unwritten colours. EVOSEG's part of #36's audit: `EvoFx` checked against `EffectObject`
+  (`_Static_assert`), `EvoDialog` is a `Dialog`, `EvoModel` a `Model`, `EvoCardInfo` a view of disc records
+  (pointer-free); `EVO_CARD_LIST`'s sort takes `HOST_SIZEOF`. VRAM: textures equal at all 11 dumps, the picture at 6.
+  Its SPU trace: #63.
 - Next: the rest of the duel (#4) and the card-art cache's timing (#45, with the CD's per-read latency: psxstack#62);
   M2: the stretched quads' row or column (psxstack#54); M3: the port's own SPU trace replayed on its timeline
   (psxstack#63).

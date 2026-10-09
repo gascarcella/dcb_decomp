@@ -51,7 +51,9 @@ void EVO_drawTray(EvoTray *tray) {
     if (tray == &EVO_TRAYS[0]) {
         player = 1;
     }
-#if VERSION_US
+#if defined(PC_PORT) /* PC_PORT: the same byte, without a misaligned EvoFusion pointer (UBSan) */
+    if (EVO_FUSION.busy[player] == 0) {
+#elif VERSION_US
     /* the match depends on adding the index before the field offset, as the
        original does */
     if (((EvoFusion *)((u8 *)&EVO_FUSION + player))->busy[0] == 0) {

@@ -77,6 +77,49 @@ void unloadModel(s32 slot) {
     freeHeapBlocksByTag(slot + 0x40);
 }
 
+#ifdef PC_PORT
+/* PC_PORT: unloadAllModels' models[i - 0x40] is the word 0x100 bytes before models[i] in the PS1's Scene3D, inside
+   root and viewMatrix (PS1 offsets 0x3C..0x97 for us; jp's models are 4 bytes lower); on the host, whose Scene3D has
+   wider pointers, the same index lands before the object. Cleared here in the host's fields at that PS1 offset. */
+#if VERSION_JP
+#define SCENE3D_PS1_MODELS 0x138
+#else
+#define SCENE3D_PS1_MODELS 0x13C
+#endif
+static void clearMatrixWord(MATRIX *m, s32 ofs) {
+    /* ofs: a 4-byte word in the PS1's MATRIX (0x20 bytes: m[3][3], 2 bytes of padding, t[3]) */
+    if (ofs < 0x14) {
+        ((s16 *)m->m)[ofs / 2] = 0;
+        if (ofs / 2 + 1 < 9) {
+            ((s16 *)m->m)[ofs / 2 + 1] = 0;
+        }
+    } else {
+        m->t[(ofs - 0x14) / 4] = 0;
+    }
+}
+static void clearScene3DPs1Word(Scene3D *scene, s32 ofs) {
+    s32 rel;
+    if (ofs >= 0x78 && ofs < 0x98) {
+        bzero(&scene->viewMatrix[ofs - 0x78], 4);
+        return;
+    }
+    rel = ofs - 0x28; /* root, a GsCOORDINATE2 */
+    if (rel == 0) {
+        scene->root.flg = 0;
+    } else if (rel >= 0x04 && rel < 0x24) {
+        clearMatrixWord(&scene->root.coord, rel - 0x04);
+    } else if (rel >= 0x24 && rel < 0x44) {
+        clearMatrixWord(&scene->root.workm, rel - 0x24);
+    } else if (rel == 0x44) {
+        scene->root.param = NULL;
+    } else if (rel == 0x48) {
+        scene->root.super = NULL;
+    } else if (rel == 0x4C) {
+        scene->root.sub = NULL;
+    }
+}
+#endif
+
 void unloadAllModels(void) {
     s32 i;
 
@@ -85,7 +128,11 @@ void unloadAllModels(void) {
             unloadModelAnimations(i);
             SCENE_3D->modelState[i] = 0;
             /* sic: the original clears the wrong slot */
+#ifndef PC_PORT
             SCENE_3D->models[i - 0x40] = 0;
+#else
+            clearScene3DPs1Word(SCENE_3D, SCENE3D_PS1_MODELS + (i - 0x40) * 4);
+#endif
         }
     }
     waitFrames(FRAME_INTERVAL);
