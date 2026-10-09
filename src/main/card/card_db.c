@@ -429,9 +429,9 @@ void rollRewardCards(s32 player, s32 pack) {
     s32 row;
 
     clearCollectionFirstObtainedFlags(player);
-    cards = allocTaskHeapBlock(0x4B4);
-    inRange = allocTaskHeapBlock(0x25A);
-    nearRange = allocTaskHeapBlock(0x25A);
+    cards = allocTaskHeapBlock(HOST_FITS(0x4B4, 0x12D * sizeof(DigimonCardData *)));
+    inRange = allocTaskHeapBlock(0x25A); /* PC_PORT: bytes (an s16 per card) */
+    nearRange = allocTaskHeapBlock(0x25A); /* PC_PORT: bytes (an s16 per card) */
     bonusChance = 0;
     for (i = 0; i < 3; i++) {
         if (PLAYER_DATA(player).partners[i].cardId != 0) {

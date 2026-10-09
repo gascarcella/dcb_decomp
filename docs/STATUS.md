@@ -102,8 +102,17 @@ runners).
   sanitizer build has no report on any script: the alignment reports are gone, `HUFFMAN_LEFT`/`RIGHT` are arrays on
   the host, and `assignCardCopySerial`'s in-struct overrun is in `tests/port/ubsan.supp`. `tests/port/run.py
   --sanitize` gates CI's `replay` job with the four scripts.
-- Next: `first_duel`'s duel (#4), the literal heap sizes (#31); M2: align the phase-shifted dumps (#33), then the
-  duel's VRAM.
+- **The duel's views and sizes (#30, #31):** `EvoModel`, `ModelData` and the other views of the duel's objects by PS1
+  offsets (the duel state, the profile, the players, the HUD panels, the camera, the effects' transforms) agree with
+  the host's layout; the heap blocks of host-grown types keep their PS1 sizes, which the host's types fit
+  (`HOST_FITS`; `docs/PORT.md` "Memory and pointers"). A scratch script past `first_duel` (presses through the
+  tutorial) runs the first round of the tutorial duel on the port: the support card, SUGSEG's polygon battle
+  (attacks, damage, SUGSEG at frame 19594) and back to KAWSEG (21262), then round 2 (the opponent digivolves into
+  Frigimon, the Battle Phase), with no crash, to frame 27586, where the blind presses stall at a card select. The
+  sanitizer build had no report the base did not have. The emulator cannot replay frame-timed presses there (its
+  timing differs): a duel replay script needs waits on the duel's state (#37).
+- Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: align the phase-shifted
+  dumps (#33), then the duel's VRAM.
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

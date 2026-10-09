@@ -61,12 +61,21 @@ typedef struct {
     /* 0x03C */ s32 sy;
     /* 0x040 */ s32 sz;
     /* 0x044 */ s32 sw;
+#ifndef PC_PORT
     /* 0x048 */ s32 unk48;
+#else
+    s32p unk48; /* its Transform's parent (game.h's EFFECT_OBJECT_PARENT_EXTRA) */
+#endif
     /* 0x04C */ MATRIX targetMatrix; /* the start of the target's transform */
     /* 0x06C */ s32 targetX;
     /* 0x070 */ s32 targetY;
     /* 0x074 */ s32 targetZ;
+#ifndef PC_PORT
     /* 0x078 */ u8 unk78[0x20];
+#else
+    u8 unk78[0x1C];
+    s32p unk94; /* the target's Transform's parent */
+#endif
 #if VERSION_JP
     /* 0x098 */ EffectTrail *trail; /* jp: the fields below are 4 bytes further */
 #endif
@@ -129,7 +138,10 @@ typedef struct {
 #ifdef PC_PORT
 /* the views of an EffectObject (EffectTemplate, EvoFx, EffectInit, the effects
    that start with one) count on this layout */
-_Static_assert(__builtin_offsetof(EffectObject, parent) == 0x98 && sizeof(EffectObject) == 0x13C + EFFECT_OBJECT_HOST_EXTRA &&
+_Static_assert(__builtin_offsetof(EffectObject, parent) == 0x98 + EFFECT_OBJECT_PARENT_EXTRA &&
+                   __builtin_offsetof(EffectObject, unk48) == 0x48 &&
+                   __builtin_offsetof(EffectObject, unk94) - __builtin_offsetof(EffectObject, targetMatrix) == 0x48 &&
+                   sizeof(EffectObject) == 0x13C + EFFECT_OBJECT_HOST_EXTRA &&
                    sizeof(EffectTemplate) == sizeof(EffectObject),
                "the host's EffectObject");
 #endif
@@ -176,7 +188,12 @@ typedef struct {
     /* 0x30 */ s16 rotX;
     /* 0x32 */ s16 rotY;
     /* 0x34 */ s16 rotZ;
+#ifndef PC_PORT
     /* 0x36 */ u8 unk36[0x16];
+#else
+    u8 unk36[0x12];
+    s32p parent; /* its Transform's parent (0x48; issue #30) */
+#endif
     /* 0x4C */ LINE_G2 line[2];
     /* 0x74 */ s16 posX;
     /* 0x76 */ s16 posY;

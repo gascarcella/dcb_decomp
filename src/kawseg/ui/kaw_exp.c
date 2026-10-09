@@ -228,7 +228,7 @@ void KAW_drawBonusList(UiWindow *w) {
     y = w->originY;
     z = w->z;
     drawText(x + 0x28, y + 1, (s32p)"Detail of Earned Experience Points", 6, 0);
-    exp = DUEL->winner == 0 ? ((u8 *)SESSION_DATA)[0x74] : 0;
+    exp = DUEL->winner == 0 ? KAW_SESSION_BYTE(0x74) : 0;
     rowY = y + 15;
     drawText(x + 6, rowY, (s32p)"Experience Points from Opponent", 7, z);
     sprintf(buf, "*s0+%3d", exp);

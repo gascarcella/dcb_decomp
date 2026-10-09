@@ -58,13 +58,25 @@ void KAW_pickCardArtSlot(void) {
     DUEL->artSlot = (DUEL->artSlot + 1) % 6;
 }
 
+#ifdef PC_PORT
+/* the host's CardAnim is CARD_ANIM_SIZE bytes, not 36 (game.h, issue #30) */
+#define HAND_MARK_ANIM_SIZE CARD_ANIM_SIZE
+/* the state of a player's first HUD panel: 0xD8 is six PS1 HudPanels (battle_hud.h, issue #30) */
+#define HAND_PANEL_STATE(p) (PLAYER_PANEL(p, 0)->state)
+/* a Player's bit-field word (game.h) */
+#define HAND_PLAYER_FLAGS PLAYER_FLAGS_OFS
+#else
+#define HAND_MARK_ANIM_SIZE 36
+#define HAND_PANEL_STATE(p) HUD_PANELS[p * 0xD8 + 0xD]
+#define HAND_PLAYER_FLAGS 0x178
+#endif
 #define DRAW_HAND_MARK(u)                                                                               \
     rect.x = (u);                                                                                        \
     rect.y = player * 24 + 0x30;                                                                         \
     rect.w = 0x1B;                                                                                       \
     rect.h = 0x18;                                                                                       \
-    drawPageSprite(((CardAnim *)(CARD_ANIMS + card * 36))->spr->sx + dx,                                 \
-                   ((CardAnim *)(CARD_ANIMS + card * 36))->spr->sy + dy, (s32p)&rect,                     \
+    drawPageSprite(((CardAnim *)(CARD_ANIMS + card * HAND_MARK_ANIM_SIZE))->spr->sx + dx,                \
+                   ((CardAnim *)(CARD_ANIMS + card * HAND_MARK_ANIM_SIZE))->spr->sy + dy, (s32p)&rect,    \
                    getTPage(0, 2, SYSTEM_TEX_X, SYSTEM_TEX_Y), 0xC, 0x32)
 
 s32 KAW_drawHandHints(s32 player) {
@@ -274,12 +286,12 @@ s32 KAW_tickCardCursor(s32 player, s32 mode) {
     }
     if (DUEL->cursorSlot < 6) {
         if (DUEL->cursorPlayer == 0) {
-            if (HUD_PANELS[player * 0xD8 + 0xD] == 4) {
-                HUD_PANELS[player * 0xD8 + 0xD] = 1;
+            if (HAND_PANEL_STATE(player) == 4) {
+                HAND_PANEL_STATE(player) = 1;
             }
         } else {
-            if (HUD_PANELS[player * 0xD8 + 0xD] == 4) {
-                HUD_PANELS[player * 0xD8 + 0xD] = 2;
+            if (HAND_PANEL_STATE(player) == 4) {
+                HAND_PANEL_STATE(player) = 2;
             }
         }
     }
@@ -301,14 +313,14 @@ s32 KAW_tickCardCursor(s32 player, s32 mode) {
 }
 
 s32 KAW_openCardSelect(s32 player) {
-    MSG_BAR_PLAYER_LABEL = (*(u32 *)(DUEL_PLAYERS[player] + 0x178) >> 17) & 3;
-    HUD_PANELS[player * 0xD8 + 0xD] = player + 1;
+    MSG_BAR_PLAYER_LABEL = (*(u32 *)(DUEL_PLAYERS[player] + HAND_PLAYER_FLAGS) >> 17) & 3;
+    HAND_PANEL_STATE(player) = player + 1;
 }
 
 s32 KAW_closeCardSelect(s32 index) {
     DUEL->cursorSlot = -1;
     KAW_DUEL->cursorMode = -1;
-    HUD_PANELS[index * 0xD8 + 0xD] = 5;
+    HAND_PANEL_STATE(index) = 5;
 }
 
 s32 KAW_drawCardToHand(s32 player) {
@@ -501,7 +513,7 @@ s32 KAW_checkKnockout(s32 player) {
             KAW_showBonusBanner(opponent, 0xF);
         }
         DUEL->winner = opponent;
-        if (((*(u32 *)((u8 *)PLAYER(player) + 0x178) >> 14) & 1) && PLAYER(opponent)->wins != 2) {
+        if (((*(u32 *)((u8 *)PLAYER(player) + HAND_PLAYER_FLAGS) >> 14) & 1) && PLAYER(opponent)->wins != 2) {
             KAW_playEffect(0x1D, player);
             showStatChangePopup(player, PLAYER(player)->reviveHp, 0);
             PLAYER(player)->stats[0] = PLAYER(player)->reviveHp;
@@ -553,7 +565,7 @@ void KAW_drawCard3D(Icon3D *icon, s32 z, RawPolyFT4 *pk) {
 
     PushMatrix();
     buildRotTransMatrix(&icon->pos, &icon->rot, &matrix);
-    CompMatrix((MATRIX *)((u8 *)SCENE_3D + 0x78), &matrix, &matrix);
+    CompMatrix(KAW_VIEW_MATRIX, &matrix, &matrix);
     SetRotMatrix((MATRIX *)&matrix);
     SetTransMatrix(&matrix);
     vertices[0].vx = -20;

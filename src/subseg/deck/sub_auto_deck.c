@@ -305,7 +305,7 @@ void SUB_buildAutoDeck(PlayerDeck *deck) {
     s32 n;
     s16 count;
 
-    SUB_AUTO_DECK_POOLS = allocTaskHeapBlock(0x2760);
+    SUB_AUTO_DECK_POOLS = allocTaskHeapBlock(0x2760); /* PC_PORT: bytes (CardIdLists, pointer-free) */
     for (i = 0; i < 20; i++) {
         SUB_AUTO_DECK_POOLS[i].count = 0;
     }

@@ -34,8 +34,8 @@
 void initDuelState(s32 isCpuDuel) {
     void *block;
 
-    CARD_ANIMS = block = allocTaskHeapBlock(0x870);
-    DUEL_STATE = block = allocTaskHeapBlock(0x86C);
+    CARD_ANIMS = block = allocTaskHeapBlock(HOST_FITS(0x870, 60 * sizeof(CardAnim)));
+    DUEL_STATE = block = allocTaskHeapBlock(HOST_FITS(0x86C, sizeof(Duel)));
     DUEL->sprites = (void *)KAW_allocCardPolys();
     DUEL->turnPlayer = rand() % 2;
     DUEL->step = 0;
@@ -209,8 +209,8 @@ void runDuel(s32 mode, s32 parent) {
                 DUEL->fade = 0;
             }
             if (DUEL->fade == 0) {
-                DB(0).scenePackets = allocHeapBlock(0xBB80, 0x7F);
-                DB(1).scenePackets = allocHeapBlock(0xBB80, 0x7F);
+                DB(0).scenePackets = allocHeapBlock(0xBB80, 0x7F); /* PC_PORT: bytes (GPU packets) */
+                DB(1).scenePackets = allocHeapBlock(0xBB80, 0x7F); /* PC_PORT: bytes (GPU packets) */
                 showArenaStage(0x400);
                 addFrameCallback((s32p)renderSceneModels);
                 SCENE_3D->modelState[0x17] = 1;

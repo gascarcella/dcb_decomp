@@ -252,8 +252,14 @@ void SUG_animateHpCounter(s32 side) {
 }
 
 void SUG_showAttackLabel(s32 side) {
+#ifdef PC_PORT
+    HudSlide slides[2]; /* SUG_tickHudSlides walks them as an array, as in the PS1 frame (#30) */
+#define obj slides[0]
+#define obj2 slides[1]
+#else
     HudSlide obj;
     HudSlide obj2;
+#endif
     Rect16 uv2;
     s32 state;
     s32 alt;
@@ -287,6 +293,10 @@ void SUG_showAttackLabel(s32 side) {
         drawTexturedSprite((s16)obj.pos + 6, 0xA2, &uv2, SUG_HUD_TPAGE, getClut(SUG_BATTLE->players[side].attack * 16 + 0x280, 0x52), 0, 0x80, 1);
     } while (state != 2);
 }
+#ifdef PC_PORT
+#undef obj
+#undef obj2
+#endif
 
 void SUG_showAttackBanner(s32 side) {
     HudSlide banners[5];
@@ -393,12 +403,19 @@ void SUG_showAttackBanner(s32 side) {
 }
 
 void SUG_showHpBanner(s32 side) {
+#ifdef PC_PORT
+    HudSlide slides[3]; /* SUG_tickHudSlides walks them as an array, as in the PS1 frame (#30) */
+#define bar slides[0]
+#define icon slides[1]
+#define num slides[2]
+#else
     HudSlide bar;
     HudSlide icon;
 #if VERSION_JP
     HudSlide label;
 #endif
     HudSlide num;
+#endif
 #if VERSION_US || VERSION_EU
     s32 unused[8]; /* unused, but it is in the original stack frame */
 #endif
@@ -451,10 +468,21 @@ void SUG_showHpBanner(s32 side) {
     } while (state != 3);
     waitFrames(FRAME_INTERVAL);
 }
+#ifdef PC_PORT
+#undef bar
+#undef icon
+#undef num
+#endif
 
 void SUG_showWinnerBanner(s32 side) {
+#ifdef PC_PORT
+    HudSlide slides[2]; /* SUG_tickHudSlides walks them as an array, as in the PS1 frame (#30) */
+#define banner slides[0]
+#define icon slides[1]
+#else
     HudSlide banner;
     HudSlide icon;
+#endif
     s32 state;
 
     state = 0;
@@ -476,6 +504,10 @@ void SUG_showWinnerBanner(s32 side) {
                       0x80, 0, icon.trail, 6);
     } while (state != 3);
 }
+#ifdef PC_PORT
+#undef banner
+#undef icon
+#endif
 
 void SUG_showEatUpHpBanner(void) {
     HudSlide obj;

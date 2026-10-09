@@ -38,6 +38,8 @@ typedef struct {
     s32 liveScale[3];
 #if VERSION_JP
     u8 unk44[0x58]; /* jp's EffectObject: the fields below are 4 bytes further */
+#elif defined(PC_PORT)
+    u8 unk44[0x54 + EFFECT_OBJECT_PARENT_EXTRA]; /* the host's EffectObject (game.h, issue #30) */
 #elif VERSION_US || VERSION_EU
     u8 unk44[0x54];
 #endif
@@ -108,7 +110,11 @@ typedef struct {
 typedef struct {
     EffectSlot slots[150];
     s32 modelSlots[3];
+#ifndef PC_PORT
     u8 xform[0x4C];
+#else
+    u8 xform[TRANSFORM_HOST_SIZE] __attribute__((aligned(sizeof(s32p)))); /* a Transform (game.h, issue #30) */
+#endif
     s32p pak;
     s32 count;
 } EffectSlots;
@@ -121,6 +127,16 @@ typedef struct {
     s32 waitFrames;
     s32 waitReleased; /* the first wait holds until regs[0] is -1 */
 } EffectScript;
+
+#ifdef PC_PORT
+/* a Model's keys (0xD80 on the PS1; the host's coords and objects before them hold pointers) and the n-th entry of a
+   chain of pointers (4 bytes each on the PS1; issue #30) */
+#define MODEL_KEYS(model) (((Model *)(model))->keys)
+#define XFORM_CHAIN_OFS(n) ((n) * (s32)sizeof(Xform *))
+#else
+#define MODEL_KEYS(model) (model + 0xD80)
+#define XFORM_CHAIN_OFS(n) (n << 2)
+#endif
 
 typedef struct Xform {
     u8 unk0[0x48];
@@ -268,7 +284,7 @@ void SUG_detachEffectToWorld(EffectSlots *slots, s32 id, EffectParams *cmd) {
                 if (n >= 16) {
                     break;
                 }
-                *(Xform **)((s32p)p + (n << 2)) = xform;
+                *(Xform **)((s32p)p + XFORM_CHAIN_OFS(n)) = xform;
             } while (xform != (Xform *)slots->xform);
         }
 #elif VERSION_EU
@@ -626,8 +642,8 @@ void SUG_runEffectScript(EffectScript *runner) {
                             prev = SCENE_3D->models[CAMERA->targetModel];
                             CAMERA->targetModel = slots->modelSlots[PARAMS->source];
                             next = SCENE_3D->models[CAMERA->targetModel];
-                            src = (BoneChannels *)(prev + 0xD80) + *(s16 *)(prev + 4);
-                            dst = (BoneChannels *)(next + 0xD80) + *(s16 *)(next + 4);
+                            src = (BoneChannels *)MODEL_KEYS(prev) + *(s16 *)(prev + 4);
+                            dst = (BoneChannels *)MODEL_KEYS(next) + *(s16 *)(next + 4);
                             for (i = 0; i < 3; i++) {
                                 dst->ch[0][i].value = src->ch[0][i].value;
                                 dst->ch[1][i].value = src->ch[1][i].value;
@@ -1044,10 +1060,16 @@ void SUG_createModelEffectFromParams(EffectParams *params, EffectSlots *ctx) {
 
     template = &buf;
     SUG_initEffectFromParams(template, params, ctx);
+#ifdef PC_PORT
+    /* not an address: loadModel's VRAM slot, which the PS1 steps by an Entry16 (16) per model slot as a pointer
+       (issue #30) */
+    entry = (Entry16 *)(s32p)(params->vramEntries != 0 ? params->vramEntries + ctx->modelSlots[0] * 16 : 0);
+#else
     entry = GAME_S32_TO_PTR(Entry16 *, params->vramEntries); /* a script register (op 8) */
     if (entry != NULL) {
         entry += ctx->modelSlots[0];
     }
+#endif
 #if VERSION_JP
     /* jp's model effects animate all their bones and take one CLUT bank */
     SUG_createModelEffect(params->brightness, template, params->id, params->anim, params->modelTexAnimId, (s32)entry,

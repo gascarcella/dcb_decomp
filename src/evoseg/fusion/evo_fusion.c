@@ -169,9 +169,9 @@ void EVO_runFusion(s32 unit) {
     EVO_initFusionScene();
     EVO_loadEffectArchive();
     for (i = 0; i < 3; i++) {
-        EVO_DECK_CARD_COUNTS[i] = allocTaskHeapBlock(0x12D);
+        EVO_DECK_CARD_COUNTS[i] = allocTaskHeapBlock(0x12D); /* PC_PORT: bytes (a count per card) */
     }
-    EVO_SPARE_CARD_COUNTS = allocTaskHeapBlock(0x12D);
+    EVO_SPARE_CARD_COUNTS = allocTaskHeapBlock(0x12D); /* PC_PORT: bytes (a count per card) */
     EVO_countSpareCards();
     EVO_openWindows();
     EVO_clearTextLines(EVO_TEXT_LINES);

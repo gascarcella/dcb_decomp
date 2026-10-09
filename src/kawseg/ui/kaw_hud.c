@@ -34,13 +34,20 @@ typedef struct {
 } GradPacket;
 
 typedef struct {
+#ifndef PC_PORT
     /* 0x000 */ u8 unk0[0x828];
+#else
+    u8 unk0[DUEL_OFS(ringMode)]; /* the host's Duel: mode..width are its ringMode..ringWidth (issue #30) */
+#endif
     /* 0x828 */ s32 mode;
     /* 0x82C */ s32 cx;
     /* 0x830 */ s32 cy;
     /* 0x834 */ s32 radius;
     /* 0x838 */ s32 width;
 } DuelRing;
+#ifdef PC_PORT
+_Static_assert(__builtin_offsetof(DuelRing, width) == DUEL_OFS(ringWidth), "DuelRing is the host Duel's ring");
+#endif
 
 typedef struct HudPanelK {
     /* 0x00 */ u8 rgb[4];
@@ -197,7 +204,7 @@ s32p KAW_allocCardPolys(void) {
     for (i = 0; i < 2; i++) {
         ((Graphics *)&GRAPHICS)->buffers[i].primSlots[10] = (s32p)&CARD_POLY_PACKETS[i];
     }
-    allocTaskHeapBlock(0xE10);
+    allocTaskHeapBlock(0xE10); /* PC_PORT: bytes (never used: it keeps the heap's layout) */
 }
 
 s32 KAW_freeCardPolys(void) {
@@ -373,7 +380,7 @@ void KAW_drawCursor(void *cursor) {
 #define SET_SPRITE_MATRIX(sprite, m)                                  \
     do {                                                              \
         buildRotTransMatrix(&(sprite)->pos, &(sprite)->rot, m);       \
-        CompMatrix((MATRIX *)((u8 *)SCENE_3D + 0x78), m, m);          \
+        CompMatrix(KAW_VIEW_MATRIX, m, m);                            \
         SetRotMatrix((MATRIX *)(m));                                       \
         SetTransMatrix(m);                                             \
     } while (0)

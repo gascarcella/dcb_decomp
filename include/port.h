@@ -39,6 +39,8 @@ typedef u32 u32p;
    s32 field), and back: the address itself on the PS1 */
 #define GAME_PTR_TO_S32(p) ((s32)(p))
 #define GAME_S32_TO_PTR(type, v) ((type)(v))
+/* a heap block's size the PS1 code writes as its byte count, of an object whose host type is larger: ps1 */
+#define HOST_FITS(ps1, host) ps1
 
 #else
 
@@ -64,6 +66,12 @@ void *game_s32_to_ptr(s32 v);
 s32 game_heap_owns(const void *p); /* whether p is in the heap's host bytes */
 #define GAME_PTR_TO_S32(p) game_ptr_to_s32(p)
 #define GAME_S32_TO_PTR(type, v) ((type)game_s32_to_ptr(v))
+
+/* A heap block's size the PS1 code writes as its byte count, of an object whose type (host, a sizeof) is larger on the
+   host: the block keeps the PS1's size, so the heap's table and every later block keep the PS1's addresses, and the
+   host's bytes fit because heap.c spaces each block HEAP_HOST_SCALE (sizeof(void *) / 4) times its size; checked at
+   compile time (issue #31) */
+#define HOST_FITS(ps1, host) (0 * sizeof(char[(host) <= (ps1) * (sizeof(void *) / 4) ? 1 : -1]) + (ps1))
 
 /* The arguments of a call to one of startup.s's stubs that the game declares without a prototype and calls with as
  * many arguments as it uses (spawnTask, resumeTask; include/game.h): each one an s32p, the missing ones 0. On the

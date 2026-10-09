@@ -68,7 +68,11 @@ typedef struct {
 typedef struct {
     EvoFx fx;
     Model *model;
+#ifndef PC_PORT
     u8 pad140[0x160 - 0x140];
+#else
+    u8 pad140[0x160 - 0x140 + TEX_ANIM_HOST_EXTRA]; /* SUGSEG's TexAnim on the host (game.h, issue #30) */
+#endif
     EvoClut clut;
     s16 prevLevel;
     s8 slot;
@@ -78,6 +82,13 @@ typedef struct {
     u8 pad572[2];
     s32 clutBank; /* 0 takes the model's CLUT from the row at y 0xF0, else 0x70 */
 } EvoModelFx;
+#ifdef PC_PORT
+#include "dcb/scene3d.h"
+_Static_assert(__builtin_offsetof(EvoModelFx, model) == __builtin_offsetof(ModelLink, model) &&
+                   __builtin_offsetof(EvoModelFx, flags) == __builtin_offsetof(ModelLink, axisMode) &&
+                   __builtin_offsetof(EvoModelFx, active) == __builtin_offsetof(ModelLink, enabled),
+               "ModelLink is a view of EvoModelFx (issue #30)");
+#endif
 
 typedef void (*EvoFxFunc)(EvoFx *);
 

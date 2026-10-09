@@ -317,7 +317,7 @@ void OPEN_initMemcardScreen(s32 port) {
     OPEN_MEMCARD.animPhase = 0;
     OPEN_MEMCARD.message = -1;
     OPEN_MEMCARD.animTime = 0;
-    OPEN_MEMCARD.buffer = allocHeapBlock(0x4000, 0x63);
+    OPEN_MEMCARD.buffer = allocHeapBlock(0x4000, 0x63); /* PC_PORT: bytes (card sectors) */
 }
 
 /* libgpu's setRECT */

@@ -31,6 +31,10 @@
 #if VERSION_JP
 #define CARD_ANIM_SIZE 40
 #define SPRITE_KIND(c) (*(s8 *)(CARD_ANIMS + (c) * CARD_ANIM_SIZE + 4))
+#elif defined(PC_PORT)
+/* the host's CardAnim holds a pointer and is larger: its size and its state by name (issue #30) */
+#define CARD_ANIM_SIZE ((s32)sizeof(CardAnim))
+#define SPRITE_KIND(c) (((CardAnim *)(CARD_ANIMS + (c) * CARD_ANIM_SIZE))->state)
 #elif VERSION_US || VERSION_EU
 #define CARD_ANIM_SIZE 36
 #define SPRITE_KIND(c) (*(s8 *)(CARD_ANIMS + (c) * CARD_ANIM_SIZE + 0x22))
@@ -624,10 +628,18 @@ typedef struct {
     u8 b[8];
 } Bytes8;
 #ifdef PC_PORT
-/* What an EffectObject (scroll_bg.h) gains on the host: its parent is pointer-wide
-   (4 bytes at -m64, none at -m32), so every field after it is that much further,
-   and so are the effects that start with an EffectObject's bytes */
-#define EFFECT_OBJECT_HOST_EXTRA (sizeof(s32p) - 4)
+/* What an EffectObject (scroll_bg.h) gains on the host: three pointer-wide words (4 bytes more each at -m64, none
+   at -m32), so every field after them is that much further, and so are the effects that start with an EffectObject's
+   bytes. Two come before its parent (0x98 on the PS1): the effect is a Transform (dcb/transform.h) whose parent is at
+   0x48, and its target (targetMatrix, 0x4C) is one whose parent is at 0x94 (issue #30) */
+#define EFFECT_OBJECT_HOST_EXTRA (3 * (sizeof(s32p) - 4))
+#define EFFECT_OBJECT_PARENT_EXTRA (2 * (sizeof(s32p) - 4))
+/* What a model effect's texture animation (SUGSEG's TexAnim, 0x20 bytes on the PS1, after the effect's Model pointer)
+   gains on the host: four pointers. ModelLink (scene3d.h) reads SUGSEG's ModelEffect and EVOSEG's EvoModelFx by their
+   PS1 offsets past it */
+#define TEX_ANIM_HOST_EXTRA (4 * (sizeof(s32p) - 4))
+/* a Transform's bytes (0x4C on the PS1): its parent is pointer-wide */
+#define TRANSFORM_HOST_SIZE (0x48 + sizeof(s32p))
 #endif
 typedef struct {
 #if VERSION_JP
@@ -637,7 +649,11 @@ typedef struct {
 #elif VERSION_US || VERSION_EU
     /* 0x000 */ u8 unk0[0x13C];
 #endif
+#ifndef PC_PORT
     /* 0x13C */ u8 texAnim[0x20];
+#else
+    u8 texAnim[0x20 + TEX_ANIM_HOST_EXTRA] __attribute__((aligned(sizeof(s32p)))); /* SUGSEG's TexAnim (issue #30) */
+#endif
     /* 0x15C */ u8 *tpagePrims[2];
     /* 0x164 */ u8 *prims[2];
     /* 0x16C */ void *vertices;
@@ -824,6 +840,14 @@ typedef struct {
     /* 0x1CD */ s8 playedCard;
     /* 0x1CE */ char name[1];
 } Player;
+#ifdef PC_PORT
+/* A Player's heap block (initDuelPlayers' 0x1E4 bytes on the PS1): the name's 0x16 bytes run past the struct */
+#define PLAYER_BLOCK_SIZE (__builtin_offsetof(Player, name) + (0x1E4 - 0x1CE))
+_Static_assert(PLAYER_BLOCK_SIZE % 4 == 0, "KAWSEG's PlayerSnapshot copies the block in words");
+/* the word of usedAttack .. unk178_31 (0x178 on the PS1), which KAWSEG reads whole */
+#define PLAYER_FLAGS_OFS (__builtin_offsetof(Player, wins) - 4)
+_Static_assert(PLAYER_FLAGS_OFS == __builtin_offsetof(Player, armorCluts) + 8, "Player's bit-field word");
+#endif
 #endif
 /* a player's 30 cards: jp's Player reaches them through its deck */
 #if VERSION_JP
@@ -1172,40 +1196,128 @@ typedef struct {
 } ModelAnimState;
 typedef struct {
     /* 0x0000 */ s32 dataSize;
+#ifndef PC_PORT
     /* 0x0004 */ s16 nobj;
+#else
+    /* PC_PORT: the callers' views of a Model by its PS1 offsets, EvoModel (EVOSEG) and ModelData (SUGSEG), name these
+       fields too; on the host every view is this Model, so their names are members of the same storage (issue #30) */
+    union {
+        s16 nobj;
+        s16 partCount; /* EvoModel */
+    };
+#endif
     /* 0x0006 */ s16 id;
+#ifndef PC_PORT
     /* 0x0008 */ VECTOR pos;
+#else
+    union {
+        VECTOR pos;
+        struct {
+            s32 posXY[2];
+            s32 x; /* ModelData: pos.vz, 0x10 */
+        };
+    };
+#endif
     /* 0x0018 */ VECTOR scale;
     /* 0x0028 */ GsCOORDINATE2 root;
     /* 0x0078 */ GsCOORDINATE2 coord[32];
+#ifndef PC_PORT
     /* 0x0A78 */ SVECTOR rot;
+#else
+    union {
+        SVECTOR rot;
+        struct {
+            s16 rotX; /* ModelData */
+            s16 rotY;
+        };
+    };
+#endif
     /* 0x0A80 */ SVECTOR rots[32];
+#ifndef PC_PORT
     /* 0x0B80 */ GsDOBJ4 obj[32];
+#else
+    union {
+        GsDOBJ4 obj[32];
+        /* EvoModel's parts (EvoPart, evoseg.h): its 320 run on into keys, but only the model's nobj are read */
+        struct EvoPart {
+            u32 attribute;
+            GsCOORDINATE2 *coord2;
+            void *tmd; /* a TmdObject (evoseg.h) */
+            u32 id;
+        } parts[32];
+    };
+#endif
     /* 0x0D80 */ BoneKeys keys[32];
+#ifndef PC_PORT
     /* 0x1F80 */ s16 *bonepos[32];
+#else
+    union {
+        s16 *bonepos[32];
+        struct {
+            s16 x;
+            s16 y;
+        } *pose; /* EvoModel: bonepos[0] as an EvoPose */
+    };
+#endif
     /* 0x2000 */ VECTOR boneScale[32];
+#ifndef PC_PORT
     /* 0x2200 */ ModelAnimState anim;
+#else
+    union {
+        ModelAnimState anim;
+        struct {
+            s32 animClip; /* ModelData: anim.clip */
+            s32 animUnk4;
+            s32 animKeyTimer; /* ModelData: anim.keyTimer */
+        };
+    };
+#endif
     /* 0x2220 */ AnimClip anims[16];
     /* 0x22A0 */ u8 unk22A0[0x10];
+#ifndef PC_PORT
     /* 0x22B0 */ MATRIX lw[32];
+#else
+    union {
+        MATRIX lw[32];
+        MATRIX matrices[32];           /* EvoModel */
+        u8 boneMatrices[32][0x20];     /* ModelData: a MATRIX per bone */
+    };
+#endif
     /* 0x26B0 */ s8 parent[32];
     /* 0x26D0 */ s32 clutOffset;
     /* 0x26D4 */ s32 tpageOffset;
     /* 0x26D8 */ s32 rootOnly;
     /* 0x26DC */ void *data;
+#ifndef PC_PORT
     /* 0x26E0 */ s32p link;
     /* 0x26E4 */ Rect16 prect;
     /* 0x26EC */ Rect16 crect;
+#else
+    union {
+        s32p link;
+        void *owner; /* ModelData */
+    };
+    Rect16 prect;
+    union {
+        Rect16 crect;
+        Rect16 clutRect; /* ModelData */
+    };
+#endif
 #if VERSION_US || VERSION_EU
     /* 0x26F4 */ void *pak;
+#ifndef PC_PORT
     /* 0x26F8 */ u8 clut[0x200];
+#else
+    u16 clut[0x100]; /* ModelData reads it as 256 colours; model_load.c only takes its address */
+#endif
 #endif
 } Model;
 #ifdef PC_PORT
 /* A view of Model by its PS1 offsets (Model2220, above): on the host, where Model's fields before bonepos hold
    pointers, the Model itself. Only bonepos is read through it (open_registration.c); its `scale` (Model.boneScale)
-   is not. */
+   is not. EvoModel (evoseg.h) and ModelData (sugseg.h) are the Model too, their names in its unions (issue #30). */
 typedef Model Model2220;
+_Static_assert(sizeof(MATRIX) == 0x20, "ModelData's boneMatrices are MATRIX-sized rows");
 #endif
 typedef struct {
     s16 id;
@@ -1342,11 +1454,27 @@ typedef struct {
 } Duel;
 #elif VERSION_US || VERSION_EU
 typedef struct {
+#ifndef PC_PORT
     /* 0x000 */ u8 unk0[0x50];
+#else
+    /* PC_PORT: KAWSEG's views of the duel state (DuelK, DuelAi in dcb/kawseg.h, DuelBanner, DuelRing) name bytes
+       this Duel leaves unnamed, by their PS1 offsets. On the host the pointers among them are here too, and each
+       view's pads are this Duel's offsets, so that every field of a view sits where this Duel has its bytes (issue
+       #30). DuelK's: tutorialScript, ringPrims, the banner's prims (DuelBanner), hudPrims, effectArchive */
+    /* 0x000 */ void *unk0[2];
+    /* 0x008 */ u8 unk8[0x40];
+    /* 0x048 */ void *unk48[2];
+#endif
     /* 0x050 */ Player *firstAttacker;
     /* 0x054 */ Player *secondAttacker;
     /* 0x058 */ u8 *cursor;
+#ifndef PC_PORT
     /* 0x05C */ u8 unk5C[0x784];
+#else
+    /* 0x05C */ u8 unk5C[0x768]; /* DuelAi's sims */
+    /* 0x7C4 */ void *unk7C4;    /* DuelK's selected */
+    /* 0x7C8 */ u8 unk7C8[0x18]; /* DuelK's slots */
+#endif
     /* 0x7E0 */ CardCache cache[6];
     /* 0x7F8 */ struct CardSprite *sprites; /* the sprite of each of the 60 cards */
     /* 0x7FC */ s32 cpuWaitFrames;
@@ -1388,6 +1516,9 @@ typedef struct {
     /* 0x834 */ s32 ringRadius;
     /* 0x838 */ s32 ringWidth;
     /* 0x83C */ s32 inPolygonBattle;
+#ifdef PC_PORT
+    /* 0x840 */ u8 unk840[0x2C]; /* DuelK's bonusFlags and cluts: the duel state's block is 0x86C bytes */
+#endif
 } Duel;
 #endif
 typedef struct {

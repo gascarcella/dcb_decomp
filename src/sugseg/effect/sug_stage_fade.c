@@ -27,7 +27,11 @@ void SUG_setStageBrightness(u8 level) {
     DB(0).draw.b0 = DB(1).draw.b0 = b;
 }
 
+#ifdef PC_PORT
+#define FADE_LEVEL (SCENE_3D->unk130[0]) /* Scene3D's byte 0x130 (issue #30) */
+#else
 #define FADE_LEVEL (((u8 *)SCENE_3D)[0x130])
+#endif
 
 void SUG_runStageFadeTask(void) {
     while (1) {

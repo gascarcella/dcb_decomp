@@ -119,7 +119,7 @@ void startMemoryCardEvents(void) {
         MEMORY_CARD_DIRECTORIES[i] = &HOST_CARD_DIRECTORIES[i];
 #endif
     }
-    MEMORY_CARD_SAVE_HEADER = allocPermanentHeapBlock(0x200);
+    MEMORY_CARD_SAVE_HEADER = allocPermanentHeapBlock(0x200); /* PC_PORT: bytes (the card's save header) */
 }
 
 #if VERSION_JP

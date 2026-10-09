@@ -8,3 +8,8 @@
 # turn rewrites) and the last card's on areaScriptFlags[0] (which resetScriptProgress zeroes after). Both inside
 # PlayerProfile, whose bytes from bonusCounts to unk2435 have the PS1's layout on the host (port/game/state.c).
 bounds:assignCardCopySerial
+#
+# KAW_tickCardCursor (src/kawseg/duel/kaw_hand.c): the card cursor looks for the nearest card through 9 entries from
+# Player.hand[4] on, so hand[4..8] are topCards[0..4], the s8/u8 bytes right after it (Player 0x1B9-0x1C1, pointer-free:
+# the same layout on the host). Reached in the duel (issue #30), not by the four gated scripts.
+bounds:KAW_tickCardCursor

@@ -217,7 +217,11 @@ void KAW_getCardPosition(s32 index, u8 *fx) {
 
     if (index >= 0) {
         base = (s32p)CARD_ANIMS;
+#ifdef PC_PORT
+        anim = (CardAnim *)(index * CARD_ANIM_SIZE + base); /* 36 bytes on the PS1 (game.h, issue #30) */
+#else
         anim = (CardAnim *)(index * 36 + base);
+#endif
         EFFECT_PARAMS(fx)->px = anim->spr->pos.vx;
         EFFECT_PARAMS(fx)->py = anim->spr->pos.vy;
         EFFECT_PARAMS(fx)->pz = anim->spr->pos.vz;
@@ -654,7 +658,11 @@ EffectTable *KAW_createEffectScript(void *data) {
     fx.fadeMode = 0;
     fx.speed = 0;
     fx.hitRadius = 0x80;
+#ifdef PC_PORT
+    fx.parent = (s32p)SCENE_3D->viewMatrix; /* its byte 0x98 on the PS1 (issue #30) */
+#else
     *(GsCOORDINATE2 **)((u8 *)&fx + 0x98) = (GsCOORDINATE2 *)SCENE_3D->viewMatrix;
+#endif
     fx.mode = 0;
     KAW_EFFECT_ROOT = fx;
     initEffectObject(&KAW_EFFECT_ROOT);

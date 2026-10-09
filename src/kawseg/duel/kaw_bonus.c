@@ -47,10 +47,17 @@ typedef struct {
 } BonusEntry;
 
 typedef struct {
+#ifndef PC_PORT
     u8 unk0[8];
+#else
+    u8 unk0[DUEL_OFS(unk8)]; /* the host's Duel (issue #30) */
+#endif
     PolyF4 banner[2];
     DR_MODE bannerMode[2];
 } DuelBanner;
+#ifdef PC_PORT
+_Static_assert(sizeof(DuelBanner) <= DUEL_OFS(unk48), "the banner sits in the host Duel's unk8");
+#endif
 
 extern s32 KAW_BONUS_ROW;
 

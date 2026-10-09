@@ -91,7 +91,11 @@ typedef struct {
     /* 0x12 */ s16 y;
     /* 0x14 */ u8 unk14[8];
     /* 0x1C */ s32 z;
+#ifndef PC_PORT
     /* 0x20 */ u8 parent[4];
+#else
+    void *parent; /* Panel's and KAWSEG's HudPanelK's pointer: the host's panels are their size (issue #30) */
+#endif
 } HudPanel;
 #if VERSION_JP
 /* jp keeps the state and hand slot right after the sprite */

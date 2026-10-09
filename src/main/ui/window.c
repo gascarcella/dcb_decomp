@@ -231,9 +231,19 @@ void animateWindowTo(UiWindow *win, Rect16 *target) {
     win->animDone = 0;
 }
 
+#ifdef PC_PORT
+/* the UiWindow's halfword i and its scrollStep (0x3E): from the label on (0x2C, a pointer), the host's offsets differ
+   (issue #30) */
+#define WINDOW_HALF(win, i) (((UiWindow *)(win))->scroll[(i) - 0x18])
+#define WINDOW_SCROLL_STEP(win) (*(s8 *)&((UiWindow *)(win))->scrollStep)
+#else
+#define WINDOW_HALF(win, i) win[i]
+#define WINDOW_SCROLL_STEP(win) ((s8 *)win)[0x3E]
+#endif
+
 void scrollWindowTo(s16 *win, s32 x, s32 y) {
-    if (((s8 *)win)[0x3E] >= 6) {
-        ((s8 *)win)[0x3E] = 0;
+    if (WINDOW_SCROLL_STEP(win) >= 6) {
+        WINDOW_SCROLL_STEP(win) = 0;
     }
     if (x > win[4] - win[8]) {
         x = win[4] - win[8];
@@ -247,10 +257,10 @@ void scrollWindowTo(s16 *win, s32 x, s32 y) {
     if (y < 0) {
         y = 0;
     }
-    win[0x18] = win[2];
-    win[0x19] = win[3];
-    win[0x1A] = x;
-    win[0x1B] = y;
+    WINDOW_HALF(win, 0x18) = win[2];
+    WINDOW_HALF(win, 0x19) = win[3];
+    WINDOW_HALF(win, 0x1A) = x;
+    WINDOW_HALF(win, 0x1B) = y;
 }
 
 s32 drawWindow(UiWindow *win, void (*drawContents)(), s32 z) {

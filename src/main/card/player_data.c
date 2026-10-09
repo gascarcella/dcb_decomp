@@ -21,8 +21,8 @@ void initPlayerData(void) {
 
     loadCardDatabase();
     PLAYER_PROFILES = (s32p)allocPermanentHeapBlock(sizeof(PlayerProfile) * 2);
-    SESSION_DATA = session = allocPermanentHeapBlock(0x102C);
-    ((SessionData *)SESSION_DATA)->areaSession = allocPermanentHeapBlock(0x1AC);
+    SESSION_DATA = session = allocPermanentHeapBlock(HOST_FITS(0x102C, sizeof(SessionData)));
+    ((SessionData *)SESSION_DATA)->areaSession = allocPermanentHeapBlock(0x1AC); /* PC_PORT: bytes (pointer-free) */
     resetPlayerData();
 }
 
