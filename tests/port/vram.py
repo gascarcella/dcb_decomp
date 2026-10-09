@@ -5,17 +5,26 @@ M2). Adapted from dw2003recomp's tests/port/vram.py (docs/THIRD_PARTY.md).
 Usage: tests/port/vram.py [SCRIPT ...] [--out DIR] [-j N] [--no-png] [--keep]
 
 For each script (default: every tests/replay/scripts/<name>.json with a record), a variant is run in the emulator and
-in the port: after every `checkpoint` step a `vram` step of the same name (the whole VRAM, 1024x512x16 bits, on the
-checkpoint's frame), and at the end of `boot` and `new_game` a few more dumps (EXTRAS: the title's PRESS START and
-SAISEG's first area, some frames on). A `vram` step takes its frame, so the steps after a checkpoint start one frame
-later than in the committed script; both sides run the same variant, and every dump is keyed by its name, never by a
-frame number (the port's frames are not the emulator's).
+in the port: after every `checkpoint` step a `vram` step of the same name (the whole VRAM, 1024x512x16 bits), plus
+the dumps EXTRA_DUMPS places after a step that waits on a state (the name entry, the starter list) and END_DUMPS at
+the end of `boot` and `new_game` (the title's PRESS START, SAISEG's first area and message). A dump is taken on the
+frame of its checkpoint, unless ALIGN or its own entry lists steps to wait first: then a checkpoint "<name>@aligned"
+(or one of the dump's name) after them gives its frame. **The waits align the dumps on the game's own counters**,
+not on frame counts (#33): the port reaches the checkpoints after other frame counts (the CD and loader timing, the
+movie), and the screen's animations follow the frames, the scrolling background above all (SCROLL_POS: a wait for
+the position both sides pass through), the registration's and SAISEG's message arrows (their blink counters).
+A `vram` step takes its frame, so the steps after a dump start later than in the committed script; both sides run the
+same variant, and every dump is keyed by its name, never by a frame number (the port's frames are not the
+emulator's). The committed scripts and records are not changed.
 - The emulator (tests/replay/replay.py's run_once, the interpreter core) runs it with tests/port/vram.lua before
   psxstack's run.lua: each dump also writes the displayed picture (PCSX.GPU.takeScreenShot) and the last 120 vsyncs of
   the game's frame-buffer index and vblanksPerFrame.
 - The port (build/port/dcb, DCB_PORT_CHECKPOINT_DIR) runs it twice: once for the record (the frame of each dump: every
-  dump follows a checkpoint of its name), once more with `--screenshot FRAME:PATH` at those frames (the displayed
-  picture, a PPM); the two records must be identical.
+  dump follows its checkpoint), once more with `--screenshot FRAME:PATH` at those frames (the displayed picture, a
+  PPM); the two records must be identical.
+- A dump aligned on the game's state can come an odd number of frames later on one side, whose buffers are then the
+  other way round: each side's displayed buffer is the one its picture matches, and when they differ the port's two
+  buffers are exchanged before the whole-VRAM comparison (the table says "swap").
 
 Per dump, three comparisons:
 - **vram**: the whole VRAM equal. It can be only where the emulator's game was not CPU-bound ("steady": the
@@ -62,34 +71,99 @@ KNOWN = ROOT / "tests/port/vram_known.json"
 PRELUDE = ROOT / "tests/port/vram.lua"
 W, H = 1024, 512
 CHECKS = ("vram", "textures", "frame")
-# Dumps after the script's last checkpoint, in frames from it (a checkpoint "<last>+N" and its dump): the title's
-# PRESS START blinking, and SAISEG's first area once its screen is up.
-EXTRAS = {"boot": (120,), "new_game": (120, 600)}
 STEADY_VSYNCS = 60
+BUFFER_ROWS = 256   # the game's two display buffers: x 0, y 0 and y 256 (src/main/gfx/display.c)
+
+# The game's state the dumps wait on (config/us/symbols*.txt; include/game.h, include/dcb/openseg.h, saiseg.h; the
+# port maps each in port/game/state.c's game_state_read).
+SCROLL_POS = 0x801D81F8 + 0x70    # SCROLL_BACKGROUND.scrollPos (s16): the scrolling background's position in 1/60
+                                  # texel; each rendered frame adds scrollSpeed (30 once ramped up) and wraps at 7680
+                                  # (256 frames); hidden (mode and shownImage -1) it stays 0 (src/main/gfx/scroll_bg.c)
+OPEN_INTRO_STEP = 0x801F4F28      # OPEN_INTRO_TEXT.step: the registration's step (1 the name entry, 3 the starter)
+OPEN_INTRO_PAGE = 0x801F4F2C      # OPEN_INTRO_TEXT.page: its text page (6: the deck list under the pad)
+OPEN_INTRO_BLINK = 0x801F4F44     # OPEN_INTRO_TEXT.blink (s32): the frames the message's "next" arrow has blinked, 0
+                                  # until the page is typed out and waits for CROSS (open_registration.c)
+SAI_NEXT_BLINK = 0x801F4588 + 0x121   # SAI_AREA.nextBlink (u8): the frames the message window's "next" arrow has
+                                      # blinked, 0 until a message is typed out and waits for CROSS (sai_text.c)
+
+
+def wait_mem(addr, value, size, why, timeout=600):
+    return {"type": "wait_mem", "addr": f"0x{addr:08X}", "size": size, "value": value, "timeout": timeout,
+            "comment": why}
+
+
+def scroll_at(pos, why="the scrolling background at a position both sides pass through"):
+    """The scrolling background at `pos` (a multiple of 30: from 0, the speed ramps 6..30, 420 in all, then 30 per
+    frame), which it passes once every 256 frames: its phase no longer depends on the frames the CD loads took."""
+    return wait_mem(SCROLL_POS, pos, 2, why, timeout=600)
+
+
+# Where the dumps are and what each waits on before it is taken. A dump is keyed by its name, the same moment in
+# every script (the scripts are prefixes of each other). Every checkpoint of a script is a dump (on the checkpoint's
+# frame, unless ALIGN lists steps for it: then a checkpoint "<name>@aligned" after those steps gives the dump's
+# frame); EXTRA_DUMPS adds dumps after a step of the script that waits on a state (an `until` or a wait_mem: the
+# same moment on both sides), END_DUMPS after a script's last step. The waits put both sides at the same point of
+# the game's own counters: the frame counts differ (the CD and loader timing, the movie: #26), and the animations
+# follow the frames (#33).
+ALIGN = {
+    "name_entered": [scroll_at(3840)],
+    "starter_chosen": [wait_mem(OPEN_INTRO_BLINK, 120, 4, "the page typed out 120 frames ago"), scroll_at(3840)],
+}
+EXTRA_DUMPS = [
+    # (name, after the step waiting for addr == value, the alignment steps)
+    ("name_entry", (OPEN_INTRO_STEP, 1), [scroll_at(3840)]),
+    ("starter_select", (OPEN_INTRO_PAGE, 6), [scroll_at(3840)]),
+]
+END_DUMPS = {
+    # the title's PRESS START, 120 frames on (the title's own animation follows its state: no scroll shown)
+    "boot": [("title+120", [{"type": "wait_frames", "frames": 119}])],
+    # SAISEG's first area: the background hidden at pos 0 since the registration ended starts with the area's corner
+    # icon (SAI_runCornerIcon: changeScrollingBackground), so 1800 is 60 frames into the area screen; then the first
+    # message typed out, its arrow blinking for 24 frames
+    "new_game": [("saiseg_area", [scroll_at(1800, "60 frames into the area screen (the background starts with it)")]),
+                 ("saiseg_message", [wait_mem(SAI_NEXT_BLINK, 24, 1, "the first message typed out, waiting for "
+                                              "CROSS for 24 frames", timeout=2000)])],
+}
+
+
+def step_waits_on(step, addr, value):
+    """The step (or its `until`) is a wait_mem for `addr` == `value`."""
+    c = step.get("until", step)
+    return c.get("type") == "wait_mem" and int(str(c.get("addr")), 0) == addr and int(str(c.get("value")), 0) == value
 
 
 def vram_script(name, out):
-    """The script with a vram step after each checkpoint, and the extras; returns (path, script, dump names)."""
+    """The script with the dumps; returns (path, script, {dump name: the checkpoint giving its frame})."""
     script = replay.load_script(port_run.SCRIPTS / f"{name}.json")
-    steps, dumps = [], []
+    steps, dumps = [], {}
+    slack = 0   # frames the waits may add: their timeouts
+
+    def dump(d, align, checkpoint=None):
+        """A dump after `checkpoint` (a step of the script) or after the step just added, behind `align`."""
+        nonlocal slack
+        steps.extend(align)
+        slack += sum(s.get("timeout", 0) if s["type"] == "wait_mem" else s.get("frames", 0) for s in align)
+        if checkpoint is not None and not align:
+            dumps[d] = checkpoint                  # on the checkpoint's own frame
+        else:
+            dumps[d] = d if checkpoint is None else f"{d}@aligned"
+            steps.append({"type": "checkpoint", "name": dumps[d], "image": False})
+        steps.append({"type": "vram", "name": d})
+
     for step in script["steps"]:
         steps.append(step)
         if step.get("type") == "checkpoint":
-            steps.append({"type": "vram", "name": step["name"]})
-            dumps.append(step["name"])
-    last, prev = dumps[-1], 0
-    for n in EXTRAS.get(name, ()):
-        # the vram step ends its frame; wait_frames (n - prev - 1) then puts the checkpoint n frames after the last
-        steps += [{"type": "wait_frames", "frames": n - prev - 1},
-                  {"type": "checkpoint", "name": f"{last}+{n}", "image": False},
-                  {"type": "vram", "name": f"{last}+{n}"}]
-        dumps.append(f"{last}+{n}")
-        prev = n
+            dump(step["name"], ALIGN.get(step["name"], []), checkpoint=step["name"])
+        for d, (addr, value), align in EXTRA_DUMPS:
+            if step_waits_on(step, addr, value):
+                dump(d, align)
+    for d, align in END_DUMPS.get(name, ()):
+        dump(d, align)
     # the port exits on the frame its script completes, before that frame's screenshots: one more frame
     steps.append({"type": "wait_frames", "frames": 2})
     script["name"] = f"{name}@vram"
     script["steps"] = steps
-    script["max_frames"] = script.get("max_frames", 20000) + len(dumps) + sum(EXTRAS.get(name, ()))
+    script["max_frames"] = script.get("max_frames", 20000) + 2 * len(dumps) + slack
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"{name}@vram.json"
     path.write_text(json.dumps(script, indent=1) + "\n")
@@ -212,6 +286,29 @@ def vram_rgb(v):
     return b"".join(RGB15[p & 0x7FFF] for p in v)
 
 
+def displayed_buffer(v, rgb, sw, sh):
+    """Which display buffer (0: y 0, 1: y 256) holds the displayed picture `rgb` (16-bit, sw x sh): the one with fewer
+    differing pixels."""
+    counts = []
+    for b in (0, 1):
+        n = 0
+        for y in range(sh):
+            row = v[(b * BUFFER_ROWS + y) * W:(b * BUFFER_ROWS + y) * W + sw]
+            if b"".join(RGB15[p & 0x7FFF] for p in row) != rgb[y * sw * 3:(y + 1) * sw * 3]:
+                n += 1
+        counts.append(n)
+    return 0 if counts[0] <= counts[1] else 1
+
+
+def swap_buffers(v, cols, rows):
+    """The VRAM with the two display buffers (x below `cols`, `rows` rows from y 0 and from y 256) exchanged."""
+    out = array.array("H", v)
+    for y in range(rows):
+        a, b = y * W, (y + BUFFER_ROWS) * W
+        out[a:a + cols], out[b:b + cols] = v[b:b + cols], v[a:a + cols]
+    return out
+
+
 def compare_dump(name, emu_dir, port_dir, shot, png_dir):
     """The three comparisons of one dump: {check: None (equal) | {count, rect}}, plus the context."""
     ev, pv = load_vram(emu_dir / f"vram_{name}.bin"), load_vram(port_dir / f"vram_{name}.bin")
@@ -219,13 +316,22 @@ def compare_dump(name, emu_dir, port_dir, shot, png_dir):
     sw, sh, srgb, bpp = emu_screen(emu_dir, name)
     disp_cols = min(W, sw * 3 // 2 if bpp == 24 else sw)
     res = {"steady": steady, "cadence": cadence, "display": [sw, sh, bpp], "display_vram_columns": disp_cols}
+    pw, ph, prgb = read_ppm(shot)
+    # The game draws into the buffer it does not show and swaps them every frame: a dump aligned on the game's state
+    # can come an odd number of frames later on one side, which then shows the other buffer. The buffer each side
+    # shows is the one its picture matches; when they differ, the port's buffers are exchanged before the whole-VRAM
+    # comparison, so the displayed frame is compared with the displayed frame and the one before with the one before.
+    res["buffers_swapped"] = False
+    if bpp == 16 and (pw, ph) == (sw, sh) and sh <= BUFFER_ROWS:
+        if displayed_buffer(ev, srgb, sw, sh) != displayed_buffer(pv, prgb, sw, sh):
+            pv = swap_buffers(pv, disp_cols, sh)
+            res["buffers_swapped"] = True
     n, rect = diff_rect(ev, pv, W, H)
     res["vram"] = {"count": n, "rect": rect} if n else None
     if 0 < n <= 16:   # a few pixels: which, and their values (emulator, port)
         res["vram"]["pixels"] = [[i % W, i // W, f"{ev[i]:04x}", f"{pv[i]:04x}"] for i in range(W * H) if ev[i] != pv[i]]
     n, rect = diff_rect(ev, pv, W, H, x_from=disp_cols)
     res["textures"] = {"count": n, "rect": rect} if n else None
-    pw, ph, prgb = read_ppm(shot)
     if (pw, ph) != (sw, sh):
         res["frame"] = {"count": sw * sh, "rect": None, "size": [[sw, sh], [pw, ph]]}
     else:
@@ -243,14 +349,17 @@ def compare_dump(name, emu_dir, port_dir, shot, png_dir):
 def check_script(name, binary, out, png, keep=False):
     """Runs one script's variant on both sides and compares every dump; returns (rows, messages)."""
     sdir = out / name
-    path, script, dumps = vram_script(name, sdir)
+    path, script, dump_cps = vram_script(name, sdir)
     emu = run_emulator(path, script, sdir / "emu")
     rec1 = run_port(binary, path, sdir / "port")
-    frames = {cp["name"]: cp["frame"] for cp in rec1["checkpoints"]}
-    emu_frames = {cp["name"]: cp["frame"] for cp in emu["checkpoints"]}
-    missing = [d for d in dumps if d not in frames or d not in emu_frames]
+    cp_frames = {cp["name"]: cp["frame"] for cp in rec1["checkpoints"]}
+    cp_emu_frames = {cp["name"]: cp["frame"] for cp in emu["checkpoints"]}
+    missing = [d for d, cp in dump_cps.items() if cp not in cp_frames or cp not in cp_emu_frames]
     if missing:
         raise RuntimeError(f"{name}: no checkpoint for the dumps {missing}")
+    dumps = list(dump_cps)
+    frames = {d: cp_frames[cp] for d, cp in dump_cps.items()}
+    emu_frames = {d: cp_emu_frames[cp] for d, cp in dump_cps.items()}
     shots = {frames[d]: sdir / "port" / f"screen_{d}.ppm" for d in dumps}
     rec2 = run_port(binary, path, sdir / "port", shots)
     msgs = []
@@ -331,7 +440,7 @@ def main():
             elif c in k:
                 notes.append(f"{r['script']}/{r['dump']}: {c} is equal now: vram_known.json's entry is stale")
             cells.append(text)
-        cad = ("steady " if r["steady"] else "not steady ") + r["cadence"]
+        cad = ("steady " if r["steady"] else "not steady ") + r["cadence"] + (" swap" if r["buffers_swapped"] else "")
         print(f"{r['script']:<11} {r['dump']:<15} {r['emu_frame']:>6} {r['port_frame']:>6}  {cad:<31} "
               f"{cells[0]:<38} {cells[1]:<38} {cells[2]}")
     (out / "report.json").write_text(json.dumps(rows, indent=1) + "\n")

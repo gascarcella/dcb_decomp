@@ -33,9 +33,10 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 TIER = 1   # the one slot of port/game/game.json's memory.slots
 REPLAY_PY = ROOT / "tests" / "replay" / "replay.py"
 # The PS1 symbols whose addresses the adapter needs (port/game/game.c and state.c: the overlay area, the scripts'
-# wait_mem targets), looked up in config/<version>/symbols*.txt and undefined_syms*.txt.
+# wait_mem targets, and tests/port/vram.py's alignment waits), looked up in config/<version>/symbols*.txt and
+# undefined_syms*.txt.
 ADAPTER_SYMBOLS = ["OVERLAY_AREA", "PLAYER_PROFILES", "OPEN_TITLE_STATE", "OPEN_INTRO_TEXT",
-                   "OPEN_MEMCARD", "OPEN_MEMCARD_STATE"]
+                   "OPEN_MEMCARD", "OPEN_MEMCARD_STATE", "SCROLL_BACKGROUND", "SAI_AREA"]
 
 
 def mk_variables(version):
