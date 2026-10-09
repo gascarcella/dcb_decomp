@@ -3,7 +3,7 @@
 _Last updated: 2026-10-08_
 
 The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the four emulator scripts, twice
-identical, clean under ASan/UBSan; M2 (rendering) has started. Upstream's decompilation is complete: every function and all
+identical, clean under ASan/UBSan; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"). Upstream's decompilation is complete: every function and all
 data of the USA, Japanese and European releases match (upstream's README "Status").
 
 ## The PS1 build
@@ -111,6 +111,17 @@ runners).
   Frigimon, the Battle Phase), with no crash, to frame 27586, where the blind presses stall at a card select. The
   sanitizer build had no report the base did not have. The emulator cannot replay frame-timed presses there (its
   timing differs): a duel replay script needs waits on the duel's state (#37).
+- **M2's second half, the desktop build** (docs/PORT.md "Running it"): `scripts/setup.sh sdl` builds SDL3, DXC and Dear
+  ImGui at psxstack's pins (the stack's own setup, in a checkout of it under `bin/psxstack-tools/`; 27 s with 32 jobs);
+  `scripts/port_build.sh --sdl` builds the window build (`build/port-sdl/dcb`) and passes the stack's input self-test;
+  `--sdl --boot` boots in an offscreen window whose log and picture equal the headless build's.
+  `scripts/launcher_build.sh` builds `dcb-launcher` from `game.json`; its self-test passes with the real disc and game
+  but for one check that hard-codes the first game's 50 Hz (psxstack#57, accepted by name). On this desktop (Wayland,
+  NVIDIA) the `new_game` script ran in a real window with each renderer (`--renderer gpu`: Vulkan) to SAISEG, 60.00
+  vsyncs a second, both logs equal to the headless run's; the pictures (the movie, the title, the registration) are
+  right, the GPU renderer's equal to the software one's. The SPU's output is not silent (not yet compared: M3). CI's
+  `desktop` job runs both scripts, its tools cached on the stack's pins. The game crashes without a disc (#39), so the
+  input self-test needs it. Ready for a play-test by hand.
 - Next: a replay script through the tutorial duel (#37) and the rest of the duel (#4); M2: align the phase-shifted
   dumps (#33), then the duel's VRAM.
 

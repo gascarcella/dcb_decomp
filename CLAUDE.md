@@ -76,19 +76,20 @@ psxstack checkout vX.Y.Z`, commit the submodule). dw2003recomp bumps its own pin
 | `tools/` | upstream | Their build helpers (`try_match.py`, `hacks.py`, `check_names.py`, `rename.py`, `extract_drv.py`, `objdiff_generate.py`, `dl_deps.sh`, …) |
 | `external/` | upstream | Submodules: maspsx, m2c, decomp-permuter, psyq_headers |
 | `Makefile`, `Dockerfile`, `.github/workflows/build.yaml`, `docker.yaml` | upstream | The build and their CI (its build job runs only in ReGame-Labs; its `names` job runs here too) |
-| `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh`, `probe.sh` (the port's configure and host-compile probe), `gte_test.sh` (the host GTE macros' test), `check_emulator.sh` (the emulator boots the disc) |
+| `scripts/` | ours | `setup.sh`, `worktree_init.sh`, `build.sh`, `gamedata_dir.sh`, `probe.sh` (the port's configure and host-compile probe), `gte_test.sh` (the host GTE macros' test), `check_emulator.sh` (the emulator boots the disc), `port_build.sh` (the port's build; `--boot`, `--sdl` the window build), `launcher_build.sh` (the launcher and its self-test) |
 | `docs/` | ours | `STATUS.md`, `PORT.md`, `DECISIONS.md`, `THIRD_PARTY.md` |
 | `tests/` | ours | `replay/` (the emulator oracle: `replay.py` configures psxstack's runner, `probes.lua` this game's state probes, `scripts/*.json` the pad scripts, `expected/*.json` their records), `port/run.py` (the port's replay test, from M1), `port/vram.py` + `vram.lua` + `vram_known.json` (M2: the VRAM and pictures against the emulator's), `port/gte_host_test.c` (the host GTE macros, `scripts/gte_test.sh`) |
 | `psxstack/` | ours (submodule) | The stack at its pinned tag |
 | `port/` | ours | The port's game side, as in dw2003recomp: `CMakeLists.txt` (`psxstack_add_game()`), `game/` (the adapter, `game.json`), `tools/` (`port_inputs.py`: the unit and overlay lists from `mk/version/us.mk`; `port_bss.py`: the executable's game `.bss` as C, a generated MAIN unit; `port_inventory.py`: psxstack's host-compile probe configured for this tree), `include/` (host-only headers first on the port's include path: `gte.h`, the 40 GTE macros on psxstack's software GTE), later `mods/`. Our tools live here, not in upstream's `tools/` |
-| `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`), the port's disc-free `probe` job (`scripts/probe.sh`, then `scripts/gte_test.sh`) and the `replay` job (the disc and the emulator from the data checkout) |
-| `bin/`, `.venv/`, `disks/`, `build/`, `asm/`, `expected/`, `assets/` | untracked | The toolchain (`bin/cross`: binutils + cpp wrapper, `bin/python`, upstream's downloads, `bin/redux` the emulator), the venv, the disc files, build outputs |
+| `.github/workflows/fork.yaml` | ours | The fork's CI: the `us` build from the data checkout (deploy key secret `GAMEDATA_DEPLOY_KEY`), the port's disc-free `probe` job (`scripts/probe.sh`, then `scripts/gte_test.sh`), the `replay` job (the disc and the emulator from the data checkout) and the `desktop` job (the window build and the launcher, their self-tests; the tools cached on psxstack's pins) |
+| `bin/`, `.venv/`, `disks/`, `build/`, `asm/`, `expected/`, `assets/` | untracked | The toolchain (`bin/cross`: binutils + cpp wrapper, `bin/python`, upstream's downloads, `bin/redux` the emulator, `bin/psxstack-tools/` a checkout of the stack whose `tools/` holds SDL3, DXC and Dear ImGui: `scripts/setup.sh sdl`), the venv, the disc files, build outputs |
 
 ## Commands
 ```sh
 scripts/setup.sh            # main checkout, once: submodules, binutils (bin/cross), Python 3.12, .venv, upstream's deps, disks/us from ../dcb-gamedata
 scripts/setup.sh disc       # the whole disc image, disks/us/dcb_us.bin + .cue (for the emulator and the port), SHA-1 checked
 scripts/setup.sh redux      # the pinned PCSX-Redux into bin/redux (the data checkout's zip, through psxstack's tools/replay/redux.sh)
+scripts/setup.sh sdl        # SDL3, DXC, Dear ImGui at psxstack's pins into bin/psxstack-tools/tools (the stack's own setup; ~30 s-minutes; DCB_SDL_TOOLS_FROM=../dw2003recomp/tools links instead)
 scripts/check_emulator.sh   # the disc boots headless in the emulator (OPENSEG loaded)
 .venv/bin/python tests/replay/replay.py check [-j N]            # the emulator replays against tests/replay/records/ (CI's replay job)
 .venv/bin/python tests/replay/replay.py run tests/replay/scripts/X.json [--record] [--repeat 2] [-v] [--prelude LUA]   # one script; --record writes its expected file
@@ -98,6 +99,10 @@ scripts/probe.sh            # the port: cmake configure (build/port), then the h
 .venv/bin/python port/tools/port_inventory.py probe|link|counts [--sites KIND]   # the probe alone; build/port_inventory/
 scripts/gte_test.sh         # the host GTE macros (port/include/gte.h) against psxstack's software GTE; no disc
 scripts/tasks_test.sh       # the task scheduler (task.c + port/game/tasks.c) on psxstack's fibers; no disc
+scripts/port_build.sh [--boot]   # the headless port, build/port/dcb (--boot: 600 frames from the disc to OPENSEG)
+scripts/port_build.sh --sdl [--boot]   # the window build, build/port-sdl/dcb, and its --input-test (offscreen; needs the disc); --boot: its log equals the headless run's
+build/port-sdl/dcb --disc disks/us/dcb_us.cue --window [--renderer gpu] [--memcard1 build/card1.mcd]   # play (docs/PORT.md "Running it": keys, where saves go)
+scripts/launcher_build.sh   # build/launcher/dcb-launcher and its self-test (offscreen; with the disc and build/port-sdl/dcb, the real game too)
 .venv/bin/python tests/port/vram.py [SCRIPT ...] [-j 4] [--keep]   # M2: VRAM, textures and picture vs the emulator per checkpoint (known: tests/port/vram_known.json; PNGs in build/port-vram/)
 cmake -S port -B build/port -G Ninja [-DPSXSTACK_DIR=$PWD/../psxstack]           # the port's configure (M0: configures; the build links from M1)
 . .venv/bin/activate        # then upstream's commands work as their README says (the toolchain is in .venv/bin):

@@ -19,6 +19,15 @@
 #               (tools/replay/redux.sh): the zip from the data checkout's tools/prebuilt/, SHA-256 checked; test with
 #               scripts/check_emulator.sh. $PSXSTACK_DIR names another checkout of the stack than the submodule
 #               (stack work in progress)
+#   sdl         (not by default) the PC port's window and launcher tools, SDL3, DXC and Dear ImGui at the psxstack
+#               submodule's pins, built by the stack's own scripts/setup.sh (its steps sdl3 dxc imgui) in a checkout
+#               of the stack at the submodule's commit, bin/psxstack-tools/ (the stack's setup installs into its own
+#               checkout's tools/): bin/psxstack-tools/tools/ is the PSXSTACK_TOOLS_DIR scripts/port_build.sh --sdl
+#               and scripts/launcher_build.sh pass. A few minutes (SDL3 from source). SDL3's backends follow the -dev
+#               headers present (psxstack/scripts/setup.sh --sdl3-desktop-apt lists Ubuntu's); with no X11/Wayland
+#               headers only the offscreen driver is built (the self-tests', not a window). Offline shortcut:
+#               DCB_SDL_TOOLS_FROM=DIR (e.g. ../dw2003recomp/tools) first symlinks DIR's sdl3, dxc and imgui there;
+#               the stack's setup then checks them against its pins and rebuilds any that differ
 #   link        in a git worktree: bin/, .venv and disks/ of the main checkout, symlinked (worktrees share them)
 #
 # Worktrees: everything built goes into the MAIN checkout (bin/, .venv) and is symlinked into the worktree; run
@@ -221,6 +230,40 @@ step_redux() {
     rm -f "$debs"
 }
 
+step_sdl() {
+    local stack dest="$MAIN/bin/psxstack-tools" rev t drivers
+    stack="${PSXSTACK_DIR:-$ROOT/psxstack}"
+    [[ -f "$stack/scripts/setup.sh" ]] || die "sdl: $stack/scripts/setup.sh is missing (scripts/worktree_init.sh, or PSXSTACK_DIR=<checkout>)"
+    rev="$(git -C "$stack" rev-parse HEAD)"
+    # A checkout of the stack with its own .git: init + fetch rather than clone, so it also lands on a directory that
+    # already holds tools (CI restores bin/psxstack-tools/tools from its cache first). Only tracked files change.
+    [[ -d "$dest/.git" ]] || git init -q "$dest"
+    if [[ "$(git -C "$dest" rev-parse -q --verify HEAD 2>/dev/null)" != "$rev" ]]; then
+        git -C "$dest" cat-file -e "$rev^{commit}" 2>/dev/null || git -C "$dest" fetch -q --no-tags "$stack" HEAD
+        git -C "$dest" -c advice.detachedHead=false checkout -q --force --detach "$rev"
+    fi
+    if [[ -n "${DCB_SDL_TOOLS_FROM:-}" ]]; then
+        [[ -d "$DCB_SDL_TOOLS_FROM" ]] || die "sdl: DCB_SDL_TOOLS_FROM=$DCB_SDL_TOOLS_FROM is not a directory"
+        for t in sdl3 dxc imgui; do
+            [[ -e "$DCB_SDL_TOOLS_FROM/$t" && ! -e "$dest/tools/$t" ]] || continue
+            ln -s "$(cd "$DCB_SDL_TOOLS_FROM/$t" && pwd)" "$dest/tools/$t"
+            log "sdl: bin/psxstack-tools/tools/$t -> $DCB_SDL_TOOLS_FROM/$t (checked against the pins next)"
+        done
+    fi
+    log "sdl: psxstack $(git -C "$stack" describe --tags --always)'s scripts/setup.sh sdl3 dxc imgui in bin/psxstack-tools"
+    # the stack's setup takes cmake and ninja from the PATH (the venv's, as CI pip-installs them; else it pip-installs its own)
+    PATH="$MAIN/.venv/bin:$PATH" bash "$dest/scripts/setup.sh" sdl3 dxc imgui
+    drivers="$(nm -g --defined-only "$dest/tools/sdl3/lib/libSDL3.a" 2>/dev/null |
+               sed -n 's/.* D \(X11\|Wayland\|OFFSCREEN\|PIPEWIRE\|PULSEAUDIO\|ALSA\)_bootstrap$/\1/p' | sort -u | tr '\n' ' ')"
+    log "sdl: SDL3's drivers: ${drivers:-none found}"
+    if ! grep -qE 'X11|Wayland' <<<"$drivers"; then
+        log "sdl: no X11 or Wayland: the build runs on the offscreen driver only (the self-tests), no window. For one," \
+            "install the -dev headers (Ubuntu: $(bash "$dest/scripts/setup.sh" --sdl3-desktop-apt | tr -s ' \n' ' '))," \
+            "then rm -rf bin/psxstack-tools/tools/sdl3 && scripts/setup.sh sdl"
+    fi
+    log "sdl: PSXSTACK_TOOLS_DIR=$dest/tools"
+}
+
 step_link() {
     [[ "$MAIN" != "$ROOT" ]] || return 0
     local n ex
@@ -242,7 +285,7 @@ step_link() {
 steps=("$@")
 [[ ${#steps[@]} -gt 0 ]] || steps=(submodules binutils python venv deps gamedata)
 for s in "${steps[@]}"; do
-    case "$s" in -h|--help) sed -n '2,24p' "$0"; exit 0 ;; esac
+    case "$s" in -h|--help) sed -n '2,33p' "$0"; exit 0 ;; esac
     declare -F "step_$s" >/dev/null || die "unknown step: $s"
     "step_$s"
 done

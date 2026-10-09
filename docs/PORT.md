@@ -23,6 +23,44 @@ The milestones follow dw2003recomp's (its `docs/PORT.md`):
 | **M4: saves** | libcard and the BIOS file calls over `.mcd` images | Saves move both ways between the port and the emulator |
 | **M5: the whole game** | The opening movie (libcd streaming + MDEC), every overlay reached by a test, the launcher, packaging, mods | A release |
 
+## Running it
+The desktop build: the game in a window (psxstack's docs/RUNTIME.md "The window") and the launcher (psxstack's
+`launcher/README.md`). It needs the disc image (the game cannot start without one: #39) and the window's tools.
+```sh
+scripts/setup.sh disc sdl            # the disc image; SDL3, DXC and Dear ImGui at psxstack's pins (bin/psxstack-tools/)
+scripts/port_build.sh --sdl          # build/port-sdl/dcb, then its input self-test (offscreen)
+build/port-sdl/dcb --disc disks/us/dcb_us.cue --window --memcard1 build/card1.mcd   # play; --renderer gpu: Vulkan
+scripts/launcher_build.sh            # build/launcher/dcb-launcher, then its self-test (offscreen)
+build/launcher/dcb-launcher          # choose the disc on its Disc screen, then Play
+```
+`scripts/setup.sh sdl` runs the stack's own `scripts/setup.sh sdl3 dxc imgui` in a checkout of the stack at the
+submodule's commit, `bin/psxstack-tools/` (the stack's setup installs into its own checkout's `tools/`; a few minutes,
+mostly SDL3). SDL3's backends follow the `-dev` headers present: with no X11/Wayland headers only the offscreen driver is
+built (`psxstack/scripts/setup.sh --sdl3-desktop-apt` lists Ubuntu's packages). With the first game's checkout beside
+this one, `DCB_SDL_TOOLS_FROM=../dw2003recomp/tools scripts/setup.sh sdl` links its built tools instead (the stack's
+setup checks them against its pins). `PSXSTACK_TOOLS_DIR=<dir>` points both build scripts at other tools.
+
+**Keys** (by position; the stack's defaults, rebindable on the launcher's Controls screen): arrows the D-pad, X cross
+(confirm), C circle, Z square, S triangle, Enter START, Backspace or right Shift SELECT, Q L1, E R1, 1 L2, 3 R2; P
+pauses, F11 toggles fullscreen. A gamepad in the PlayStation layout (south cross, east circle, ...; the left stick is
+the D-pad too). Fast-forward (hold Tab; 4x) is a mod, off until switched on in the launcher's Mods screen: the way through
+the two-minute opening movie.
+
+**Where things go.** Started bare, the game reads no settings and its memory cards are fresh ones in memory, lost at exit
+(`--memcard1 FILE` keeps one; created formatted when missing). Started from the launcher, everything is in the
+settings directory, `~/.local/share/dcb/` (`$XDG_DATA_HOME/dcb/`; `--config-dir DIR` or `$DCB_CONFIG_DIR` overrides):
+`settings.json`, `card1.mcd` and `card2.mcd`, `logs/last-run.log` (the game's output), `crashes/` (crash reports).
+The launcher finds the game beside itself, else at `build/port-sdl/dcb` beside `build/launcher/` (the development tree).
+
+**State at M2** (2026-10-08): the window and the launcher work on this desktop (Wayland, both renderers; the GPU
+renderer on Vulkan gives the software renderer's picture at internal scale 1). A window run's log is the headless
+run's byte for byte. Known unfinished: **sound** is M3: the SPU plays the game's sequences through the stack's LIBSND
+and SPU (the output is not silent), but nothing has compared it with the emulator's; **saves** are M4: saving to a card
+works within the port (the `new_game` script saves to a fresh card), but cards have not moved between the port and the
+emulator; the opening movie (about two minutes, unskippable as on the PS1) ends some 1,200 frames early (#26); the duel
+has been run only through its tutorial's first round (#37); the launcher's self-test has one known failure, a check
+that hard-codes the first game's 50 Hz ([psxstack#57](https://github.com/gascarcella/psxstack/issues/57)).
+
 ## The contract, for this game
 | Contract input | This game (`us`) |
 |---|---|
@@ -492,6 +530,8 @@ runners are psxstack's (`tools/replay/`, GAME_CONTRACT.md "6. Tests"), configure
 | The port builds and boots | `build/port/dcb` links (every writable section renamed: `port_gen.py sections`); booted headless from the disc for 600 frames it exits 0 at the frame cap with OPENSEG loaded (stage 8) | `scripts/port_build.sh` (CI `probe`), `scripts/port_build.sh --boot` (CI `replay`) |
 | The port against the emulator | The port replays the same scripts and reaches the emulator's checkpoints (the cross-core view: names, stages, maps, stable profile hashes, the overlay sequence) twice byte-identical | `tests/port/run.py`: all four scripts pass and are the CI gate (`replay` job): every checkpoint at the emulator's stage and map, the overlay and map sequences, two runs identical (the four take about 100 s). Checkpoints before the profile is defined carry no image (`"image": false`: `openseg_loaded`, `title`, `title_menu`, `name_entered`, `starter_chosen`; the record has no hashes). `saiseg` and `first_duel` keep theirs, and the stable hash leaves out (`VOLATILE_RANGES`): `profileId`, `playTime` and `cardCopySerials` (`rand()`); the heap the game never writes before those checkpoints (the emulator has the allocator's leftovers, the port zeros: partner 0's last 3 padding bytes, partners 1-2, decks 1-2, the starter deck's name after its terminator, `unk104` and `unk10E`, `unk15DF`, `unk2435`, `unk2771` bytes 1-2, `rewardCards`, `rewardResults`); and the `cardCollection` bytes of the Veemon deck's ten bonus cards (0x0B, 0x74, 0x19, 0x83, 0x1C, 0x89, 0x1F, 0x8A, 0xF9, 0x102: the starter gets one of each pair by `rand() % 2`, and the sequence's position depends on the idle loop's calls per frame). Deck 0's cards, the rest of the collection and the registration's fields stay compared. The port's frames (psxstack v0.3.3, the CD at 60 Hz): `openseg_loaded` 181, `title` 7057, `title_menu` 7059, `name_entered` 7634, `starter_chosen` 8148, `saiseg` 10203, `first_duel` 12686 |
 | The port under ASan and UBSan | The sanitizer build (`-DPSXSTACK_SANITIZE=ON`, `build/port-san`) replays each script once with no report, and its log, record and SPU trace equal the plain build's. UBSan's suppressions are `tests/port/ubsan.supp` (psxstack's rule: only in-struct overruns the game relies on, each named with its function): `assignCardCopySerial`'s 8 serials in a row of 6. Fixed for the host instead: the heap's 4-byte alignment ("Memory and pointers"), `HUFFMAN_LEFT`/`HUFFMAN_RIGHT` (declared `s32` and indexed as tables of 0x220: arrays under `PC_PORT`, `HUFFMAN_NODE` in `decompress.c`) | `tests/port/run.py --sanitize`: the four scripts, CI's `replay` job |
+| The window build (M2) | `build/port-sdl/dcb` (`-DPSXSTACK_SDL=ON`, the tools of `scripts/setup.sh sdl`) builds; the stack's input self-test passes on SDL's offscreen driver (every default key and a virtual gamepad's buttons reach the pad, hotkeys never do, the pause round trip; with the disc: #39); booted 600 frames in an offscreen window, paced in real time, its log and its picture at frame 500 equal the headless build's | `scripts/port_build.sh --sdl --boot` (CI `desktop`) |
+| The launcher | `build/launcher/dcb-launcher` builds from `game.json`; its self-test passes (the settings directory, `settings.json`'s round trips, every screen with injected keys and a virtual gamepad, the play path), with the real disc's SHA-1 and the SDL game run 300 frames from the launcher's command; one known failure accepted by name (psxstack#57) | `scripts/launcher_build.sh` (CI `desktop`) |
 | The port's VRAM and pictures against the emulator's (M2) | At every checkpoint of the four scripts, and at `title+120`, `saiseg+120` and `saiseg+600` (frames after `boot`'s and `new_game`'s last checkpoint), a `vram` step dumps the whole VRAM on both sides (psxstack's `vram` step: `PCSX.GPU.getVRAM()` in the emulator, `DCB_PORT_CHECKPOINT_DIR` in the port), keyed by the checkpoint's name, never by a frame; the emulator's prelude `tests/port/vram.lua` adds the displayed picture (`PCSX.GPU.takeScreenShot()`) and the game's cadence (its frame-buffer index and `vblanksPerFrame` over the last 60 vsyncs); the port is run twice, the second time with `--screenshot` at the frames the first run's record gives. Three checks per dump, each a gate unless `tests/port/vram_known.json` lists it: the whole VRAM, the textures and CLUTs (the VRAM right of the display buffers, which start at x 0), the displayed picture. **At M2's start:** the emulator is never CPU-bound at these dumps (its frame-buffer index flips every vsync, `vblanksPerFrame` 1; the movie's `openseg_loaded` excepted, where the render loop is not running), so all three can be compared everywhere. The whole VRAM is equal at `openseg_loaded`, `title+120`, `saiseg` and `first_duel`; the textures at every dump but `saiseg+120`; the picture everywhere but `title_menu` (5 pixels) and the four dumps of #33. Known: `title` (2 pixels' mask bit) and `title_menu` (one column of a mode-2 modulated sprite), the software GPU against PCSX-Redux's ([psxstack#54](https://github.com/gascarcella/psxstack/issues/54)); `name_entered`, `starter_chosen`, `saiseg+120`, `saiseg+600`: the port reaches them after other frame counts, so the scrolling background and SAISEG's loading and animations are at another phase (#33) | `tests/port/vram.py` (CI `replay`, about 70 s at `-j 4`; the differences as PNGs in `build/port-vram/<script>/`, `--keep` keeps the dumps) |
 
 **The probes** (`tests/replay/probes.lua`): `stage` is the overlay slot's first word (each overlay's own id: SUGSEG

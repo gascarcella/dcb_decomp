@@ -151,3 +151,66 @@ jobs:
     # M2: the VRAM, textures and picture against the emulator's at every checkpoint; the known differences are in
     # tests/port/vram_known.json. No PNGs: pictures of the game stay off CI.
     - run: .venv/bin/python tests/port/vram.py -j 2 --no-png
+
+  # The desktop build (docs/PORT.md "Running it"): the window build (-DPSXSTACK_SDL=ON) and the launcher, with SDL3, DXC
+  # and Dear ImGui from scripts/setup.sh sdl (psxstack's own setup at the submodule's pins, in bin/psxstack-tools/),
+  # cached on those pins (psxstack/scripts/setup.sh --pins: a pin bump rebuilds them once, ~2 min). No apt: on the
+  # runner SDL gets whatever backends its headers allow, and the checks run on its offscreen video and dummy audio
+  # drivers. The game cannot start without its disc, so the input self-test needs the data checkout, as the replay job.
+  # scripts/port_build.sh --sdl --boot: the input self-test (every default key and a virtual gamepad's buttons reach the
+  # pad, hotkeys never do, the pause), then the boot in an offscreen window whose log and picture must equal the
+  # headless build's; scripts/launcher_build.sh: the launcher's self-test, with the real disc and the SDL game.
+  desktop:
+    if: >-
+      github.repository == 'gascarcella/dcb_decomp' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    name: desktop (window, launcher)
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - uses: actions/checkout@v5
+      with:
+        repository: gascarcella/dcb-gamedata
+        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
+        path: gamedata-checkout
+        sparse-checkout: gamedata/us
+        persist-credentials: false
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - run: |
+        python3 -m venv .venv
+        .venv/bin/pip install cmake ninja
+
+    - id: pins
+      run: echo "hash=$(psxstack/scripts/setup.sh --pins | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          bin/psxstack-tools/tools/sdl3
+          bin/psxstack-tools/tools/dxc
+          bin/psxstack-tools/tools/imgui
+        key: psxstack-tools-${{ runner.os }}-${{ steps.pins.outputs.hash }}
+
+    - run: DCB_GAMEDATA="$PWD/gamedata-checkout" scripts/setup.sh disc sdl
+
+    - run: scripts/port_build.sh --sdl --boot
+    - run: scripts/launcher_build.sh
+
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: desktop-logs
+        path: |
+          build/port-sdl/input-test.log
+          build/port-sdl/crash-*.txt
+          build/launcher/self-test.log
+        if-no-files-found: ignore
