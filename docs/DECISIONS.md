@@ -20,9 +20,10 @@ _Decided: 2026-10-08_
 
 `upstream` is ReGame-Labs/dcb_decomp. Its `main` is merged into ours on a branch, through a pull request; `main` is
 never rebased, since the fork is public. Our additions live in files of our own (`scripts/`, `docs/`, `CLAUDE.md`,
-`port/`, `psxstack/`, `.github/workflows/fork.yaml`). Changes to their files are the hooks the port needs and a credit
-banner at the top of `README.md`, nothing else: no renames, no reformatting, no reorganisation, so that each upstream
-merge stays easy. A fix that belongs to the decompilation itself goes to upstream as a pull request, when the owner
+`port/`, `psxstack/`, `.github/workflows/fork.yaml`). Changes to their files are the hooks the port needs and the
+port's section at the top of `README.md` (the credit banner, then how to play, above upstream's README kept verbatim;
+2026-10-21, as the first game's README opens with the port), nothing else: no renames, no reformatting, no
+reorganisation, so that each upstream merge stays easy. A fix that belongs to the decompilation itself goes to upstream as a pull request, when the owner
 says so, rather than living only here.
 
 ## The PS1 build stays byte-identical
@@ -83,7 +84,7 @@ the contract was done there, and why, is in its `port/`, `tools/port_inputs.py`,
 _Decided: 2026-10-08_
 
 Upstream's `LICENSE` (MIT, juandav) stays as it is. The README opens with a banner naming the decompilation and its
-author. `docs/THIRD_PARTY.md` lists what the fork builds on, and the launcher's About text (`game.json`
+author, and its port section hands the decompilation's part back to upstream's README, unchanged below it. `docs/THIRD_PARTY.md` lists what the fork builds on, and the launcher's About text (`game.json`
 `launcher.about`) credits the decompilation.
 
 ## Pull requests to the fork's main; docs are lean

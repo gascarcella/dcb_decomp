@@ -1,14 +1,159 @@
+# Digimon Digital Card Battle: the PC port
+
+> [!NOTE]
+> **This is a fork for a PC port.** The matching decompilation is the work of
+> [juandav](https://github.com/ReGame-Labs) at [ReGame-Labs/dcb_decomp](https://github.com/ReGame-Labs/dcb_decomp),
+> and this fork exists with its author's agreement. It adds a native PC port built from the same C on
+> [psxstack](https://github.com/gascarcella/psxstack), the stack behind the
+> [Digimon World 2003 port](https://github.com/gascarcella/dw2003recomp). Decompilation work belongs upstream;
+> [their README](#digimon-digital-card-battle-decomp) follows the port's part of this page, unchanged.
+
+> [!NOTE]
+> **AI disclosure.** The port is built with heavy use of AI: most of its code, tools, tests and documentation were
+> written by AI coding agents (Anthropic's Claude, through Claude Code), directed and checked by a human maintainer.
+> The result is verified mechanically: the PlayStation build must stay byte-identical to the original, and the port is
+> replayed against an emulator by the reference tests. The decompilation itself is juandav's work.
+
+A native **PC port** of **Digimon Digital Card Battle** (PlayStation, USA, SLUS-01328) for Linux and Windows. The
+decompiled C rebuilds a byte-identical copy of the game's executable and overlays, and the same C, compiled for your
+PC, runs the game natively, with a launcher and optional mods.
+
+> [!IMPORTANT]
+> **This repository contains no game data.** You need your own copy of the game: the port reads everything from your
+> disc image. This project is not affiliated with or endorsed by Bandai, Bandai Namco or Sony.
+
+## Contents
+
+- [Playing the PC port](#playing-the-pc-port)
+  - [Supported platforms](#supported-platforms)
+  - [Download](#download)
+  - [Provide your disc image](#provide-your-disc-image)
+  - [Settings, controls and saves](#settings-controls-and-saves)
+  - [What works](#what-works)
+- [Reporting an issue](#reporting-an-issue)
+- [Developing the port](#developing-the-port)
+- [The decompilation](#digimon-digital-card-battle-decomp) (upstream's README: status, versions, toolchain, building,
+  layout, contributing)
+
+## Playing the PC port
+
+### Supported platforms
+
+| Platform | State |
+|---|---|
+| **Linux** x86_64 (glibc 2.39 or newer: Ubuntu 24.04, Fedora 40, Debian 13, or later) | Supported |
+| **Windows** 10 or newer, 64-bit | Supported; tested under Wine so far, not yet on real Windows |
+| macOS | Not planned yet |
+
+### Download
+
+Open the [Releases page](https://github.com/gascarcella/dcb_decomp/releases) and download the latest package for your
+system. The `.debug` file and the `-debug.zip` are the programs' debug info for crash reports; they are not needed to
+play. `SHA256SUMS` and `SHA256SUMS-windows` hold the checksums (`sha256sum -c SHA256SUMS`).
+
+**Linux:** `dcb-<version>-linux-x86_64.AppImage`. Make it executable and run it:
+```sh
+chmod +x dcb-*-linux-x86_64.AppImage
+./dcb-*-linux-x86_64.AppImage
+```
+The AppImage opens the **launcher**, which holds the game and its mods. Nothing needs installing or compiling. If your
+system cannot mount AppImages, run it with `--appimage-extract-and-run`.
+
+**Windows:** `dcb-<version>-windows-x86_64.zip`. Unzip it anywhere (its files must stay together: the launcher finds the
+game beside itself) and run `dcb-launcher.exe`. The programs are not signed, so Windows may show a SmartScreen warning
+the first time: choose "More info", then "Run anyway".
+
+### Provide your disc image
+
+The game is read from **your own disc image** of *Digimon Digital Card Battle (USA)*, SLUS-01328:
+
+- It must be the raw **`.bin` + `.cue`** dump (one MODE2/2352 track, 215,661,936 bytes), SHA-1
+  `b3945b3e76c1fcc554a7614e2b4211d974990105`. Dumping tools such as Redump-style rippers produce this format.
+- Other releases (the Japanese and the European discs) are not accepted by the port yet.
+
+In the launcher's **Disc** screen choose the `.cue` (or the `.bin`), drag it onto the window, or type its path. The
+launcher checks the SHA-1 once and remembers the disc; then press **Play**. The launcher hides while the game runs and
+comes back when it ends.
+
+### Settings, controls and saves
+
+- **Settings** (video, renderer, audio, memory cards), **Controls** (keyboard and gamepad rebinding, hotkeys) and
+  **Mods** are the launcher's other screens.
+- **Keyboard defaults:** arrows the D-pad, X cross (confirm), C circle, Z square, S triangle, Enter START, Backspace
+  or right Shift SELECT, Q and E L1 and R1, 1 and 3 L2 and R2; P pauses, F11 toggles fullscreen. A **gamepad** works as
+  on a PlayStation (south button cross, east circle; the left stick is the D-pad too).
+- **Fast-forward** (hold Tab, 4x) is a mod, off until you switch it on in the Mods screen: the way through the
+  two-minute opening movie, which cannot be skipped, as on the PlayStation.
+- **Where things are kept:** `~/.local/share/dcb/` on Linux (`$XDG_DATA_HOME/dcb/`), `%APPDATA%\dcb\` on Windows:
+  `settings.json`, the memory cards `card1.mcd` and `card2.mcd` (the same format as PCSX-Redux's, so a card moves
+  between the port and the emulator), `logs/last-run.log` (the last game run's output) and `crashes/` (crash reports).
+  A `portable.txt` file beside the launcher keeps all of this in the launcher's own folder instead.
+
+Details: [`docs/PORT.md`](docs/PORT.md) "Running it", and psxstack's `launcher/README.md`.
+
+### What works
+
+The port is a **work in progress**. What the reference tests cover, replayed against the original in an emulator: the
+boot, the opening movie, the title, registering a new player, choosing a starter and the tutorial duel to its end; saves
+written by the port load in the emulator and the other way round; the sound reproduces the emulator's sound-chip writes.
+The rest of the game runs but is less tested; the deck editor, fusion and the ending are being brought under test.
+The current state in words is [`docs/STATUS.md`](docs/STATUS.md).
+
+## Reporting an issue
+
+Found a bug, a crash, or something that plays differently from the original? Please
+[open an issue](https://github.com/gascarcella/dcb_decomp/issues/new). A useful report has:
+
+- the **version** (the package's file name, or the commit you built) and your **system** (distribution or Windows
+  version, desktop, GPU, gamepad);
+- **what happened** and **what you expected**, ideally compared with the original game on a PS1 or an emulator;
+- **steps to reproduce** from a new game or a save (attach the memory card from the settings directory if it helps);
+- the **output**: after an error the launcher's Play screen shows the exit status and the game's last lines, with a
+  **Copy** button; on Windows, the matching `crash-<date>.dmp` from the `crashes` folder if there is one;
+- screenshots or a short video when it is visual.
+
+Please check the [open issues](https://github.com/gascarcella/dcb_decomp/issues) first, and never attach the game's
+files or a disc image. Questions about the code are welcome as issues too. A problem in the decompilation itself
+belongs to [upstream](https://github.com/ReGame-Labs/dcb_decomp/issues).
+
+## Developing the port
+
+The port lives in files of its own: `port/` (the game side of psxstack's contract: `port/CMakeLists.txt`, the adapter
+and `game.json` in `port/game/`, the tools in `port/tools/`), `scripts/`, `tests/`, `packaging/`, `docs/` and the
+`psxstack` submodule (clone with `--recursive`, or `git submodule update --init psxstack`). Upstream's files carry only
+the port's hooks, under `#ifdef PC_PORT`, and the PlayStation build stays byte-identical (`scripts/build.sh` ends with
+every binary `OK`).
+
+```sh
+scripts/setup.sh                      # once: submodules, binutils, Python venv, upstream's deps (dump your disc as "Getting the game files" says below)
+scripts/setup.sh disc sdl             # the disc image as disks/us/dcb_us.bin + .cue; SDL3, DXC and Dear ImGui at psxstack's pins
+scripts/build.sh                      # the PS1 build: every binary byte-identical
+scripts/probe.sh                      # the port's configure and the host-compile probe over every unit (no disc)
+scripts/port_build.sh --sdl           # the window build, build/port-sdl/dcb, and its input self-test
+build/port-sdl/dcb --disc disks/us/dcb_us.cue --window --memcard1 build/card1.mcd   # play
+scripts/launcher_build.sh             # build/launcher/dcb-launcher and its self-test
+.venv/bin/python tests/port/run.py    # the port replays the emulator's pad scripts (tests/replay/) and compares the records
+scripts/setup.sh windows && scripts/build_windows.sh --test   # the Windows cross-build, tested under Wine
+```
+
+| Document | Contents |
+|---|---|
+| [`docs/STATUS.md`](docs/STATUS.md) | Where the port stands |
+| [`docs/PORT.md`](docs/PORT.md) | How the port works: the plan, running it, releases, what the game needs, sound, testing |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | How the fork works and why |
+| [`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md) | Credits and everything borrowed from other projects |
+| psxstack's `docs/GAME_CONTRACT.md`, `docs/PORT.md`, `docs/RUNTIME.md` | The stack: what a game supplies, how the runtime and the launcher work |
+
+Work items are the [issues](https://github.com/gascarcella/dcb_decomp/issues). Pull requests about the port go to this
+fork; changes to the decompilation go upstream, under its [CONTRIBUTING.md](CONTRIBUTING.md). Our own work is under
+the same [MIT licence](LICENSE) as the decompilation.
+
+---
+
+*Everything below is upstream's README, kept as it is so that upstream merges stay easy.*
+
 # Digimon Digital Card Battle decomp
 
-> **This is a fork for a PC port.** The matching decompilation below is the work of
-> [juandav](https://github.com/ReGame-Labs) at
-> [ReGame-Labs/dcb_decomp](https://github.com/ReGame-Labs/dcb_decomp), and this fork exists with its author's agreement. It adds a
-> native PC port built from the same C on [psxstack](https://github.com/gascarcella/psxstack), the stack behind the
-> [Digimon World 2003 port](https://github.com/gascarcella/dw2003recomp). The port's state is in
-> [docs/STATUS.md](docs/STATUS.md) and its design in [docs/PORT.md](docs/PORT.md). Everything after this note is
-> upstream's README; decompilation work belongs upstream.
-
-| Version | Code | Data | Functions |
 |---|---|---|---|
 | 🇺🇸 USA (`SLUS_013.28`) | [![Code](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=code&version=SLUS_013.28&label=Code)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLUS_013.28) | [![Data](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=data&version=SLUS_013.28&label=Data)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLUS_013.28) | [![Functions](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=functions&version=SLUS_013.28&label=Functions)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLUS_013.28) |
 | 🇯🇵 Japan (`SLPS_025.06`) | [![Code](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=code&version=SLPS_025.06&label=Code)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLPS_025.06) | [![Data](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=data&version=SLPS_025.06&label=Data)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLPS_025.06) | [![Functions](https://decomp.dev/ReGame-Labs/dcb_decomp.svg?mode=shield&measure=functions&version=SLPS_025.06&label=Functions)](https://decomp.dev/ReGame-Labs/dcb_decomp/SLPS_025.06) |
