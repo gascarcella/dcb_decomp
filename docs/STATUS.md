@@ -13,10 +13,10 @@ data of the USA, Japanese and European releases match (upstream's README "Status
   toolchain: binutils 2.42 in `bin/cross`, the host's cpp (GCC 16) as `mipsel-linux-gnu-cpp`, and Python 3.12 in
   `.venv`.
 - `jp` and `eu` are not built here: their discs are not in the data checkout yet.
-- **CI:**
-  - The fork's `fork.yaml` builds `us` from the data checkout and compares every binary.
-  - Upstream's `build.yaml` runs its `names` job (`check_names.py`, `hacks.py --check README.md`); its build job
-    skips forks.
+- **CI** (`fork.yaml`; upstream's workflows are deleted here, DECISIONS "CI: our workflows only, parallel"): `build
+  (us)` builds `us` from the data checkout and compares every binary; `names` runs upstream's checks
+  (`check_names.py`, `hacks.py --check README.md`) on every run; the port's jobs run beside them, the replay tests in
+  six shards.
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
