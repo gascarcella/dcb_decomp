@@ -22,6 +22,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/release.yml
+      - .github/actions/**
       - packaging/**
       - scripts/package_appimage.sh
       - scripts/package_windows.sh
@@ -31,9 +32,10 @@ on:
 permissions:
   contents: read
 
+# A tag's run is never cancelled; a pull request's newer push cancels its older run.
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   packages:
@@ -48,41 +50,16 @@ jobs:
         fetch-depth: 0   # git describe over the tags: a manual run's version
         persist-credentials: false
 
-    # Only psxstack (public, at its pin): the port and the launcher build from it; upstream's submodules are the PS1
-    # build's.
-    - run: |
-        git submodule update --init psxstack
-        echo "psxstack at $(git -C psxstack describe --tags --always)"
-
-    - uses: actions/setup-python@v6
+    # Only psxstack (public, at its pin: the port and the launcher build from it; upstream's submodules are the PS1
+    # build's), the desktop SDL's -dev packages (X11, Wayland, PipeWire, PulseAudio, ALSA, ...: the stack's setup lists
+    # them) and wine64 for the Windows package's test (no 32-bit multiarch), the venv's cmake and ninja, and the tools
+    # cached on their pins (psxstack's and the AppImage tools'): .github/actions/setup, as fork.yaml's jobs. No data
+    # checkout.
+    - uses: ./.github/actions/setup
       with:
-        python-version: '3.12'
-
-    # The desktop SDL's -dev packages (X11, Wayland, PipeWire, PulseAudio, ALSA, ...: the stack's setup lists them),
-    # and wine64 for the Windows package's test (no 32-bit multiarch).
-    - run: |
-        python3 -m venv .venv
-        .venv/bin/pip install cmake ninja
-        sudo apt-get update -q
-        sudo apt-get install -y -q --no-install-recommends wine wine64 $(psxstack/scripts/setup.sh --sdl3-desktop-apt)
-
-    # The tools' cache key: the stack's pins and the AppImage tools' (scripts/setup.sh's APPIMAGE* lines).
-    - id: pins
-      run: |
-        echo "hash=$({ psxstack/scripts/setup.sh --pins; grep '^APPIMAGE' scripts/setup.sh; } | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
-
-    - uses: actions/cache@v4
-      with:
-        path: |
-          bin/psxstack-tools/tools/sdl3-desktop
-          bin/psxstack-tools/tools/llvm-mingw
-          bin/psxstack-tools/tools/sdl3-windows
-          bin/psxstack-tools/tools/dxc
-          bin/psxstack-tools/tools/imgui
-          bin/appimage
-        key: release-tools-${{ runner.os }}-${{ steps.pins.outputs.hash }}
-
-    - run: scripts/setup.sh windows sdl3-desktop appimage
+        steps: windows sdl3-desktop appimage
+        cache: release
+        apt: wine wine64 $(psxstack/scripts/setup.sh --sdl3-desktop-apt)
 
     # The version: the tag on a tag push (GITHUB_REF), else git describe (dev-<commit>); both scripts check that the
     # game says it (dcb --version).

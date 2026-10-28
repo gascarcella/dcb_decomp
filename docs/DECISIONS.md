@@ -20,11 +20,12 @@ _Decided: 2026-10-08_
 
 `upstream` is ReGame-Labs/dcb_decomp. Its `main` is merged into ours on a branch, through a pull request; `main` is
 never rebased, since the fork is public. Our additions live in files of our own (`scripts/`, `docs/`, `CLAUDE.md`,
-`port/`, `psxstack/`, `.github/workflows/fork.yaml`). Changes to their files are the hooks the port needs and the
+`port/`, `psxstack/`, `.github/workflows/fork.yaml` and `release.yml`, `.github/actions/`). Changes to their files are the hooks the port needs and the
 port's section at the top of `README.md` (the credit banner, then how to play, above upstream's README kept verbatim;
 2026-10-21, as the first game's README opens with the port), nothing else: no renames, no reformatting, no
 reorganisation, so that each upstream merge stays easy. A fix that belongs to the decompilation itself goes to upstream as a pull request, when the owner
-says so, rather than living only here.
+says so, rather than living only here. One exception: their workflows are deleted here ("CI: our workflows only,
+parallel").
 
 ## The PS1 build stays byte-identical
 _Decided: 2026-10-08_
@@ -115,3 +116,18 @@ llvm-mingw (clang + lld, UCRT; lld writes the PDBs), SDL3 cross-built the same w
 `bin/psxstack-tools/` (`scripts/setup.sh windows`), no system package. Static, x86_64, Windows 10 or newer. Tested on
 Linux under Wine (`scripts/build_windows.sh --test`, CI's `windows` job): the launcher's and the input self-tests, the
 replays, and `boot`'s log byte-identical to the Linux build's. Real Windows comes from testers.
+
+## CI: our workflows only, parallel
+_Decided: 2026-10-28_
+
+Upstream's `.github/workflows/build.yaml` and `docker.yaml` are deleted here: their build jobs run only in
+ReGame-Labs/dcb_decomp (the fork can't read its disc repository), so only `build.yaml`'s `names` job ran, and its
+checks (`tools/check_names.py`, `tools/hacks.py --check README.md`) are now `fork.yaml`'s `names` job. Their
+`Dockerfile` and `tools/docker.sh` stay (not workflows). An upstream sync that changes either workflow resolves the
+conflict by keeping them deleted, and carries any new disc-free check over into `fork.yaml`.
+
+`fork.yaml` is laid out for wall-clock time, as dw2003recomp's `ci.yml`: parallel jobs set up by
+`.github/actions/setup` (also `release.yml`'s), the tools cached on their pins (never the disc), the emulator and port
+tests sharded by replay script and run four at a time on each runner (`scripts/ci_parallel.sh`), a change to
+documentation or the release's files alone skipping the heavy jobs (`scripts/ci_changes.sh`), a newer push cancelling
+a pull request's older run, and one `ci` job that always reports the run's result.

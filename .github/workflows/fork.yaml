@@ -1,7 +1,15 @@
-# The fork's own CI (docs/DECISIONS.md "The PS1 build stays byte-identical"). Upstream's build.yaml builds only in
-# ReGame-Labs/dcb_decomp, whose disc repository forks can't read; its `names` job still runs here. This workflow
-# builds `us` from the owner's private data checkout (gascarcella/dcb-gamedata, read through a deploy key) and checks
-# every binary against the original, as upstream's build job does.
+# The fork's CI (docs/DECISIONS.md "The PS1 build stays byte-identical", "CI: our workflows only, parallel"): the
+# decompilation's name checks, the `us` build against the original, the PC port's probe, its tests against the
+# emulator, the window build and the launcher, the Windows build under Wine. Laid out after dw2003recomp's ci.yml
+# (docs/THIRD_PARTY.md): parallel jobs, each set up by .github/actions/setup.
+#
+# When it runs: on pull requests and pushes to main; a newer push to a pull request cancels the older run. The
+# `changes` job sorts the changed files (scripts/ci_changes.sh): a change to documentation or to the release's own
+# files only (release.yml tests those) runs `names` alone. The `ci` job always reports, the result of the whole run.
+#
+# The data checkout (gascarcella/dcb-gamedata: the executable, P.DRV, the disc image, the emulator) comes through the
+# read-only deploy key GAMEDATA_DEPLOY_KEY; a fork's pull request has no secrets, so it gets the disc-free jobs only
+# (names, probe). Nothing from it is cached or uploaded.
 name: fork
 on:
   push:
@@ -10,14 +18,71 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+
+# One run per pull request (the newest push wins); pushes to main and manual runs are keyed by commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    # Only this fork's own runs have the key; a pull request from another fork gets upstream's disc-free checks.
-    if: >-
-      github.repository == 'gascarcella/dcb_decomp' &&
-      (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+  # Whether the change needs the heavy jobs, and whether the data checkout is there.
+  changes:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.changes.outputs.code }}
+      data: ${{ steps.data.outputs.present }}
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0   # the base commit (the repository is a few MB)
+        persist-credentials: false
+
+    - name: What changed (scripts/ci_changes.sh)
+      id: changes
+      env:
+        EVENT: ${{ github.event_name }}
+        BEFORE: ${{ github.event.before }}
+      run: |
+        # A pull request's checkout is its merge commit: its first parent is the base it is tested against.
+        if [[ "$EVENT" == pull_request ]] && git rev-parse -q --verify HEAD^2 > /dev/null; then
+          scripts/ci_changes.sh --diff HEAD^1 HEAD >> "$GITHUB_OUTPUT"
+        elif [[ "$EVENT" == push && ! "$BEFORE" =~ ^0*$ ]] && git cat-file -e "$BEFORE^{commit}" 2> /dev/null; then
+          scripts/ci_changes.sh --diff "$BEFORE" HEAD >> "$GITHUB_OUTPUT"
+        else
+          scripts/ci_changes.sh --all >> "$GITHUB_OUTPUT"
+        fi
+        cat "$GITHUB_OUTPUT"
+
+    - name: Is the data checkout available?
+      id: data
+      run: echo "present=${{ secrets.GAMEDATA_DEPLOY_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  # Always, disc-free, a few seconds: upstream's checks (they were its build.yaml's `names` job: every version names
+  # its symbols as us does, and the README's counts of fake matches and hacks are the source's), the shell scripts
+  # parse, the Python compiles.
+  names:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        persist-credentials: false
+
+    - run: python3 tools/check_names.py
+    - run: python3 tools/hacks.py --check README.md
+    - name: Scripts parse, Python compiles
+      run: |
+        for f in scripts/*.sh; do bash -n "$f"; done
+        python3 -m py_compile tests/*/*.py port/tools/*.py
+
+  # The PS1 build: `us` from the data checkout's executable and P.DRV, every binary checked against the original, as
+  # upstream's build job does.
+  build:
+    needs: changes
+    if: needs.changes.outputs.code == 'true' && needs.changes.outputs.data == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     name: build (us)
     env:
       VERSION: us
@@ -42,8 +107,8 @@ jobs:
         rm -rf gamedata-checkout
 
     - run: |
-        sudo apt-get update
-        sudo apt-get install -y binutils-mipsel-linux-gnu gcc-mipsel-linux-gnu
+        sudo apt-get update -q
+        sudo apt-get install -y -q binutils-mipsel-linux-gnu gcc-mipsel-linux-gnu
 
     - uses: actions/setup-python@v6
       with:
@@ -59,40 +124,25 @@ jobs:
         make -j$(nproc)
         make compare
 
-    # The shell scripts this fork adds parse.
-    - run: for f in scripts/*.sh; do bash -n "$f"; done
-
-  # The PC port's host-compile probe (docs/PORT.md "The host-compile probe"; issue #2) and its build: no disc, no game
-  # data. The port configures from the tracked sources alone, psxstack's inventory compiles every `us` unit for the
-  # host (0 diagnostics, no duplicate global), the Psy-Q declarations agree with the stack's and the shim covers every
-  # call (scripts/probe.sh, a gate since M1 drove it to zero); then the port builds and links (scripts/port_build.sh).
+  # The PC port's disc-free gate (docs/PORT.md "The host-compile probe"): the configure from the tracked sources,
+  # psxstack's inventory compiles every `us` unit for the host (0 diagnostics, no duplicate global), the Psy-Q
+  # declarations agree with the stack's and the shim covers every call (scripts/probe.sh); the port builds and links
+  # (scripts/port_build.sh); the host GTE macros and the task scheduler's tests. Runs on a fork's pull request too.
   probe:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     name: port probe (us)
     steps:
     - uses: actions/checkout@v5
       with:
-        submodules: recursive
         persist-credentials: false
-
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.12'
-        cache: pip
-
-    - run: |
-        python3 -m venv .venv
-        .venv/bin/pip install cmake ninja
+    - uses: ./.github/actions/setup
 
     - run: scripts/probe.sh
-
-    # The port's build and link (build/port/dcb), and its version.
     - run: scripts/port_build.sh
-
-    # The host GTE macros (port/include/gte.h) against psxstack's software GTE: gcc only, no disc.
     - run: scripts/gte_test.sh
-
-    # The task scheduler on the host (src/main/system/task.c, port/game/tasks.c) over psxstack's fibers: gcc only.
     - run: scripts/tasks_test.sh
 
     - uses: actions/upload-artifact@v4
@@ -102,114 +152,94 @@ jobs:
         path: build/port_inventory/summary.txt
         if-no-files-found: ignore
 
-  # The emulator replays (docs/PORT.md "Testing"; issue #3): the pad scripts of tests/replay/scripts/ run in the
-  # pinned PCSX-Redux from the data checkout and must give the records of tests/replay/records/. Needs the disc
-  # image (rebuilt from the data checkout's xz parts) and the emulator zip, both through the deploy key, so only the
-  # fork's own runs have it, as the build job. The stack's runners are the submodule's tools/replay/. Then the port
-  # boots the same disc headless to OPENSEG (scripts/port_build.sh --boot) and replays boot and title against the
-  # records (tests/port/run.py boot title new_game first_duel).
+  # The emulator and the port against each other (docs/PORT.md "Testing"), sharded: the longest replay scripts each get
+  # a job, the `others` shard every other script with a record (a new script lands there by itself) and the checks
+  # that are not per script. In each shard, per script, side by side on the runner's 4 cores (scripts/ci_parallel.sh;
+  # each is single-threaded): the emulator's replay against its record (tests/replay/replay.py check), the port's
+  # (tests/port/run.py --sanitize: twice identical, the cross-core view, the ASan/UBSan build with no report; then
+  # tests/port/sound.py port, the port's SPU calls against the emulator's) and the VRAM and pictures (tests/port/vram.py
+  # --no-png: no picture of the game leaves the runner; the known differences: tests/port/vram_known.json). A script
+  # that continues another ("after", tests/replay/chain.py) runs combined from boot, so a shard needs no other's
+  # output. `others` also: the emulator boots the disc (scripts/check_emulator.sh), the port boots it headless to
+  # OPENSEG (scripts/port_build.sh --boot), the saves both ways (tests/saves/run.py: the cards stay on the runner) and
+  # LIBSND on the emulator's SPU trace, also under ASan/UBSan (tests/port/sound.py --sanitize).
   replay:
-    if: >-
-      github.repository == 'gascarcella/dcb_decomp' &&
-      (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+    needs: changes
+    if: needs.changes.outputs.code == 'true' && needs.changes.outputs.data == 'true'
     runs-on: ubuntu-24.04
-    name: emulator replays (us)
+    timeout-minutes: 30
+    name: replay (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keep OWN_SHARD below in step with the shards named after a script.
+        shard: [fusion, deck_edit, records, first_duel_play, others]
+    env:
+      OWN_SHARD: fusion deck_edit records first_duel_play
+      SHARD: ${{ matrix.shard }}
     steps:
     - uses: actions/checkout@v5
       with:
-        submodules: recursive
         persist-credentials: false
-
-    - uses: actions/checkout@v5
+    - uses: ./.github/actions/setup
       with:
-        repository: gascarcella/dcb-gamedata
-        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
-        path: gamedata-checkout
-        sparse-checkout: |
+        steps: disc redux
+        gamedata: |
           gamedata/us
           tools/prebuilt
-        persist-credentials: false
+        deploy-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
 
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.12'
+    # The plain build (with the link's check; `others` also boots it) and the sanitizer build, before the tests use
+    # them side by side.
+    - name: The port and its sanitizer build
+      run: |
+        boot=""
+        [[ "$SHARD" != others ]] || boot=--boot
+        scripts/port_build.sh $boot
+        cmake -S port -B build/port-san -G Ninja -DPSXSTACK_SANITIZE=ON > /dev/null
+        cmake --build build/port-san
 
-    - run: |
-        python3 -m venv .venv
-        .venv/bin/pip install cmake ninja
-
-    - run: |
-        export DCB_GAMEDATA="$PWD/gamedata-checkout"
-        export DCB_UBUNTU_MIRROR=http://azure.archive.ubuntu.com/ubuntu   # the runners' own archive: archive.ubuntu.com stalls from them
-        scripts/setup.sh disc redux
-        scripts/check_emulator.sh
-        .venv/bin/python tests/replay/replay.py check -j 2
-
-    - run: scripts/port_build.sh --boot
-    - run: .venv/bin/python tests/port/run.py boot title new_game first_duel first_duel_play deck_edit fusion records --sanitize
-    # M2: the VRAM, textures and picture against the emulator's at every checkpoint; the known differences are in
-    # tests/port/vram_known.json. No PNGs: pictures of the game stay off CI.
-    - run: .venv/bin/python tests/port/vram.py -j 2 --no-png
-    # M4: saves both ways: the port and the emulator each save new_game to a new card, the cards' formats, then each
-    # loads the other's card (tests/saves/continue.json). The cards are made here and never uploaded (game data).
-    - run: .venv/bin/python tests/saves/run.py
-    # M3: LIBSND, LIBSPU and the SPU core replayed on the emulator's timeline must give the committed SPU write trace
-    # (tests/sound/traces/first_duel_play.trace.gz) exactly to its known first difference, also under ASan/UBSan; the known exceptions are in
-    # tests/port/sound_known.json. Then the port's own runs above against it (informational: the game's timing differs).
-    - run: .venv/bin/python tests/port/sound.py --sanitize
-    - run: .venv/bin/python tests/port/sound.py port
+    - name: The tests, side by side
+      run: |
+        if [[ "$SHARD" == others ]]; then
+          scripts=$(for f in tests/replay/records/*.json; do n=$(basename "$f" .json); [[ " $OWN_SHARD " == *" $n "* ]] || echo "$n"; done)
+        else
+          scripts=$SHARD
+        fi
+        echo "scripts:" $scripts
+        py=.venv/bin/python
+        {
+          for s in $scripts; do echo "$py tests/port/vram.py $s -j 1 --no-png --out build/port-vram/$s"; done
+          for s in $scripts; do echo "$py tests/port/run.py $s --sanitize && $py tests/port/sound.py port $s"; done
+          for s in $scripts; do echo "$py tests/replay/replay.py check tests/replay/scripts/$s.json"; done
+          if [[ "$SHARD" == others ]]; then
+            echo "scripts/check_emulator.sh"
+            echo "$py tests/saves/run.py"
+            echo "$py tests/port/sound.py --sanitize"
+          fi
+        } | scripts/ci_parallel.sh -j 4
 
   # The desktop build (docs/PORT.md "Running it"): the window build (-DPSXSTACK_SDL=ON) and the launcher, with SDL3, DXC
-  # and Dear ImGui from scripts/setup.sh sdl (psxstack's own setup at the submodule's pins, in bin/psxstack-tools/),
-  # cached on those pins (psxstack/scripts/setup.sh --pins: a pin bump rebuilds them once, ~2 min). No apt: on the
-  # runner SDL gets whatever backends its headers allow, and the checks run on its offscreen video and dummy audio
-  # drivers. The input self-test runs without the disc (#39); the boot and the launcher's self-test need the data
-  # checkout, as the replay job.
-  # scripts/port_build.sh --sdl --boot: the input self-test (every default key and a virtual gamepad's buttons reach the
-  # pad, hotkeys never do, the pause), then the boot in an offscreen window whose log and picture must equal the
+  # and Dear ImGui from scripts/setup.sh sdl (cached on psxstack's pins). No apt: SDL gets the backends its headers
+  # allow, and the checks run on its offscreen video and dummy audio drivers. scripts/port_build.sh --sdl --boot: the
+  # input self-test (without the disc, #39), then the boot in an offscreen window whose log and picture must equal the
   # headless build's; scripts/launcher_build.sh: the launcher's self-test, with the real disc and the SDL game.
   desktop:
-    if: >-
-      github.repository == 'gascarcella/dcb_decomp' &&
-      (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+    needs: changes
+    if: needs.changes.outputs.code == 'true' && needs.changes.outputs.data == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     name: desktop (window, launcher)
     steps:
     - uses: actions/checkout@v5
       with:
-        submodules: recursive
         persist-credentials: false
-
-    - uses: actions/checkout@v5
+    - uses: ./.github/actions/setup
       with:
-        repository: gascarcella/dcb-gamedata
-        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
-        path: gamedata-checkout
-        sparse-checkout: gamedata/us
-        persist-credentials: false
-
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.12'
-
-    - run: |
-        python3 -m venv .venv
-        .venv/bin/pip install cmake ninja
-
-    - id: pins
-      run: echo "hash=$(psxstack/scripts/setup.sh --pins | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
-
-    - uses: actions/cache@v4
-      with:
-        path: |
-          bin/psxstack-tools/tools/sdl3
-          bin/psxstack-tools/tools/dxc
-          bin/psxstack-tools/tools/imgui
-        key: psxstack-tools-${{ runner.os }}-${{ steps.pins.outputs.hash }}
-
-    - run: DCB_GAMEDATA="$PWD/gamedata-checkout" scripts/setup.sh disc sdl
+        steps: disc sdl
+        cache: desktop
+        gamedata: gamedata/us
+        deploy-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
 
     - run: scripts/port_build.sh --sdl --boot
     - run: scripts/launcher_build.sh
@@ -224,62 +254,34 @@ jobs:
           build/launcher/self-test.log
         if-no-files-found: ignore
 
-  # The Windows build (docs/PORT.md "Running it"; DECISIONS "Windows: cross-built from Linux with llvm-mingw, tested
-  # under Wine"): the game and the launcher cross-compiled with llvm-mingw and SDL3 for Windows (scripts/setup.sh
-  # windows: psxstack's own steps at the submodule's pins in bin/psxstack-tools/, cached on those pins), then under
-  # Ubuntu's Wine, headless (scripts/build_windows.sh --test): the launcher's self-test with the disc and dcb.exe, the
-  # game's input self-test, the boot and title replays (the emulator's cross-core view, two runs identical), and boot's
-  # frame log, record and SPU trace byte-identical to the Linux headless build's. The disc comes from the data
-  # checkout, as the replay job's.
+  # The Windows build (DECISIONS "Windows: cross-built from Linux with llvm-mingw, tested under Wine"): the game and the
+  # launcher cross-compiled with llvm-mingw and SDL3 for Windows (scripts/setup.sh windows, cached on psxstack's pins),
+  # then under Ubuntu's Wine, headless (scripts/build_windows.sh --test): the launcher's self-test with the disc and
+  # dcb.exe, the game's input self-test, the boot and title replays (the emulator's cross-core view, two runs
+  # identical), and boot's frame log, record and SPU trace byte-identical to the Linux headless build's.
   windows:
-    if: >-
-      github.repository == 'gascarcella/dcb_decomp' &&
-      (github.event_name != 'pull_request' ||
-       github.event.pull_request.head.repo.full_name == github.repository)
+    needs: changes
+    if: needs.changes.outputs.code == 'true' && needs.changes.outputs.data == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 40
     name: windows (cross-build, Wine)
     env:
       WINEDEBUG: "-all"
     steps:
     - uses: actions/checkout@v5
       with:
-        submodules: recursive
         persist-credentials: false
-
-    - uses: actions/checkout@v5
-      with:
-        repository: gascarcella/dcb-gamedata
-        ssh-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
-        path: gamedata-checkout
-        sparse-checkout: gamedata/us
-        persist-credentials: false
-
-    - uses: actions/setup-python@v6
-      with:
-        python-version: '3.12'
-
     # wine64 alone: no 32-bit multiarch (the binaries are x86_64; `wine` is the command the scripts call).
-    - run: |
-        python3 -m venv .venv
-        .venv/bin/pip install cmake ninja
-        sudo apt-get update -q
-        sudo apt-get install -y -q --no-install-recommends wine wine64
-
-    - id: pins
-      run: echo "hash=$(psxstack/scripts/setup.sh --pins | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
-
-    - uses: actions/cache@v4
+    - uses: ./.github/actions/setup
       with:
-        path: |
-          bin/psxstack-tools/tools/llvm-mingw
-          bin/psxstack-tools/tools/sdl3-windows
-          bin/psxstack-tools/tools/dxc
-          bin/psxstack-tools/tools/imgui
-        key: psxstack-tools-windows-${{ runner.os }}-${{ steps.pins.outputs.hash }}
+        steps: disc windows
+        cache: windows
+        apt: wine wine64
+        gamedata: gamedata/us
+        deploy-key: ${{ secrets.GAMEDATA_DEPLOY_KEY }}
 
-    - run: DCB_GAMEDATA="$PWD/gamedata-checkout" scripts/setup.sh disc windows
-
-    - run: |
+    - name: Wine prefix
+      run: |
         mkdir -p build/wine-prefix
         WINEPREFIX="$PWD/build/wine-prefix" wineboot --init
         wine --version
@@ -302,3 +304,20 @@ jobs:
           build/port-test-wine/*/*_crash/
           build/port-test-linux.log
         if-no-files-found: ignore
+
+  # The run's result in one check (a skipped job passes: documentation only, or a fork's pull request without the data
+  # checkout); the one to require in a branch rule.
+  ci:
+    needs: [changes, names, build, probe, replay, desktop, windows]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - name: Every job passed or was skipped
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        echo "results: $RESULTS"
+        for r in $RESULTS; do
+          [[ "$r" == success || "$r" == skipped ]] || { echo "::error::a job ended with: $r"; exit 1; }
+        done

@@ -1,0 +1,104 @@
+# A port job's setup (fork.yaml, release.yml; adapted from dw2003recomp's .github/actions/setup, docs/THIRD_PARTY.md):
+# the psxstack submodule, apt only for what has no pinned install, the venv's cmake and ninja, the data checkout through
+# the deploy key, the job's tool cache, then scripts/setup.sh with the job's steps. Every port job runs it once, right
+# after its checkout.
+#
+# The tool cache: psxstack's tools in bin/psxstack-tools/tools/ and the AppImage tools in bin/appimage, keyed on the
+# pins (psxstack/scripts/setup.sh --pins, scripts/setup.sh's APPIMAGE lines) and the job's steps, not on the scripts'
+# text: a changed pin rebuilds the tools once. One cache per job (`cache`): a job saves exactly what it installs.
+# Never cached: the disc and anything else from the data checkout (a fork's pull request can restore this
+# repository's caches), and the emulator (its install takes ~2 s).
+name: Port setup
+description: psxstack, apt, the venv, the data checkout and the disc, the cached tools (scripts/setup.sh)
+inputs:
+  steps:
+    description: "scripts/setup.sh steps (space separated; empty: none), e.g. `disc redux`, `disc sdl`, `windows`"
+    default: ""
+  cache:
+    description: "The tool cache's name (the job's); empty: no tool cache"
+    default: ""
+  apt:
+    description: "apt packages (wine ...); empty: no apt at all (the runners' mirror stalls now and then)"
+    default: ""
+  gamedata:
+    description: "The data checkout's sparse paths (empty: no data checkout); needs deploy-key"
+    default: ""
+  deploy-key:
+    description: "The data checkout's read-only deploy key (secrets.GAMEDATA_DEPLOY_KEY)"
+    default: ""
+runs:
+  using: composite
+  steps:
+    # The runners' own Ubuntu mirror for setup.sh's downloads (archive.ubuntu.com stalls from them: the emulator's
+    # sysroot), and the data checkout's place (scripts/gamedata_dir.sh).
+    - name: Environment
+      shell: bash
+      run: |
+        echo "DCB_UBUNTU_MIRROR=http://azure.archive.ubuntu.com/ubuntu" >> "$GITHUB_ENV"
+        echo "DCB_GAMEDATA=$GITHUB_WORKSPACE/gamedata-checkout" >> "$GITHUB_ENV"
+
+    # Only psxstack (public, at its pin): upstream's submodules (external/) are the PS1 build's.
+    - name: psxstack submodule
+      shell: bash
+      run: |
+        git submodule update --init psxstack
+        echo "psxstack at $(git -C psxstack describe --tags --always)"
+
+    - name: System packages
+      if: inputs.apt != ''
+      shell: bash
+      run: |
+        sudo apt-get update -q
+        sudo apt-get install -y -q --no-install-recommends ${{ inputs.apt }}
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    # The venv's cmake and ninja first on the PATH (the scripts also find them there themselves).
+    - name: venv (cmake, ninja)
+      shell: bash
+      run: |
+        python3 -m venv .venv
+        .venv/bin/pip install -q cmake ninja
+        echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+    - name: Data checkout
+      if: inputs.gamedata != '' && inputs.deploy-key != ''
+      uses: actions/checkout@v5
+      with:
+        repository: gascarcella/dcb-gamedata
+        ssh-key: ${{ inputs.deploy-key }}
+        path: gamedata-checkout
+        sparse-checkout: ${{ inputs.gamedata }}
+        persist-credentials: false
+
+    - name: The pins (the tool cache's key)
+      id: pins
+      if: inputs.cache != ''
+      shell: bash
+      env:
+        STEPS: ${{ inputs.steps }}
+      run: |
+        hash=$({ psxstack/scripts/setup.sh --pins; grep '^APPIMAGE' scripts/setup.sh; echo "$STEPS"; } | sha256sum | cut -c1-16)
+        echo "hash=$hash" >> "$GITHUB_OUTPUT"
+
+    # Every tool directory the steps can install: the ones this job installs exist and are saved, the others skipped.
+    - name: Cached tools
+      if: inputs.cache != ''
+      uses: actions/cache@v4
+      with:
+        path: |
+          bin/psxstack-tools/tools/sdl3
+          bin/psxstack-tools/tools/sdl3-desktop
+          bin/psxstack-tools/tools/sdl3-windows
+          bin/psxstack-tools/tools/llvm-mingw
+          bin/psxstack-tools/tools/dxc
+          bin/psxstack-tools/tools/imgui
+          bin/appimage
+        key: tools-${{ inputs.cache }}-${{ runner.os }}-${{ steps.pins.outputs.hash }}
+
+    - name: scripts/setup.sh ${{ inputs.steps }}
+      if: inputs.steps != ''
+      shell: bash
+      run: scripts/setup.sh ${{ inputs.steps }}
