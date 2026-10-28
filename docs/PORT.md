@@ -651,7 +651,10 @@ saved deck slot): the host's struct is 0x2A78 bytes, so before M4 the port's car
 PS1 heap addresses (the host's block table holds the PS1's, so the emulator's card database is at the same address),
 a deck slot pointing at a partner (`card_db.c`'s `cardSlot->card = &partners[slot]`) by the partner's PS1 offset in
 the profiles' block, a word that is not a heap address (the stale bytes of the partners and decks not set up yet) kept
-as it is, `profileSize` as the PS1's 0x2774. The two cards of the same game, one saved by the port and one by the
+as it is (on a 64-bit host tagged in the pointer's upper half, `GAME_STALE_TAG`: as a bare word it could fall inside
+the host heap's own addresses, `HEAP_ARENA` in the non-PIE executable's `.bss`, and be written back as a heap pointer;
+psxstack v0.3.19's larger `.bss` moved the heap over the emulator card's `0x0302011f`), `profileSize` as the PS1's
+0x2774. The two cards of the same game, one saved by the port and one by the
 emulator, are then the same bytes but the profile's `VOLATILE_RANGES` (the id, the play time, the rand()-drawn
 serials and bonus cards, the heap the game never writes), the checksums that cover them, the title's play time and the
 buffer's stale tail (`tests/saves/cards.py`). The icon and the directory are byte-identical.

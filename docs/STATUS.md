@@ -227,8 +227,11 @@ runners).
   hand. Widescreen and the extended VRAM stay off (no game mod asks). The window build's **disc-free** input self-test
   passes again (psxstack v0.3.19, #115: from v0.3.7 a window run armed save states, and the self-test without the disc,
   which runs no game, stopped at vsync 1 on the save-state check); it skips the quick slot, as there is no game.
-  The gates pass with the disc: `build.sh` 8 OK, `probe.sh`, `port_build.sh --sdl --boot`, the launcher self-test
-  (610 of 610), `tests/port/run.py --sanitize` over the eight scripts, `vram.py`, `build_windows.sh --test`, and the
+  The bump's larger `.bss` put the host heap (`HEAP_ARENA`) over a stale word of the emulator's card, which the
+  port's load then wrote back as a heap pointer (`tests/saves/run.py` failed): a stale word read from a save is now
+  tagged in the pointer's upper half (docs/PORT.md "Saves"). The gates pass with the disc: `build.sh` 8 OK,
+  `probe.sh`, `port_build.sh --sdl --boot`, the launcher self-test (610 of 610), `tests/port/run.py --sanitize --m32`
+  over the eight scripts, `tests/saves/run.py`, `vram.py`, `build_windows.sh --test`, and the
   release's packages built in Docker (`scripts/release_local.sh`: the AppImage, with the static C++ runtime the menu
   needs, and the zip, each smoke-tested with the disc).
 

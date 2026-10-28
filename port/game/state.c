@@ -155,6 +155,16 @@ static int game_profile_ptr_ps1(const void *p, uint32_t *out) {
     return 1;
 }
 
+/* A stale word read from a save (game_ps1_ptr below) is kept in the pointer field with this tag in its upper half, a
+ * non-canonical x86-64 address that is never a host pointer: kept as the bare word, it could fall inside the host
+ * heap's own addresses (HEAP_ARENA, in a non-PIE executable's .bss, below 4 GB) and be written back as a heap
+ * pointer's PS1 address. 0 at -m32, where a pointer has no upper half. */
+#if UINTPTR_MAX > 0xFFFFFFFFu
+#define GAME_STALE_TAG ((uintptr_t)0xDCB5 << 48)
+#else
+#define GAME_STALE_TAG ((uintptr_t)0)
+#endif
+
 /* A pointer field of the profile as the image holds it: a pointer into the heap (or NULL) as its PS1 address (into
  * the profiles' block by field, above); any other value is not a pointer the game made but the bytes the heap block
  * held before (resetPlayerData leaves the partners' and the decks' card pointers as it finds them, and the boot's
@@ -162,6 +172,9 @@ static int game_profile_ptr_ps1(const void *p, uint32_t *out) {
  * same. */
 static uint32_t game_image_ptr(const void *p) {
     uint32_t v;
+    if (GAME_STALE_TAG != 0 && ((uintptr_t)p & ~(uintptr_t)0xFFFFFFFFu) == GAME_STALE_TAG) {
+        return (uint32_t)(uintptr_t)p; /* a stale word game_ps1_ptr read from a save, as it was */
+    }
     if (game_profile_ptr_ps1(p, &v)) {
         return v;
     }
@@ -304,15 +317,15 @@ static uint32_t game_get32(const u8 *in) {
  * byte (the host's block table holds the PS1's addresses, so a card pointer saved by the emulator points into the
  * same card database here; one into the profiles' block, a partner's cards, by field), 0 NULL; any other word, and
  * an address in the profiles' block outside the partners' cards, is not a pointer the game made (the stale bytes of
- * the partners and decks the game has not set up, as the PS1's heap held them) and is kept as it is, so it is saved
- * back the same. */
+ * the partners and decks the game has not set up, as the PS1's heap held them) and is kept as it is, tagged
+ * (GAME_STALE_TAG), so it is saved back the same. */
 static void *game_ps1_ptr(uint32_t v) {
     uint32_t base, off, in, r;
     if (v == 0) {
         return NULL;
     }
     if (!game_heap_holds((s32)v)) {
-        return (void *)(uintptr_t)v;
+        return (void *)(GAME_STALE_TAG | v);
     }
     base = game_heap_ps1((const void *)PLAYER_PROFILES);
     off = v - base;
@@ -320,7 +333,7 @@ static void *game_ps1_ptr(uint32_t v) {
         in = off % GAME_PROFILE_SIZE;
         r = (in - 0x80) % GAME_PARTNER_SIZE;
         if (in < 0x80 || in >= 0x848 || r >= 0x278) {
-            return (void *)(uintptr_t)v;
+            return (void *)(GAME_STALE_TAG | v);
         }
         return (u8 *)&((PlayerProfile *)PLAYER_PROFILES)[off / GAME_PROFILE_SIZE].partners[(in - 0x80) /
                                                                                          GAME_PARTNER_SIZE] + r;
