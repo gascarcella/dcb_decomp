@@ -5,14 +5,15 @@
 # executable) and SDL3 for Windows. Adapted from dw2003recomp's scripts/build_windows.sh (docs/THIRD_PARTY.md).
 #
 #   scripts/build_windows.sh [--no-launcher] [--test] [--jobs N]
-#     (default)      the game, Release, -DPSXSTACK_SDL=ON, into build/port-win (dcb.exe, dcb.pdb, mods/), and the
+#     (default)      the game, Release, -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON (the in-game menu, as in the AppImage),
+#                    into build/port-win (dcb.exe, dcb.pdb, mods/), and the
 #                    launcher (built from port/game/game.json) into build/launcher-win (dcb-launcher.exe, its PDB)
 #     --no-launcher  the game only
 #     --test         then under Wine (wine on PATH; the prefix build/wine-prefix/, headless), each run under `timeout`:
 #                    the launcher's self-test (SDL's offscreen video through DCB_SELFTEST_VIDEO_DRIVER, as Wine drops
 #                    SDL_VIDEO_DRIVER; with the disc, the real disc's SHA-1 and dcb.exe run 300 frames from the
 #                    launcher's command); and with the disc (disks/us/dcb_us.cue: scripts/setup.sh disc) dcb.exe
-#                    --input-test, then the boot and title replays (tests/port/run.py --exe build/port-win/dcb.exe
+#                    --input-test (ending with the in-game menu's round trip), then the boot and title replays (tests/port/run.py --exe build/port-win/dcb.exe
 #                    --wine: deterministic, the emulator's cross-core view) and boot's frame log against the Linux
 #                    headless build's (build/port, tests/port/run.py boot): with the record and the SPU trace, byte-identical
 #     --jobs N       parallel jobs (default: every core)
@@ -32,7 +33,7 @@ while [[ $# -gt 0 ]]; do
         --no-launcher) LAUNCHER=0; shift ;;
         --test) TEST=1; shift ;;
         --jobs) JOBS="$2"; shift 2 ;;
-        -h|--help) sed -n '2,23p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
         *) echo "build_windows.sh: unknown argument $1" >&2; exit 2 ;;
     esac
 done
@@ -49,7 +50,7 @@ STACK="${PSXSTACK_DIR:-$ROOT/psxstack}"
 TOOLS="${PSXSTACK_TOOLS_DIR:-$ROOT/bin/psxstack-tools/tools}"
 [[ -x "$TOOLS/llvm-mingw/bin/x86_64-w64-mingw32-clang" && -f "$TOOLS/sdl3-windows/lib/cmake/SDL3/SDL3Config.cmake" &&
    -x "$TOOLS/dxc/bin/dxc" ]] || die "no llvm-mingw, SDL3 for Windows or DXC in $TOOLS: scripts/setup.sh windows"
-[[ $LAUNCHER -eq 0 || -f "$TOOLS/imgui/imgui.cpp" ]] || die "no Dear ImGui in $TOOLS: scripts/setup.sh windows"
+[[ -f "$TOOLS/imgui/imgui.cpp" ]] || die "no Dear ImGui (the launcher, the in-game menu) in $TOOLS: scripts/setup.sh windows"
 TOOLCHAIN="$STACK/cmake/windows-x86_64.cmake"
 export PSXSTACK_TOOLS_DIR="$TOOLS"   # the toolchain file's lookup, also in CMake's try_compile projects
 mkdir -p build
@@ -61,10 +62,10 @@ quiet() { # quiet LOG CMD...: the output into LOG, its end shown when the comman
 
 # ---- The game: the window build (Release), as a GUI-subsystem dcb.exe with its PDB and the mods' manifests.
 GAME=build/port-win
-cfg=(-G Ninja "-DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DPSXSTACK_SDL=ON
-     "-DPSXSTACK_TOOLS_DIR=$TOOLS" "-DPSXSTACK_PYTHON=$PY")
+cfg=(-G Ninja "-DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON
+     "-DPSXSTACK_IMGUI_DIR=$TOOLS/imgui" "-DPSXSTACK_TOOLS_DIR=$TOOLS" "-DPSXSTACK_PYTHON=$PY")
 [[ -n "${PSXSTACK_DIR:-}" ]] && cfg+=("-DPSXSTACK_DIR=$PSXSTACK_DIR")
-log "game: cmake -S port -B $GAME (windows-x86_64.cmake, Release, -DPSXSTACK_SDL=ON); ninja (log: $GAME.build.log)"
+log "game: cmake -S port -B $GAME (windows-x86_64.cmake, Release, -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON); ninja (log: $GAME.build.log)"
 quiet "$GAME.configure.log" cmake -S port -B "$GAME" "${cfg[@]}"
 quiet "$GAME.build.log" ninja -C "$GAME" -j "$JOBS"
 for f in "$GAME/dcb.exe" "$GAME/dcb.pdb" "$GAME/mods"; do [[ -e "$f" ]] || die "the build made no $f"; done
@@ -137,7 +138,9 @@ SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy timeout 600 wine "$GAME/dcb.ex
 rc=$?
 set -e
 [[ $rc -eq 0 ]] || { tail -20 "$GAME/input-test.log" >&2; die "the input self-test under wine ended with status $rc ($GAME/input-test.log)"; }
-log "game: input self-test under wine: $(grep -m1 -o 'exit 0 after .*' "$GAME/input-test.log" || echo passed)"
+grep -q 'input test: the menu: passed' "$GAME/input-test.log" ||
+    die "the input self-test under wine ran no in-game menu ($GAME/input-test.log)"
+log "game: input self-test under wine: $(grep -m1 -o 'exit 0 after .*' "$GAME/input-test.log" || echo passed), the in-game menu passed"
 
 log "game: the boot and title replays under wine (tests/port/run.py --exe $GAME/dcb.exe --wine)"
 timeout 1800 "$PY" tests/port/run.py boot title --exe "$GAME/dcb.exe" --wine --out build/port-test-wine ||

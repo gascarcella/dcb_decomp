@@ -18,7 +18,7 @@
 # built on first use); the network on the first run (the tools; then kept in build/release-local/ between runs, about
 # 10 min cold, 2 warm). With the disc (disks/us/dcb_us.bin: scripts/setup.sh disc) mounted read-only, the smoke tests
 # also run the bundled game on it, as fork.yaml's jobs do; without it they run without the disc, as release.yml does.
-# Output: build/release/dcb-<version>-linux-x86_64.AppImage, its .debug, SHA256SUMS,
+# Output: build/release/dcb-<version>-x86_64.AppImage, its .debug, SHA256SUMS,
 # dcb-<version>-windows-x86_64.zip, its -debug.zip, SHA256SUMS-windows.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -111,7 +111,7 @@ scripts/package_windows.sh --test
 
 built="$src/build/release"
 (cd "$built" && sha256sum -c --quiet SHA256SUMS && sha256sum -c --quiet SHA256SUMS-windows) || die "SHA256SUMS does not match"
-for f in "dcb-$version-linux-x86_64.AppImage" "dcb-$version-linux-x86_64.debug" SHA256SUMS \
+for f in "dcb-$version-x86_64.AppImage" "dcb-$version-x86_64.debug" SHA256SUMS \
          "dcb-$version-windows-x86_64.zip" "dcb-$version-windows-x86_64-debug.zip" SHA256SUMS-windows; do
     [[ -f "$built/$f" ]] || die "the container made no $f"
     cp "$built/$f" "$out/"

@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-10-09_
+_Last updated: 2026-10-28_
 
 The fork is set up, and **M1 (headless boot) is complete**: the PC port replays the five emulator scripts (the tutorial duel to its end among them), twice
 identical, clean under ASan/UBSan; **M4 (saves) is complete**: saves move both ways between the port and the emulator; M2 (rendering) has started, and the game runs in a window with its launcher (docs/PORT.md "Running it"); M3
@@ -20,7 +20,7 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
-v0.3.6 (a replay step that writes memory, `write_mem`, psxstack #70; v0.3.5: game.json `disc_required`: no start without a disc, `--input-test` aside, psxstack #64; v0.3.4: the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
+v0.3.19 (the stack's features below, "psxstack v0.3.19"; v0.3.6: a replay step that writes memory, `write_mem`, psxstack #70; v0.3.5: game.json `disc_required`: no start without a disc, `--input-test` aside, psxstack #64; v0.3.4: the launcher self-test and `--fps` help read the game's rate, #57; the GPU's two known title differences against PCSX-Redux documented, #54; v0.3.3: LIBC2's `rand`/`srand`, the CD's rate following `video.rate`, `port_test`'s crash directory and ASan default; v0.3.2: a checkpoint without an image; v0.3.1: the shim's functions this game calls, psxstack #37, #38, #41, #45; v0.3.0: the second game's stack work, optional heap, the stack's Psy-Q declarations, fibers, the replay
 runners).
 - `port/` (`CMakeLists.txt`, `game/game.json`, the empty adapter, `tools/port_inputs.py`, `tools/port_inventory.py`)
   configures from the tracked sources alone: 155 units, 7 overlays in one slot. No upstream file changed.
@@ -132,7 +132,7 @@ runners).
   self-test and the `boot` and `title` replays pass, and `boot`'s frame log, record and SPU trace are byte-identical to
   the Linux headless build's. Two game-side Windows fixes: `bzero`/`bcopy`, missing from the UCRT
   (`port/game/libc_win32.c`), and clang's duplicate-typedef error in `state.c`. `scripts/package_appimage.sh` and
-  `scripts/package_windows.sh` make `dcb-<version>-linux-x86_64.AppImage` (5 MB, glibc 2.38+) and
+  `scripts/package_windows.sh` make `dcb-<version>-linux-x86_64.AppImage` (5 MB, glibc 2.38+; `dcb-<version>-x86_64.AppImage` since the update check) and
   `dcb-<version>-windows-x86_64.zip` (4 MB; the PDBs in `-debug.zip`), each smoke-tested (303 of 303 inside the
   package, with the disc); `release.yml` drafts a release on a `vX.Y.Z` tag, which the owner publishes by hand;
   `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). v0.1.0 was published on 2026-10-09.
@@ -213,6 +213,27 @@ runners).
   stack's poisoned redzones), the textures and ENDSEG's picture equal in VRAM. ENDSEG's views
   (`port/game/views_endseg.c`) and its part of #36's audit (nothing read through a second layout). The ending itself
   is a play-test by hand (docs/PORT.md).
+- **psxstack v0.3.19** (from v0.3.6; docs/PORT.md "Running it"): the window builds take the in-game menu
+  (`-DPSXSTACK_MENU=ON` in `scripts/port_build.sh --sdl`, `scripts/build_windows.sh`, `scripts/package_appimage.sh`;
+  the input self-tests require its round trip), the quick save state (F5/F9), the Faster loading mod (off: the replays
+  are unchanged), `video.scaling`, Settings as four screens (Video, Graphics, Audio, System). Game-side: the **update
+  check** (game.json `launcher.updates`, this repository's releases; the AppImage is now `dcb-<version>-x86_64.AppImage`,
+  the name the check looks for), **two present filters** (`video.scenes`: 2D "the duel field and the menus", default
+  `sharp`; 3D "polygon battles and fusions"; `game_state_scene()` says 3D while SUGSEG is loaded or the wire-grid floor
+  is drawn: on the window build replaying `fusion`, 3D exactly over the three polygon battles and the fusion cutscene's
+  two halves), **placeholder Steam artwork** (`packaging/steam/`, from the port's icon: proper art still wanted; CI
+  counts `packaging/steam/` as code, since the launcher embeds it). **Player 2** (`input.player2`) is the player's
+  setting, off by default; the game reads port 1 for KAWSEG's versus duel and OPENSEG's friend trade, untested by
+  hand. Widescreen and the extended VRAM stay off (no game mod asks). The window build's **disc-free** input self-test
+  passes again (psxstack v0.3.19, #115: from v0.3.7 a window run armed save states, and the self-test without the disc,
+  which runs no game, stopped at vsync 1 on the save-state check); it skips the quick slot, as there is no game.
+  The bump's larger `.bss` put the host heap (`HEAP_ARENA`) over a stale word of the emulator's card, which the
+  port's load then wrote back as a heap pointer (`tests/saves/run.py` failed): a stale word read from a save is now
+  tagged in the pointer's upper half (docs/PORT.md "Saves"). The gates pass with the disc: `build.sh` 8 OK,
+  `probe.sh`, `port_build.sh --sdl --boot`, the launcher self-test (610 of 610), `tests/port/run.py --sanitize --m32`
+  over the eight scripts, `tests/saves/run.py`, `vram.py`, `build_windows.sh --test`, and the
+  release's packages built in Docker (`scripts/release_local.sh`: the AppImage, with the static C++ runtime the menu
+  needs, and the zip, each smoke-tested with the disc).
 
 ## Upstream
 In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).

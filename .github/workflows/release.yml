@@ -133,7 +133,7 @@ jobs:
           --title "Digimon Digital Card Battle PC port $TAG" --generate-notes --notes "The launcher and the PC port of Digimon Digital Card Battle, built from juandav's decompilation (ReGame-Labs/dcb_decomp) on psxstack, for Linux and for Windows. A work in progress (docs/STATUS.md).
         Bring your own disc image of Digimon Digital Card Battle (PS1, USA, SLUS-01328) as a .cue and .bin: the launcher checks its SHA-1. No game data is included.
 
-        **Linux x86_64**: \`dcb-*-linux-x86_64.AppImage\`: \`chmod +x\` it, then run it (the launcher). Needs glibc 2.39 or newer (Ubuntu 24.04, Fedora 40, Debian 13 or later).
+        **Linux x86_64**: \`dcb-*-x86_64.AppImage\`: \`chmod +x\` it, then run it (the launcher). Needs glibc 2.39 or newer (Ubuntu 24.04, Fedora 40, Debian 13 or later).
         **Windows x86_64**: \`dcb-*-windows-x86_64.zip\`: unzip, run \`dcb-launcher.exe\` (unsigned: SmartScreen's \"More info\", \"Run anyway\"). Windows 10 or newer. Tested on Linux under Wine only, not yet on real Windows: reports are welcome in the issues.
         The .debug file and the -debug.zip are the programs' debug info for crash reports (not needed to play)." \
           ./*.AppImage ./*.debug ./*-windows-x86_64.zip ./*-windows-x86_64-debug.zip SHA256SUMS SHA256SUMS-windows

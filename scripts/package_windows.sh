@@ -17,7 +17,8 @@
 # Needs: scripts/setup.sh windows; cmake and ninja (the venv's); wine for --test.
 # Outputs: <out>/dcb-<version>-windows-x86_64.zip (dcb-<version>-windows-x86_64/: dcb.exe, dcb-launcher.exe, mods/,
 # README.txt, LICENSES/), <out>/dcb-<version>-windows-x86_64-debug.zip (the PDBs), <out>/SHA256SUMS-windows; the
-# staging under build/release/windows/.
+# staging under build/release/windows/. The zip's name and its one top folder are what the launcher's update check
+# and self-update look for (psxstack docs/GAME_CONTRACT.md "Releases", docs/LAUNCHER.md "Applying one"): keep them.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

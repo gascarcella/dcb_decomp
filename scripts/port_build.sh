@@ -7,9 +7,10 @@
 # cap (status 0: no port_unimplemented, no fatal, no crash, no watchdog).
 #
 # With --sdl, the window build instead (docs/PORT.md "Running it"; psxstack's docs/RUNTIME.md "The window"):
-# -DPSXSTACK_SDL=ON into build/port-sdl, SDL3 and DXC from scripts/setup.sh sdl (bin/psxstack-tools/tools, or
-# $PSXSTACK_TOOLS_DIR), then the stack's input self-test on SDL's offscreen driver (--input-test: every default key and
-# a virtual gamepad's buttons reach the pad, the hotkeys never do; without the disc, on the stack's pump alone).
+# -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON (the in-game menu) into build/port-sdl, SDL3, DXC and Dear ImGui from
+# scripts/setup.sh sdl (bin/psxstack-tools/tools, or $PSXSTACK_TOOLS_DIR), then the stack's input self-test on SDL's
+# offscreen driver (--input-test: every default key and a virtual gamepad's buttons reach the pad, the hotkeys never
+# do, the quick save slot's round trips, the in-game menu's round trip; without the disc, on the stack's pump alone).
 # --sdl --boot boots in an offscreen window, paced in real time (10 s for 600 frames), and requires its log and
 # its screenshot of frame N-100 to equal the headless build's (build/port, built and booted first): the window changes
 # only when the vsyncs happen.
@@ -28,7 +29,7 @@ while [[ $# -gt 0 ]]; do
         --boot) BOOT=1; shift ;;
         --sdl) SDL=1; shift ;;
         --frames) FRAMES="$2"; shift 2 ;;
-        -h|--help) sed -n '2,19p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
         *) echo "port_build.sh: unknown argument $1" >&2; exit 2 ;;
     esac
 done
@@ -47,11 +48,11 @@ cfg=(-G Ninja "-DPSXSTACK_PYTHON=$PY")
 if [[ $SDL -eq 1 ]]; then
     BUILD=build/port-sdl
     TOOLS="${PSXSTACK_TOOLS_DIR:-$ROOT/bin/psxstack-tools/tools}"
-    [[ -f "$TOOLS/sdl3/lib/libSDL3.a" && -x "$TOOLS/dxc/bin/dxc" ]] ||
-        { echo "port_build.sh: no SDL3 or DXC in $TOOLS: scripts/setup.sh sdl" >&2; exit 2; }
-    cfg+=(-DPSXSTACK_SDL=ON "-DPSXSTACK_TOOLS_DIR=$TOOLS")
+    [[ -f "$TOOLS/sdl3/lib/libSDL3.a" && -x "$TOOLS/dxc/bin/dxc" && -f "$TOOLS/imgui/imgui.cpp" ]] ||
+        { echo "port_build.sh: no SDL3, DXC or Dear ImGui in $TOOLS: scripts/setup.sh sdl" >&2; exit 2; }
+    cfg+=(-DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON "-DPSXSTACK_IMGUI_DIR=$TOOLS/imgui" "-DPSXSTACK_TOOLS_DIR=$TOOLS")
 fi
-log "configure and build: cmake -S port -B $BUILD$([[ $SDL -eq 0 ]] || echo ' -DPSXSTACK_SDL=ON'); ninja -C $BUILD"
+log "configure and build: cmake -S port -B $BUILD$([[ $SDL -eq 0 ]] || echo ' -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON'); ninja -C $BUILD"
 cmake -S port -B "$BUILD" "${cfg[@]}" > /dev/null
 ninja -C "$BUILD"
 "$BUILD/dcb" --version
@@ -74,7 +75,9 @@ if [[ $SDL -eq 1 ]]; then
     rc=$?
     set -e
     [[ $rc -eq 0 ]] || { tail -20 "$ROOT/$BUILD/input-test.log" >&2; echo "port_build.sh: the input self-test ended with status $rc ($BUILD/input-test.log)" >&2; exit 1; }
-    log "input self-test: $(grep -m1 -o 'exit 0 after .*' "$ROOT/$BUILD/input-test.log")"
+    grep -q 'input test: the menu: passed' "$ROOT/$BUILD/input-test.log" ||
+        { tail -20 "$ROOT/$BUILD/input-test.log" >&2; echo "port_build.sh: the input self-test ran no in-game menu ($BUILD/input-test.log)" >&2; exit 1; }
+    log "input self-test: $(grep -m1 -o 'exit 0 after .*' "$ROOT/$BUILD/input-test.log"), the in-game menu passed"
 fi
 
 [[ $BOOT -eq 1 ]] || exit 0

@@ -111,7 +111,7 @@ scripts/launcher_build.sh   # build/launcher/dcb-launcher and its self-test (off
 scripts/setup.sh windows    # llvm-mingw, SDL3 for Windows, DXC, Dear ImGui at psxstack's pins (DCB_SDL_TOOLS_FROM links too)
 scripts/build_windows.sh [--test]   # build/port-win/dcb.exe, build/launcher-win/dcb-launcher.exe (+ PDBs); --test: the self-tests and boot/title replays under Wine, boot's log against the Linux build's
 scripts/setup.sh sdl3-desktop appimage   # the release's SDL3 (every desktop backend) and the pinned appimagetool
-scripts/package_appimage.sh --test  # build/release/dcb-<version>-linux-x86_64.AppImage + .debug (Fedora: --shared-libstdcxx, a test build only)
+scripts/package_appimage.sh --test  # build/release/dcb-<version>-x86_64.AppImage + .debug (Fedora: --shared-libstdcxx, a test build only)
 scripts/package_windows.sh --test   # build/release/dcb-<version>-windows-x86_64.zip + -debug.zip (the PDBs), tested under Wine
 scripts/release_local.sh [--host]   # both packages as release.yml builds them (Docker ubuntu:24.04, a clean checkout of HEAD) into build/release/
 .venv/bin/python tests/port/vram.py [SCRIPT ...] [-j 4] [--keep]   # M2: VRAM, textures and picture vs the emulator per checkpoint (known: tests/port/vram_known.json; PNGs in build/port-vram/)

@@ -20,11 +20,19 @@ Starting
 3. On the Disc screen, pick your disc image (the file dialog, a drag-and-drop or a typed path).
 4. Press Play. The launcher hides while the game runs and comes back when it ends.
 
-Settings, Controls and Mods are the launcher's other screens. Keyboard defaults: arrows the D-pad, X cross (confirm),
-C circle, Z square, S triangle, Enter START, Backspace SELECT, Q/E L1/R1, 1/3 L2/R2; P pauses, F11 fullscreen. A
-gamepad works as on a PlayStation (south button cross, east circle; the left stick is the D-pad too). Everything can be
-rebound on the Controls screen. Fast-forward (hold Tab) is a mod, off until you switch it on in the Mods screen: the
-way through the two-minute opening movie, which cannot be skipped.
+Video, Graphics, Audio, System, Controls and Mods are the launcher's other screens. Keyboard defaults: arrows the D-pad, X cross (confirm),
+C circle, Z square, S triangle, Enter START, Backspace SELECT, Q/E L1/R1, 1/3 L2/R2; P pauses, F11 fullscreen, F5/F9
+save and load a quick save state. A gamepad works as on a PlayStation (south button cross, east circle; the left stick
+is the D-pad too); a second one can be player 2 (the Controls screen's Gamepad tab). Everything can be rebound on the
+Controls screen. Escape (or Back+Start on a gamepad) opens the in-game menu: the same screens inside the
+game's window. Fast-forward (hold Tab) and Faster loading are mods, off until you switch them on in the Mods screen:
+fast-forward is the way through the two-minute opening movie, which cannot be skipped.
+
+Updates
+-------
+When it starts, the launcher asks GitHub for this port's latest release (one request through Windows' own curl;
+nothing about you is sent) and offers to update itself in place: your settings and memory cards are kept. Turn it off
+on the System screen ("Check for updates when the launcher starts") or start dcb-launcher.exe with --no-update-check.
 
 Where things are kept
 ---------------------

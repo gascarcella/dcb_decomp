@@ -20,8 +20,9 @@
 #                  launcher then needs the system's libstdc++, so this AppImage is not one to publish
 # Needs: scripts/setup.sh sdl (DXC, Dear ImGui), sdl3-desktop (or an sdl3 with the desktop backends), appimage; cmake,
 # ninja (the venv's), gcc/g++ (with libstdc++.a), binutils.
-# Outputs: <out>/dcb-<version>-linux-x86_64.AppImage, <out>/dcb-<version>-linux-x86_64.debug (the game's debug info, for
-# crash reports' addresses), <out>/SHA256SUMS; the build trees and logs under build/release/.
+# Outputs: <out>/dcb-<version>-x86_64.AppImage, <out>/dcb-<version>-x86_64.debug (the game's debug info, for crash
+# reports' addresses), <out>/SHA256SUMS; the build trees and logs under build/release/. The AppImage's name is what the
+# launcher's update check looks for among a release's assets (psxstack docs/GAME_CONTRACT.md "Releases"): keep it.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -37,7 +38,7 @@ while [[ $# -gt 0 ]]; do
         --sdl3) sdl="$2"; shift 2 ;;
         --test) test=1; shift ;;
         --shared-libstdcxx) shared_cxx=1; shift ;;
-        -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,25p' "$0"; exit 0 ;;
         *) die "unknown argument: $1" ;;
     esac
 done
@@ -54,8 +55,8 @@ fi
 version="${version#v}"
 [[ "$version" =~ ^[A-Za-z0-9._+-]+$ ]] || die "a version of letters, digits and ._+- only: '$version'"
 export PSXSTACK_VERSION="$version"   # psxstack/cmake/version.cmake: the programs' --version
-name="dcb-$version-linux-x86_64.AppImage"
-debug="dcb-$version-linux-x86_64.debug"
+name="dcb-$version-x86_64.AppImage"   # the update check's name (GAME_CONTRACT.md "Releases")
+debug="dcb-$version-x86_64.debug"
 
 # ---- The tools.
 PY="$ROOT/.venv/bin/python"
@@ -102,8 +103,9 @@ quiet() { # quiet LOG CMD...: the command's output into LOG, its end shown when 
 rm -f "$work/port-sdl.log" "$work/launcher.log"
 cfg=(-G Ninja -DCMAKE_BUILD_TYPE=Release "-DSDL3_DIR=$sdl/lib/cmake/SDL3" "-DPSXSTACK_TOOLS_DIR=$TOOLS")
 [[ -n "${PSXSTACK_DIR:-}" ]] && cfg+=("-DPSXSTACK_DIR=$PSXSTACK_DIR")
-log "building the game (window build, Release; log: $work/port-sdl.log)"
-quiet "$work/port-sdl.log" cmake -S port -B "$work/port-sdl" "${cfg[@]}" -DPSXSTACK_SDL=ON "-DPSXSTACK_PYTHON=$PY"
+log "building the game (window build with the in-game menu, Release; log: $work/port-sdl.log)"
+quiet "$work/port-sdl.log" cmake -S port -B "$work/port-sdl" "${cfg[@]}" -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON \
+    -DPSXSTACK_MENU_STATIC_RUNTIME="$static_cxx" "-DPSXSTACK_IMGUI_DIR=$TOOLS/imgui" "-DPSXSTACK_PYTHON=$PY"
 quiet "$work/port-sdl.log" ninja -C "$work/port-sdl" -j "$JOBS"
 log "building the launcher (log: $work/launcher.log)"
 quiet "$work/launcher.log" cmake -S "$STACK/launcher" -B "$work/launcher" "${cfg[@]}" \
