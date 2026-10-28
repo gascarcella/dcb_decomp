@@ -1,7 +1,7 @@
 The licences of what this package contains.
 
-  dcb_decomp.txt          the decompilation of Digimon Digital Card Battle by juandav (the game's C, compiled into
-                          dcb.exe) (https://github.com/ReGame-Labs/dcb_decomp)
+  dcb_decomp.txt          the decompilation of Digimon Digital Card Battle by juandav, copyright ReGame Labs (the
+                          game's C, compiled into dcb.exe) (https://github.com/ReGame-Labs/dcb_decomp)
   psxstack.txt            psxstack: the PC port's runtime, its Psy-Q shim and the launcher
                           (https://github.com/gascarcella/psxstack); the port's own files are the fork's
                           (https://github.com/gascarcella/dcb_decomp)
