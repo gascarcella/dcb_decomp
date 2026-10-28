@@ -153,7 +153,8 @@ jobs:
         if-no-files-found: ignore
 
   # The emulator and the port against each other (docs/PORT.md "Testing"), sharded: the longest replay scripts each get
-  # a job, the `others` shard every other script with a record (a new script lands there by itself) and the checks
+  # a job (two shorter ones share one), the `others` shard every other script with a record (a new script lands there
+  # by itself) and the checks
   # that are not per script. In each shard, per script, side by side on the runner's 4 cores (scripts/ci_parallel.sh;
   # each is single-threaded): the emulator's replay against its record (tests/replay/replay.py check), the port's
   # (tests/port/run.py --sanitize: twice identical, the cross-core view, the ASan/UBSan build with no report; then
@@ -172,10 +173,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Keep OWN_SHARD below in step with the shards named after a script.
-        shard: [fusion, deck_edit, records, first_duel_play, others]
+        # Keep SHARDED below in step with the shards named after their scripts. Measured on the runners (#68): a
+        # shard's tests run ~1.7 times slower four at a time than alone; fusion's run.py --sanitize, 5.4 min, is the
+        # longest single test, and the other shards are packed to finish before it.
+        shard: [fusion, deck_edit, records, first_duel_play, new_game first_duel, others]
     env:
-      OWN_SHARD: fusion deck_edit records first_duel_play
+      SHARDED: fusion deck_edit records first_duel_play new_game first_duel
       SHARD: ${{ matrix.shard }}
     steps:
     - uses: actions/checkout@v5
@@ -202,7 +205,7 @@ jobs:
     - name: The tests, side by side
       run: |
         if [[ "$SHARD" == others ]]; then
-          scripts=$(for f in tests/replay/records/*.json; do n=$(basename "$f" .json); [[ " $OWN_SHARD " == *" $n "* ]] || echo "$n"; done)
+          scripts=$(for f in tests/replay/records/*.json; do n=$(basename "$f" .json); [[ " $SHARDED " == *" $n "* ]] || echo "$n"; done)
         else
           scripts=$SHARD
         fi

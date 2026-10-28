@@ -16,7 +16,7 @@ data of the USA, Japanese and European releases match (upstream's README "Status
 - **CI** (`fork.yaml`; upstream's workflows are deleted here, DECISIONS "CI: our workflows only, parallel"): `build
   (us)` builds `us` from the data checkout and compares every binary; `names` runs upstream's checks
   (`check_names.py`, `hacks.py --check README.md`) on every run; the port's jobs run beside them, the replay tests in
-  five shards.
+  six shards.
 
 ## The PC port
 **M0 (issue #2) is done: the skeleton configures and the host-compile probe runs.** `psxstack/` is the stack at
