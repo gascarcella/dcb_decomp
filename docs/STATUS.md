@@ -236,4 +236,4 @@ runners).
   needs, and the zip, each smoke-tested with the disc).
 
 ## Upstream
-In sync with ReGame-Labs/dcb_decomp `main` at `be6a1dc` (2026-10-08).
+In sync with ReGame-Labs/dcb_decomp `main` at `6c9caf1` (2026-10-10: the `LICENSE` credits ReGame Labs).
