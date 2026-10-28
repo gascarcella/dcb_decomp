@@ -18,6 +18,7 @@
 #include "dcb/openseg.h"
 #include "dcb/dialog.h"
 #include "dcb/saiseg.h"
+#include "dcb/wire_grid.h"
 #include "overlay_ids.h"
 #include "views.h"
 
@@ -220,6 +221,32 @@ int32_t game_state_stage(void) {
 int32_t game_state_map(void) {
     const PlayerProfile *p = (const PlayerProfile *)PLAYER_PROFILES;
     return p != NULL ? p->areaId : 0;
+}
+
+/* ---- The scene (game.json video.scenes; psxstack GAME_CONTRACT.md "4. The adapter units"): which present-filter set
+ * the window shows, read by the runtime once per vsync. 3D while the duel's 3D arena fills the screen: the polygon
+ * battle (SUGSEG in the slot: it is loaded for nothing else) and every scene that lays the wire-grid floor under its
+ * models, renderWireGrid among the frame callbacks: the duel's lead-in to the polygon battle (duel_session.c: the
+ * arena zooms in), the polygon battle itself and EVOSEG's fusion cutscene (evo_cutscene.c, both halves). Everything
+ * else is 2D: the duel field (its cards are sprites the GTE turns), the menus, the maps, the title, SAISEG; a model
+ * shown inside a menu (the registration's starter, the Fusion Shop's partner) does not make the screen 3D. It reads
+ * the game's state and changes none. */
+int32_t game_state_scene(void) {
+    const PortOverlay *o = port_overlay_current(GAME_OVERLAY_TIER);
+    size_t i;
+
+    if (o != NULL && o->file == GAME_OVERLAY_SUGSEG) {
+        return PORT_SCENE_3D;
+    }
+    for (i = 0; i < sizeof(GRAPHICS.frameCallbacks) / sizeof(GRAPHICS.frameCallbacks[0]); i++) {
+        if (GRAPHICS.frameCallbacks[i] == NULL) {
+            break;
+        }
+        if (GRAPHICS.frameCallbacks[i] == (void (*)(FrameBuffer *, s32))renderWireGrid) {
+            return PORT_SCENE_3D;
+        }
+    }
+    return PORT_SCENE_2D;
 }
 
 /* ---- The random index: LIBC2's rand() state, what the PS1 keeps in D_801DDC10 (0 at power-on, then each draw's).

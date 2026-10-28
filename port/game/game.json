@@ -16,7 +16,9 @@
   "disc_required": true,
   "video": {
     "rate": 60,
-    "rates": [60]
+    "rates": [60],
+    "scenes": { "2d": { "label": "the duel field and the menus", "filter": "sharp" },
+                "3d": { "label": "polygon battles and fusions" } }
   },
   "memory": {
     "ram": { "base": "0x80000000", "size": "0x200000" },
