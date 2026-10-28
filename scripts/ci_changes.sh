@@ -9,11 +9,15 @@
 # A file is `none` when no heavy job reads it: the documentation (docs/, any .md, LICENSE, .gitignore, the issue
 # templates) and the release's own files (release.yml runs on those: packaging/, the package scripts). README.md is
 # `none` here too: the `names` job, which always runs, is the one that reads it (tools/hacks.py --check README.md).
+# packaging/steam/ is `code`: game.json's launcher.steam_art names its pictures and the launcher's build embeds them
+# (as are its sources, which a picture follows; its README.txt is `none`), so the launcher's jobs must build them.
 # Anything else is `code`, and one such file runs every job: a new kind of file runs everything until it gets a rule.
 set -euo pipefail
 
 class_of() {
     case "$1" in
+        packaging/steam/README.txt) echo none ;;
+        packaging/steam/*) echo code ;;
         docs/*|*.md|LICENSE|.gitignore|.github/ISSUE_TEMPLATE/*) echo none ;;
         .github/workflows/release.yml|packaging/*|scripts/package_appimage.sh|scripts/package_windows.sh|scripts/release_local.sh) echo none ;;
         *) echo code ;;
@@ -27,7 +31,7 @@ case "${1:-}" in
         [[ $# -ge 2 ]] || { echo "usage: $0 --diff BASE [HEAD]" >&2; exit 2; }
         mapfile -t files < <(git diff --name-only "$2" "${3:-HEAD}")
         echo "ci_changes: ${#files[@]} file(s) changed from $2 to ${3:-HEAD}" >&2 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) files=("$@") ;;
 esac
 code=false
