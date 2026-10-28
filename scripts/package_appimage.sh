@@ -102,8 +102,9 @@ quiet() { # quiet LOG CMD...: the command's output into LOG, its end shown when 
 rm -f "$work/port-sdl.log" "$work/launcher.log"
 cfg=(-G Ninja -DCMAKE_BUILD_TYPE=Release "-DSDL3_DIR=$sdl/lib/cmake/SDL3" "-DPSXSTACK_TOOLS_DIR=$TOOLS")
 [[ -n "${PSXSTACK_DIR:-}" ]] && cfg+=("-DPSXSTACK_DIR=$PSXSTACK_DIR")
-log "building the game (window build, Release; log: $work/port-sdl.log)"
-quiet "$work/port-sdl.log" cmake -S port -B "$work/port-sdl" "${cfg[@]}" -DPSXSTACK_SDL=ON "-DPSXSTACK_PYTHON=$PY"
+log "building the game (window build with the in-game menu, Release; log: $work/port-sdl.log)"
+quiet "$work/port-sdl.log" cmake -S port -B "$work/port-sdl" "${cfg[@]}" -DPSXSTACK_SDL=ON -DPSXSTACK_MENU=ON \
+    -DPSXSTACK_MENU_STATIC_RUNTIME="$static_cxx" "-DPSXSTACK_IMGUI_DIR=$TOOLS/imgui" "-DPSXSTACK_PYTHON=$PY"
 quiet "$work/port-sdl.log" ninja -C "$work/port-sdl" -j "$JOBS"
 log "building the launcher (log: $work/launcher.log)"
 quiet "$work/launcher.log" cmake -S "$STACK/launcher" -B "$work/launcher" "${cfg[@]}" \
