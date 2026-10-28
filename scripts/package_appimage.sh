@@ -20,8 +20,9 @@
 #                  launcher then needs the system's libstdc++, so this AppImage is not one to publish
 # Needs: scripts/setup.sh sdl (DXC, Dear ImGui), sdl3-desktop (or an sdl3 with the desktop backends), appimage; cmake,
 # ninja (the venv's), gcc/g++ (with libstdc++.a), binutils.
-# Outputs: <out>/dcb-<version>-linux-x86_64.AppImage, <out>/dcb-<version>-linux-x86_64.debug (the game's debug info, for
-# crash reports' addresses), <out>/SHA256SUMS; the build trees and logs under build/release/.
+# Outputs: <out>/dcb-<version>-x86_64.AppImage, <out>/dcb-<version>-x86_64.debug (the game's debug info, for crash
+# reports' addresses), <out>/SHA256SUMS; the build trees and logs under build/release/. The AppImage's name is what the
+# launcher's update check looks for among a release's assets (psxstack docs/GAME_CONTRACT.md "Releases"): keep it.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -37,7 +38,7 @@ while [[ $# -gt 0 ]]; do
         --sdl3) sdl="$2"; shift 2 ;;
         --test) test=1; shift ;;
         --shared-libstdcxx) shared_cxx=1; shift ;;
-        -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,25p' "$0"; exit 0 ;;
         *) die "unknown argument: $1" ;;
     esac
 done
@@ -54,8 +55,8 @@ fi
 version="${version#v}"
 [[ "$version" =~ ^[A-Za-z0-9._+-]+$ ]] || die "a version of letters, digits and ._+- only: '$version'"
 export PSXSTACK_VERSION="$version"   # psxstack/cmake/version.cmake: the programs' --version
-name="dcb-$version-linux-x86_64.AppImage"
-debug="dcb-$version-linux-x86_64.debug"
+name="dcb-$version-x86_64.AppImage"   # the update check's name (GAME_CONTRACT.md "Releases")
+debug="dcb-$version-x86_64.debug"
 
 # ---- The tools.
 PY="$ROOT/.venv/bin/python"
