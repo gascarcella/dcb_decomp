@@ -135,7 +135,7 @@ runners).
   `scripts/package_windows.sh` make `dcb-<version>-linux-x86_64.AppImage` (5 MB, glibc 2.38+; `dcb-<version>-x86_64.AppImage` since the update check) and
   `dcb-<version>-windows-x86_64.zip` (4 MB; the PDBs in `-debug.zip`), each smoke-tested (303 of 303 inside the
   package, with the disc); `release.yml` drafts a release on a `vX.Y.Z` tag, which the owner publishes by hand;
-  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). v0.1.0 was published on 2026-10-09.
+  `scripts/release_local.sh` builds the same in Docker `ubuntu:24.04` (under 2 minutes warm). v0.1.0 was published on 2026-10-09; v0.2.0 on 2026-10-28 (psxstack v0.3.19: the in-game menu, quick save states, the update check, the 2D/3D filters, Add to Steam; the first release the update check can offer, from 0.2.0 on).
 - **The tutorial duel replayed to its end (#37):** `tests/replay/scripts/first_duel_play.json` plays it after
   `first_duel`'s steps with every press waiting on the duel's state (the tutorial window, the duel dialog, the duel
   state's step and awaitingInput, the cursor: `docs/PORT.md` "Testing"), 30,582 emulator frames (KAWSEG to SAISEG:
