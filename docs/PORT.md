@@ -29,7 +29,7 @@ The desktop build: the game in a window (psxstack's docs/RUNTIME.md "The window"
 64: game.json `disc_required`, #39), and only the stack's input self-test runs disc-free.
 ```sh
 scripts/setup.sh disc sdl            # the disc image; SDL3, DXC and Dear ImGui at psxstack's pins (bin/psxstack-tools/)
-scripts/port_build.sh --sdl          # build/port-sdl/dcb, then its input self-test (offscreen)
+scripts/port_build.sh --sdl          # build/port-sdl/dcb (with the in-game menu), then its input self-test (offscreen)
 build/port-sdl/dcb --disc disks/us/dcb_us.cue --window --memcard1 build/card1.mcd   # play; --renderer gpu: Vulkan
 scripts/launcher_build.sh            # build/launcher/dcb-launcher, then its self-test (offscreen)
 build/launcher/dcb-launcher          # choose the disc on its Disc screen, then Play
@@ -43,9 +43,42 @@ setup checks them against its pins). `PSXSTACK_TOOLS_DIR=<dir>` points both buil
 
 **Keys** (by position; the stack's defaults, rebindable on the launcher's Controls screen): arrows the D-pad, X cross
 (confirm), C circle, Z square, S triangle, Enter START, Backspace or right Shift SELECT, Q L1, E R1, 1 L2, 3 R2; P
-pauses, F11 toggles fullscreen. A gamepad in the PlayStation layout (south cross, east circle, ...; the left stick is
-the D-pad too). Fast-forward (hold Tab; 4x) is a mod, off until switched on in the launcher's Mods screen: the way through
-the two-minute opening movie.
+pauses, F11 toggles fullscreen, F5 and F9 save and load the quick save state (`quick.state` beside the settings file),
+Escape (or Back+Start on a gamepad) opens the in-game menu. A gamepad in the PlayStation layout (south cross, east
+circle, ...; the left stick is the D-pad too). Fast-forward (hold Tab; 4x) and Faster loading (the CD's data reads 2x to
+instant; the movie and its XA audio keep the drive's rate) are the stack's mods, off until switched on in the launcher's
+Mods screen: fast-forward is the way through the two-minute opening movie. The replays run without them.
+
+**What psxstack v0.3.19 gives this game** (psxstack's `CHANGELOG.md`; docs/LAUNCHER.md there for each):
+- **The in-game menu** (Escape, or Back+Start): the launcher's Video, Graphics, Audio, System, Controls and Mods
+  screens inside the game's window, applied live. It is a build option, `-DPSXSTACK_MENU=ON` (Dear ImGui from `scripts/setup.sh sdl`), which
+  `scripts/port_build.sh --sdl`, `scripts/build_windows.sh` and `scripts/package_appimage.sh` pass; their input
+  self-tests require its round trip.
+- **Two present filters** (the GPU renderer; the Graphics screen's two tabs, named by game.json `video.scenes`): one
+  for the 3D scenes, "polygon battles and fusions" (`video.filter`, the stack's default `none`), one for everything
+  else, "the duel field and the menus" (`video.scene_2d`, default `sharp`; `--filter-2d` on the command line). The
+  adapter's `game_state_scene()` (`port/game/state.c`) says 3D while SUGSEG is in the slot (the polygon battle and the arena's lead-in to it, drawn
+  while SUGSEG is loaded) or while the wire-grid floor is among the frame callbacks (`renderWireGrid`: also EVOSEG's
+  fusion cutscene, both halves); the duel field (its cards are sprites the GTE turns), the menus with a model in them
+  (the registration's starter, the Fusion Shop's partner), the maps and the title are 2D. Checked on the window build
+  replaying `fusion`: 3D exactly from each SUGSEG load to KAWSEG's return (three polygon battles) and over the fusion
+  cutscene's two halves, 2D everywhere else. `sharp` for the 2D scenes: the picture fits the screen by default
+  (`video.scaling` `fit`), at a scale that is rarely whole, and sharp bilinear keeps the small text and the card art's
+  pixels even without reshaping them (`smooth`'s xBR is for pixel art and bends the font's glyphs); anyone may choose
+  another per set.
+- **Player 2** (`input.player2`, off by default: `"first"` or `"second"` gamepad drives the PS1's port 1, on the
+  Controls screen's Gamepad tab). The game reads port 1 for a second human player: KAWSEG's versus duel
+  (`PAD_STATES[player]`, `PLAYER(1)->controller`, player 2's deck choice in `kaw_match_intro.c`) and OPENSEG's friend
+  trade (`open_trade.c`, `open_memcard.c`). Nothing is wired game-side (the setting is the player's); untested by hand.
+- **The update check** (game.json `launcher.updates`: `gascarcella/dcb_decomp`): the launcher compares its version with
+  the latest published release (never a draft or prerelease) through the system's curl, offers Update now, and on an
+  AppImage or the Windows folder replaces itself with the release's package, found by name ("Releases"). The System
+  screen's checkbox, `launcher.updates.check` or `--no-update-check` turn it off.
+- **Add to Steam** (the launcher's System screen) with the artwork of game.json `launcher.steam_art`:
+  **placeholders** for now (`packaging/steam/`: the port's icon and the title, labelled "placeholder art"; the
+  generator and the sizes in its `README.txt`), to be replaced by proper art.
+- Save states' quick slot, the menu size, `video.scaling` (`fit`, `integer`, `stretch`), the widescreen canvas at the
+  screen's aspect and the 1024x1024 VRAM: the last two only when a game mod asks, and this game has none, so they are off.
 
 **Where things go.** Started bare, the game reads no settings and its memory cards are fresh ones in memory, lost at exit
 (`--memcard1 FILE` keeps one; created formatted when missing). Started from the launcher, everything is in the
@@ -87,8 +120,8 @@ player brings the disc and the launcher checks its SHA-1):
 
 | File | What | Built by |
 |---|---|---|
-| `dcb-<version>-linux-x86_64.AppImage` | `usr/bin/dcb-launcher` (the entry point, `AppRun`), `usr/bin/dcb`, `usr/bin/mods/`, the `.desktop` file, the icon, `LICENSES/`; the static type-2 runtime (no libfuse2 needed); both programs need only glibc 2.39+ (built on ubuntu-24.04) | `scripts/package_appimage.sh` (SDL3 with the desktop backends: `scripts/setup.sh sdl3-desktop`; `scripts/setup.sh appimage`: the pinned appimagetool) |
-| `dcb-<version>-linux-x86_64.debug` | The game's debug info (`objcopy --only-keep-debug`): crash reports' addresses | the same |
+| `dcb-<version>-x86_64.AppImage` | `usr/bin/dcb-launcher` (the entry point, `AppRun`), `usr/bin/dcb`, `usr/bin/mods/`, the `.desktop` file, the icon, `LICENSES/`; the static type-2 runtime (no libfuse2 needed); both programs need only glibc 2.39+ (built on ubuntu-24.04) | `scripts/package_appimage.sh` (SDL3 with the desktop backends: `scripts/setup.sh sdl3-desktop`; `scripts/setup.sh appimage`: the pinned appimagetool) |
+| `dcb-<version>-x86_64.debug` | The game's debug info (`objcopy --only-keep-debug`): crash reports' addresses | the same |
 | `dcb-<version>-windows-x86_64.zip` | One folder: `dcb-launcher.exe`, `dcb.exe`, `mods/`, `README.txt` (the disc, the keys, where settings go), `LICENSES/` | `scripts/package_windows.sh` (`scripts/build_windows.sh`) |
 | `dcb-<version>-windows-x86_64-debug.zip` | The two PDBs: the symbols of crash reports and minidumps | the same |
 | `SHA256SUMS`, `SHA256SUMS-windows` | The checksums | the same |
@@ -98,6 +131,10 @@ The version is the tag (`vX.Y.Z` names `X.Y.Z`): psxstack's `cmake/version.cmake
 each package script checks that `dcb --version` says it. Each script's `--test` is the package's smoke test: the
 launcher's self-test inside the AppImage, or under Wine in the unzipped folder, finding the bundled game and mods by
 itself (`DCB_SELFTEST_GAME=beside`), and with `disks/us/dcb_us.cue` running the bundled game 300 frames on the disc.
+The AppImage's and the zip's names, and the zip's one top folder, are what the launcher's update check and self-update
+look for among a release's assets (psxstack's `docs/GAME_CONTRACT.md` "Releases"): the AppImage was
+`dcb-<version>-linux-x86_64.AppImage` up to v0.1.0, which the check would not find. Publishing a release offers it to
+every player's launcher from the first version with the check on (the one after v0.1.0).
 
 **Cutting a release** (the owner): with `main`'s CI green, `git tag -a v0.1.0 -m "dcb PC port 0.1.0" && git push origin
 v0.1.0`. `.github/workflows/release.yml` builds both packages from the tag on ubuntu-24.04, smoke-tests them without the
@@ -114,6 +151,8 @@ this machine, packages to try only: this host's glibc, and Fedora has no static 
 | `game.json` identity | `port/game/game.json`: `id` `dcb`, title "Digimon Digital Card Battle", `env_prefix` `DCB`, `launcher.about` crediting the decompilation (DECISIONS "Credit") |
 | Disc | SLUS-01328, "Digimon Digital Card Battle (USA)": SHA-1 `b3945b3e76c1fcc554a7614e2b4211d974990105`, 215661936 bytes, one MODE2/2352 track |
 | `video.rate` | 60 (NTSC) |
+| `video.scenes` | 2D "the duel field and the menus" (default filter `sharp`), 3D "polygon battles and fusions"; the probe is `game_state_scene()` ("Running it") |
+| `launcher.updates`, `launcher.steam_art` | `gascarcella/dcb_decomp`'s releases; the placeholder pictures in `packaging/steam/` |
 | `memory.slots` | **One slot**, `overlay`, the overlay area at `0x801DDF38` (`OVERLAY_AREA`, `config/us/symbols_overlay_calls.txt`), `0x1EAF8` bytes: the largest overlay, KAWSEG (to `0x801FCA30`; OPENSEG reaches `0x801F8188`). Each overlay's zeroed data is inside its file, so file size = memory size. KAWSEG and OPENSEG run into the 32 KB the start-up reserves for the stack (`0x801F8000`-`0x80200000`) |
 | `memory.heap` | **None** (psxstack 0.3.0 made it optional, [psxstack#26](https://github.com/gascarcella/psxstack/issues/26)): this game's heap is its own `.bss` array (`HEAP_ARENA`), game data the port saves, resets and snapshots like the rest; the arena holds the slot alone. See "Memory and pointers" |
 | `UNITS`, `MAIN_UNIT` | `port/tools/port_inputs.py` writes them from `MAIN_C_SRC` and `<OVERLAY>_C_SRC` of `mk/version/us.mk`: 155 units and the generated game `.bss` (`port_bss.py`, "Beyond the gate"), without `src/main/psyq/` (the shim replaces the libraries), `startup.s` and `libmath.s` (host replacements, below). `main()` is `src/main/main.c:54`: it starts the scheduler with `runMainTask` (`src/main/system/boot.c:76`) and spins on `rand()` |

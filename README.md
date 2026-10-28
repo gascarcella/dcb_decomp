@@ -51,10 +51,11 @@ Open the [Releases page](https://github.com/gascarcella/dcb_decomp/releases) and
 system. The `.debug` file and the `-debug.zip` are the programs' debug info for crash reports; they are not needed to
 play. `SHA256SUMS` and `SHA256SUMS-windows` hold the checksums (`sha256sum -c SHA256SUMS`).
 
-**Linux:** `dcb-<version>-linux-x86_64.AppImage`. Make it executable and run it:
+**Linux:** `dcb-<version>-x86_64.AppImage` (v0.1.0's is `dcb-0.1.0-linux-x86_64.AppImage`). Make it executable and
+run it:
 ```sh
-chmod +x dcb-*-linux-x86_64.AppImage
-./dcb-*-linux-x86_64.AppImage
+chmod +x dcb-*x86_64.AppImage
+./dcb-*x86_64.AppImage
 ```
 The AppImage opens the **launcher**, which holds the game and its mods. Nothing needs installing or compiling. If your
 system cannot mount AppImages, run it with `--appimage-extract-and-run`.
@@ -77,13 +78,23 @@ comes back when it ends.
 
 ### Settings, controls and saves
 
-- **Settings** (video, renderer, audio, memory cards), **Controls** (keyboard and gamepad rebinding, hotkeys) and
-  **Mods** are the launcher's other screens.
+- **Video**, **Graphics** (the renderer, its resolution, the filters), **Audio**, **System** (memory cards, updates,
+  Steam), **Controls** (keyboard and gamepad rebinding, hotkeys) and **Mods** are the launcher's other screens.
 - **Keyboard defaults:** arrows the D-pad, X cross (confirm), C circle, Z square, S triangle, Enter START, Backspace
-  or right Shift SELECT, Q and E L1 and R1, 1 and 3 L2 and R2; P pauses, F11 toggles fullscreen. A **gamepad** works as
-  on a PlayStation (south button cross, east circle; the left stick is the D-pad too).
-- **Fast-forward** (hold Tab, 4x) is a mod, off until you switch it on in the Mods screen: the way through the
-  two-minute opening movie, which cannot be skipped, as on the PlayStation.
+  or right Shift SELECT, Q and E L1 and R1, 1 and 3 L2 and R2; P pauses, F11 toggles fullscreen, F5 and F9 save and
+  load a quick save state. A **gamepad** works as on a PlayStation (south button cross, east circle; the left stick is
+  the D-pad too). A second gamepad can be **player 2** (the Controls screen's Gamepad tab), for versus duels and trades.
+- **The in-game menu:** Escape (or Back+Start on a gamepad) pauses the game and opens the same screens in its window,
+  applied live.
+- **Fast-forward** (hold Tab, 4x) and **Faster loading** are mods, off until you switch them on in the Mods screen:
+  fast-forward is the way through the two-minute opening movie, which cannot be skipped, as on the PlayStation.
+- **Filters** (the GPU renderer): one for the duel field and the menus (sharp by default), one for the polygon battles
+  and the fusions.
+- **Updates:** from the version after v0.1.0 the launcher checks this repository's latest release when it starts (one
+  request to GitHub, through the system's curl; nothing about you is sent) and offers to update itself. Turn it off on
+  the System screen, or start it with `--no-update-check`.
+- **Steam:** Add to Steam on the System screen adds the launcher as a non-Steam game (its artwork is a placeholder for
+  now).
 - **Where things are kept:** `~/.local/share/dcb/` on Linux (`$XDG_DATA_HOME/dcb/`), `%APPDATA%\dcb\` on Windows:
   `settings.json`, the memory cards `card1.mcd` and `card2.mcd` (the same format as PCSX-Redux's, so a card moves
   between the port and the emulator), `logs/last-run.log` (the last game run's output) and `crashes/` (crash reports).
